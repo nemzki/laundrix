@@ -1,0 +1,106 @@
+{% extends "core/base.html" %}
+{% block title %}Laundrix · Laundry business management{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('landing.static', filename='css/landing.css') }}">
+{% endblock %}
+
+{% block body %}
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="brand" href="#top"><span class="brand-mark">L</span>Laundrix</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    <nav class="nav-links" id="navLinks">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#roles">Roles</a>
+      <a href="{{ url_for('staff_auth.login') }}">Staff portal</a>
+      <a class="btn btn-primary btn-sm" href="{{ url_for('auth.login') }}">Sign in</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="pill">Laundry business management</span>
+        <h1>Run your laundry business with clarity.</h1>
+        <p class="lead">Track every order from drop-off to pickup, keep customer records organized,
+          and give your team the right access — all in one secure place.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Get started</a>
+          <a class="btn btn-outline" href="#features">See features</a>
+        </div>
+      </div>
+
+      <div class="preview" aria-hidden="true">
+        <div class="preview-head"><span></span><span></span><span></span></div>
+        <div class="preview-row"><b>Order #1042</b><span class="tag tag-blue">Received</span></div>
+        <div class="preview-row"><b>Order #1041</b><span class="tag tag-amber">Washing</span></div>
+        <div class="preview-row"><b>Order #1040</b><span class="tag tag-green">Ready for pickup</span></div>
+        <div class="preview-bar"><i></i></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="container">
+      <h2 class="section-title">Everything the front desk needs</h2>
+      <p class="section-sub">Built for the daily rhythm of a laundry shop.</p>
+      <div class="cards">
+        <article class="card"><div class="icon">🧺</div><h3>Order tracking</h3>
+          <p>Follow each load through received, washing, ready, and picked up.</p></article>
+        <article class="card"><div class="icon">👥</div><h3>Customer records</h3>
+          <p>Keep contact details and order history one click away.</p></article>
+        <article class="card"><div class="icon">💳</div><h3>Pricing &amp; payments</h3>
+          <p>Set service rates and record payments without a calculator.</p></article>
+        <article class="card"><div class="icon">📊</div><h3>Reports</h3>
+          <p>See daily and monthly activity so you can plan with confidence.</p></article>
+        <article class="card"><div class="icon">🔐</div><h3>Secure sign-in</h3>
+          <p>Google handles authentication — no passwords stored in Laundrix.</p></article>
+        <article class="card"><div class="icon">🛡️</div><h3>Role-based access</h3>
+          <p>Admins manage the business; staff see only what they need.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="section section-alt">
+    <div class="container">
+      <h2 class="section-title">How it works</h2>
+      <ol class="steps">
+        <li><span>1</span><div><h3>Sign in with Google</h3><p>Use the Google account your admin authorized.</p></div></li>
+        <li><span>2</span><div><h3>Manage orders</h3><p>Create, update, and complete orders from your dashboard.</p></div></li>
+        <li><span>3</span><div><h3>Grow with insight</h3><p>Review reports and keep your team in sync.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="roles" class="section">
+    <div class="container roles">
+      <div class="role-card">
+        <h3>Admin</h3>
+        <p>Full control of the business: manage staff access, services, pricing, and reports.</p>
+      </div>
+      <div class="role-card">
+        <h3>Staff</h3>
+        <p>Handle day-to-day work: create orders, update statuses, and serve customers.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container">
+      <h2>Ready to simplify your laundry operations?</h2>
+      <a class="btn btn-light" href="{{ url_for('auth.login') }}">Sign in to Laundrix</a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">© {{ now_year }} Laundrix. All rights reserved.</div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('landing.static', filename='js/landing.js') }}"></script>
+{% endblock %}

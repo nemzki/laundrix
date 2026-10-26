@@ -1,0 +1,17 @@
+{% extends "staff_auth/base_wizard.html" %}
+{% block title %}Staff sign-in · Laundrix{% endblock %}
+{% block progress %}{{ stepper(1, ["Email", "Staff ID", "Face"]) }}{% endblock %}
+{% block card %}
+  <h1>Staff sign-in</h1>
+  <p class="muted">Enter your work email to begin. You'll verify your Staff ID and face next.</p>
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="email">Email address</label>
+    <input id="email" name="email" type="email" autocomplete="username" required autofocus
+           maxlength="255" placeholder="you@example.com">
+    <button class="btn btn-primary btn-block" type="submit">Continue</button>
+  </form>
+{% endblock %}
+{% block below %}
+  <p class="switch">Admin? <a href="{{ url_for('auth.login') }}">Sign in with Google</a></p>
+{% endblock %}

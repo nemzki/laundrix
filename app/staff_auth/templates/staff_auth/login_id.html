@@ -1,0 +1,17 @@
+{% extends "staff_auth/base_wizard.html" %}
+{% block title %}Verify Staff ID · Laundrix{% endblock %}
+{% block progress %}{{ stepper(2, ["Email", "Staff ID", "Face"]) }}{% endblock %}
+{% block card %}
+  <h1>Verify your Staff ID</h1>
+  <p class="muted">Signing in as <strong>{{ email_hint }}</strong></p>
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="staff_id">Staff ID</label>
+    <input id="staff_id" name="staff_id" type="password" autocomplete="off" required autofocus
+           maxlength="64" placeholder="LX-12345678" spellcheck="false" autocapitalize="characters">
+    <button class="btn btn-primary btn-block" type="submit">Continue</button>
+  </form>
+{% endblock %}
+{% block below %}
+  <p class="switch"><a href="{{ url_for('staff_auth.restart') }}">← Use a different email</a></p>
+{% endblock %}

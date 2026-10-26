@@ -1,0 +1,33 @@
+{% extends "staff_auth/base_wizard.html" %}
+{% block title %}Set up staff sign-in · Laundrix{% endblock %}
+{% block progress %}{{ stepper(1, ["Consent", "Verify", "Done"]) }}{% endblock %}
+{% block card %}
+  <h1>Set up staff sign-in</h1>
+  <p class="muted">{% if name %}Hi {{ name }}. {% endif %}Confirm your Staff ID and read the notice below.</p>
+
+  <div class="notice">
+    <strong>About your ID and face data</strong>
+    <ul>
+      <li>You'll verify once on a secure page run by our provider, <b>Didit</b>: you photograph a
+          government ID and take a live selfie.</li>
+      <li>After enrollment, each staff sign-in includes a live face check against the enrolled
+          face reference. You will not need to photograph your government ID again unless an administrator asks you to re-verify.</li>
+      <li>Laundrix does <b>not</b> store your ID photos, selfies or face data. It keeps only your
+          result, the document type and sign-in records.</li>
+      <li>The provider may process data outside your country. Using this is your choice: if you'd
+          rather not, ask your administrator for an alternative.</li>
+    </ul>
+  </div>
+
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="staff_id">Staff ID</label>
+    <input id="staff_id" name="staff_id" type="password" autocomplete="off" required maxlength="64"
+           placeholder="LX-12345678" spellcheck="false" autocapitalize="characters">
+    <label class="check">
+      <input type="checkbox" name="consent" required>
+      <span>I consent to the one-time ID verification and the live face checks at staff sign-in described above.</span>
+    </label>
+    <button class="btn btn-primary btn-block" type="submit">Continue</button>
+  </form>
+{% endblock %}

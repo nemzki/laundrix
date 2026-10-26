@@ -1,0 +1,10 @@
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: .8rem 1.5rem;
+  background: var(--white); border-bottom: 1px solid var(--border); }
+.topbar-brand { font-weight: 800; font-size: 1.2rem; color: var(--navy); }
+.topbar-user { display: flex; align-items: center; gap: .9rem; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; }
+.who { display: grid; line-height: 1.2; text-align: right; }
+.role { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
+.role-admin { color: var(--primary-dark); }
+.role-staff { color: var(--muted); }
+.dash { width: min(1120px, 92%); margin: 2.5rem auto; }

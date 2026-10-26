@@ -1,0 +1,16 @@
+{% extends "staff_auth/base_wizard.html" %}
+{% block title %}Verify your identity · Laundrix{% endblock %}
+{% block progress %}{{ stepper(2, ["Consent", "Verify", "Done"]) }}{% endblock %}
+{% block card %}
+  <h1>Verify your identity</h1>
+  <p class="muted">You'll be taken to a secure page. Have your government-issued ID ready, then take a
+     live selfie. It takes about two minutes.</p>
+  <ul class="tips">
+    <li>Use a valid, unexpired ID, in good light, with no glare.</li>
+    <li>Take off sunglasses and hats for the selfie.</li>
+  </ul>
+  <form method="post" action="{{ url_for('staff_auth.enroll_start') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-primary btn-block" type="submit">Continue to verification</button>
+  </form>
+{% endblock %}

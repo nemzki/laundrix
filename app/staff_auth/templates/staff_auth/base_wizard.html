@@ -1,0 +1,18 @@
+{% extends "core/base.html" %}
+{% from "staff_auth/_stepper.html" import stepper %}
+{% block head %}
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="{{ url_for('staff_auth.static', filename='css/staff_auth.css') }}">
+{% endblock %}
+{% block body_class %}centered{% endblock %}
+
+{% block body %}
+<main class="wizard">
+  <a class="wizard-brand" href="{{ url_for('landing.index') }}"><span>L</span>Laundrix <small>Staff Portal</small></a>
+  {% block progress %}{% endblock %}
+  <section class="wizard-card">
+    {% block card %}{% endblock %}
+  </section>
+  {% block below %}{% endblock %}
+</main>
+{% endblock %}

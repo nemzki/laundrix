@@ -1,0 +1,14 @@
+{% set idv = idv_summary() %}
+{% if idv %}
+<section class="idv-card" aria-label="Identity verification">
+  <div>
+    <span class="badge badge-{{ idv.ui.badge }}">{{ idv.ui.label }}</span>
+    <h2>Identity verification</h2>
+    <p class="muted">{{ idv.ui.headline }}</p>
+  </div>
+  <a class="btn {% if idv.status == 'verified' %}btn-outline{% else %}btn-primary{% endif %}"
+     href="{{ url_for('identity.index') }}">
+    {% if idv.status == 'verified' %}View{% elif idv.can_start %}{{ idv.ui.start_label }}{% else %}View status{% endif %}
+  </a>
+</section>
+{% endif %}

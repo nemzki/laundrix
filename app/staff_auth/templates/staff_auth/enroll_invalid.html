@@ -1,0 +1,7 @@
+{% extends "staff_auth/base_wizard.html" %}
+{% block title %}Link unavailable · Laundrix{% endblock %}
+{% block card %}
+  <h1>Link unavailable</h1>
+  <p class="muted">This enrollment link is invalid, expired, or already used. Ask your administrator for a new one.</p>
+  <a class="btn btn-outline btn-block" href="{{ url_for('landing.index') }}">Back to home</a>
+{% endblock %}

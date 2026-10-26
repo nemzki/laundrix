@@ -1,0 +1,21 @@
+.auth-card { width: min(100%, 400px); background: var(--white); border: 1px solid var(--border);
+  border-radius: 18px; box-shadow: var(--shadow); padding: 2.4rem 2rem; text-align: center; }
+.auth-brand { display: inline-flex; align-items: center; gap: .6rem; font-weight: 800; font-size: 1.3rem;
+  color: var(--navy); text-decoration: none; margin-bottom: 1.4rem; }
+.auth-brand span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px;
+  background: var(--primary); color: #fff; }
+.auth-card h1 { font-size: 1.6rem; }
+.auth-card .muted { margin: 0 0 1.8rem; }
+
+.google-btn { display: flex; align-items: center; justify-content: center; gap: .8rem; width: 100%;
+  padding: .8rem 1rem; border: 1px solid #dadce0; border-radius: 10px; background: #fff;
+  color: #3c4043; font-weight: 600; text-decoration: none; transition: background .15s, box-shadow .15s; }
+.google-btn:hover { background: #f8f9fa; box-shadow: 0 1px 4px rgba(60,64,67,.25); }
+.google-btn.loading { opacity: .6; pointer-events: none; }
+.fineprint { margin: 1.6rem 0 0; font-size: .82rem; color: var(--muted); }
+
+
+.staff-access { margin: 20px 0 0; font-size: .9rem; }
+.staff-access a { color: var(--primary); font-weight: 600; text-decoration: none; }
+.staff-access a:hover { text-decoration: underline; }
+.staff-access a:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 2px; }

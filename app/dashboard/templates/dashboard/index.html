@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+{% block title %}Dashboard · Laundrix{% endblock %}
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('dashboard.static', filename='css/dashboard.css') }}">
+  {% if config.IDV_ENABLED %}<link rel="stylesheet" href="{{ url_for('identity.static', filename='css/identity.css') }}">{% endif %}
+{% endblock %}
+
+{% block body %}
+<header class="topbar">
+  <span class="topbar-brand">Laundrix</span>
+  <div class="topbar-user">
+    {% if current_user.picture_url %}
+      <img src="{{ current_user.picture_url }}" alt="" referrerpolicy="no-referrer" class="avatar">
+    {% endif %}
+    <div class="who">
+      <strong>{{ current_user.full_name or current_user.email }}</strong>
+      <span class="role role-{{ current_user.role }}">{{ current_user.role }}</span>
+    </div>
+    <form method="post" action="{{ url_for('auth.logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline" type="submit">Sign out</button>
+    </form>
+  </div>
+</header>
+
+<main class="dash">
+  <h1>{{ dashboard_title|default("Dashboard") }}</h1>
+<p class="muted">
+  {{ dashboard_description|default("Feature modules will plug in here.") }}
+</p>
+  {% if config.IDV_ENABLED %}{% include "identity/_status_card.html" %}{% endif %}
+</main>
+{% endblock %}
