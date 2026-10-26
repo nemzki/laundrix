@@ -1,0 +1,44 @@
+# ===== Secrets (NEVER commit) =====
+.env
+.env.*
+!.env.example
+client_secret*.json
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+credentials/
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ===== Virtual environments =====
+venv/
+.venv/
+env/
+
+# ===== Flask / runtime =====
+instance/
+logs/*
+!logs/.gitkeep
+*.log
+uploads/
+
+# ===== Database dumps / backups =====
+backups/
+*.dump
+*.sqlite
+*.sqlite3
+*.db
+
+# ===== IDE / OS =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
