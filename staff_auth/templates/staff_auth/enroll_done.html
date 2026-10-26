@@ -1,0 +1,9 @@
+{% extends "staff_auth/base_wizard.html" %}
+{% block title %}All set · Laundrix{% endblock %}
+{% block progress %}{{ stepper(4, ["Consent", "Photo", "Done"]) }}{% endblock %}
+{% block card %}
+  <div class="success-mark">✓</div>
+  <h1>You're all set</h1>
+  <p class="muted">Your identity is verified. From now on, sign in with your email, Staff ID and a quick live selfie.</p>
+  <a class="btn btn-primary btn-block" href="{{ url_for('staff_auth.login') }}">Go to staff sign-in</a>
+{% endblock %}

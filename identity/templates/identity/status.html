@@ -1,0 +1,58 @@
+{% extends "core/base.html" %}
+{% block title %}Identity verification · Laundrix{% endblock %}
+{% block head %}
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="{{ url_for('identity.static', filename='css/identity.css') }}">
+{% endblock %}
+
+{% block body %}
+<main class="idv-page">
+  <a class="idv-back" href="{{ url_for('dashboard.index') }}">← Back to dashboard</a>
+
+  <section class="idv-panel">
+    <span class="badge badge-{{ ui.badge }}">{{ ui.label }}</span>
+    <h1>{{ ui.headline }}</h1>
+    <p class="muted">{{ ui.body }}</p>
+    {% if hint %}<p class="idv-hint">{{ hint }}</p>{% endif %}
+
+    {% if verification %}
+    <dl class="idv-meta">
+      <div><dt>Started</dt><dd>{{ verification.created_at.strftime('%b %d, %Y %H:%M') }} UTC</dd></div>
+      <div><dt>Last update</dt><dd>{{ verification.updated_at.strftime('%b %d, %Y %H:%M') }} UTC</dd></div>
+      {% if verification.document_type %}
+        <div><dt>Document</dt><dd>{{ verification.document_type }}</dd></div>
+      {% endif %}
+    </dl>
+    {% endif %}
+
+    <div class="idv-actions">
+      {% if can_start %}
+        <a class="btn btn-primary" href="{{ url_for('identity.start') }}">{{ ui.start_label }}</a>
+      {% endif %}
+      {% if can_refresh %}
+        <form method="post" action="{{ url_for('identity.refresh') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline" type="submit">Check status</button>
+        </form>
+      {% endif %}
+    </div>
+    {% if blocked_message %}<p class="idv-hint">{{ blocked_message }}</p>{% endif %}
+  </section>
+
+  {% if history and history|length > 1 %}
+  <section class="idv-history">
+    <h2>Previous attempts</h2>
+    <ul>
+      {% for h in history %}
+        <li>
+          <a href="{{ url_for('identity.attempt', public_id=h.public_id) }}">
+            {{ h.created_at.strftime('%b %d, %Y %H:%M') }} UTC
+          </a>
+          <span class="badge badge-sm">{{ h.status.replace('_', ' ') }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</main>
+{% endblock %}

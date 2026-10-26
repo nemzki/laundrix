@@ -1,0 +1,8 @@
+{% extends "staff_auth/base_wizard.html" %}
+{% block title %}Staff sign-in unavailable · Laundrix{% endblock %}
+{% block card %}
+  <h1>Staff sign-in is unavailable</h1>
+  <p class="muted">Staff sign-in needs identity verification to be set up first. Please contact your
+     administrator.</p>
+  <a class="btn btn-outline btn-block" href="{{ url_for('landing.index') }}">Back to home</a>
+{% endblock %}

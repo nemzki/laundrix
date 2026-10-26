@@ -1,0 +1,11 @@
+{% macro stepper(current, labels) %}
+<ol class="stepper" aria-label="Progress">
+  {% for label in labels %}
+    {% set n = loop.index %}
+    <li class="{{ 'done' if n < current else ('active' if n == current else '') }}"
+        {% if n == current %}aria-current="step"{% endif %}>
+      <span>{% if n < current %}✓{% else %}{{ n }}{% endif %}</span>{{ label }}
+    </li>
+  {% endfor %}
+</ol>
+{% endmacro %}

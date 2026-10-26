@@ -1,0 +1,10 @@
+{% extends "staff_auth/base_wizard.html" %}
+{% block title %}Under review · Laundrix{% endblock %}
+{% block progress %}{{ stepper(2, ["Consent", "Verify", "Done"]) }}{% endblock %}
+{% block card %}
+  <h1>We're reviewing your verification</h1>
+  <p class="muted">This is taking longer than usual, which can happen when a person reviews it.
+     Nothing more is needed from you. Once it's approved you can sign in with your email, Staff ID
+     and a quick selfie.</p>
+  <a class="btn btn-outline btn-block" href="{{ url_for('staff_auth.enroll_return') }}">Check again</a>
+{% endblock %}

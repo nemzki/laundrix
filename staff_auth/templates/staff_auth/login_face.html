@@ -1,0 +1,27 @@
+{% extends "staff_auth/base_wizard.html" %}
+{% block title %}Face check · Laundrix{% endblock %}
+{% block progress %}{{ stepper(3, ["Email", "Staff ID", "Face"]) }}{% endblock %}
+{% block card %}
+  <h1>Face check</h1>
+  <p class="muted">For your security, we confirm it's really you. You'll be taken to a secure page
+     to take a quick live selfie. It takes a few seconds, and no ID is needed.</p>
+
+  <ul class="tips">
+    <li>Sit in good light and face the camera.</li>
+    <li>Take off sunglasses and hats.</li>
+    <li>Make sure only you are in view.</li>
+  </ul>
+
+  <form method="post" action="{{ url_for('staff_auth.face_start') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-primary btn-block" type="submit">
+      {% if in_progress %}Continue face check{% else %}Start face check{% endif %}
+    </button>
+  </form>
+  {% if in_progress %}
+    <p class="switch"><a href="{{ url_for('staff_auth.face_return') }}">I already finished: check my result</a></p>
+  {% endif %}
+{% endblock %}
+{% block below %}
+  <p class="switch"><a href="{{ url_for('staff_auth.restart') }}">← Start over</a></p>
+{% endblock %}
