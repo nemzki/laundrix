@@ -15,7 +15,13 @@ from alembic.migration import MigrationContext  # noqa: E402
 from alembic.operations import Operations  # noqa: E402
 
 VERSIONS = pathlib.Path(__file__).resolve().parents[2] / "migrations" / "versions"
-CHAIN = ["6aa6497527d1", "4b1d2288b22d", "c7f3a91d5e20", "e1a4b7c92f30"]
+CHAIN = [
+    "6aa6497527d1",
+    "4b1d2288b22d",
+    "c7f3a91d5e20",
+    "e1a4b7c92f30",
+    "11b2bcbca728",
+]
 IDENTITY_TABLES = {"identity_verifications", "identity_verification_events"}
 FACE_COLUMNS = {"face_id", "face_enrolled_at", "biometric_consent_at"}
 

@@ -197,7 +197,11 @@ def face_return():
             clear_wizard()
             flash(GENERIC_FAIL, "error")
             return redirect(url_for("staff_auth.login"))
-        register_success(cred)
+        cred.failed_attempts = 0
+        cred.locked_until = None
+
+        user.last_login_at = utcnow()
+        db.session.commit()
         if cred.enroll_token_hash:       # onboarding is finished; a leftover link must not stay valid
             cred.enroll_token_hash = cred.enroll_token_expires_at = None
             db.session.commit()

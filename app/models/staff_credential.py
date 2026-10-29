@@ -20,7 +20,7 @@ class StaffCredential(db.Model):
         db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False
     )
     staff_id_hash = db.Column(db.String(255), nullable=False)
-
+    password_hash = db.Column(db.String(255), nullable=True)
     enroll_token_hash = db.Column(db.String(64), unique=True)  # sha256 of the one-time link token
     enroll_token_expires_at = db.Column(db.DateTime)
 

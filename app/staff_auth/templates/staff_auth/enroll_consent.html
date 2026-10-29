@@ -1,33 +1,79 @@
+
 {% extends "staff_auth/base_wizard.html" %}
-{% block title %}Set up staff sign-in · Laundrix{% endblock %}
-{% block progress %}{{ stepper(1, ["Consent", "Verify", "Done"]) }}{% endblock %}
+{% block title %}Set up staff sign-in - Laundrix{% endblock %}
+{% block progress %}{{ stepper(1, ["Set password", "Verify identity", "Done"]) }}{% endblock %}
+
 {% block card %}
   <h1>Set up staff sign-in</h1>
-  <p class="muted">{% if name %}Hi {{ name }}. {% endif %}Confirm your Staff ID and read the notice below.</p>
+  <p class="muted">
+    {% if name %}Hi {{ name }}. {% endif %}
+    Create your password, then verify your identity to complete enrollment.
+  </p>
 
   <div class="notice">
     <strong>About your ID and face data</strong>
     <ul>
-      <li>You'll verify once on a secure page run by our provider, <b>Didit</b>: you photograph a
-          government ID and take a live selfie.</li>
-      <li>After enrollment, each staff sign-in includes a live face check against the enrolled
-          face reference. You will not need to photograph your government ID again unless an administrator asks you to re-verify.</li>
-      <li>Laundrix does <b>not</b> store your ID photos, selfies or face data. It keeps only your
-          result, the document type and sign-in records.</li>
-      <li>The provider may process data outside your country. Using this is your choice: if you'd
-          rather not, ask your administrator for an alternative.</li>
+      <li>
+        You must complete a one-time identity verification with our provider,
+        <b>Didit</b>, using a government ID and a live selfie.
+      </li>
+      <li>
+        After enrollment, normal staff sign-in uses your work email and password.
+        You will not be asked to repeat the ID and face verification at every login.
+        An administrator may request re-verification when necessary.
+      </li>
+      <li>
+        Laundrix does not store your ID photos, selfies, or face data.
+        It stores identity-verification records and related audit information.
+      </li>
+      <li>
+        Didit processes your verification data under its applicable privacy terms.
+        If you have questions or concerns, contact your administrator before proceeding.
+      </li>
     </ul>
   </div>
 
   <form method="post" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label for="staff_id">Staff ID</label>
-    <input id="staff_id" name="staff_id" type="password" autocomplete="off" required maxlength="64"
-           placeholder="LX-12345678" spellcheck="false" autocapitalize="characters">
+    {% if not has_password %}
+      <label for="password">Create password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="new-password"
+        minlength="12"
+        maxlength="256"
+        required
+      >
+      <p class="muted">Use at least 12 characters.</p>
+
+      <label for="confirm_password">Confirm password</label>
+      <input
+        id="confirm_password"
+        name="confirm_password"
+        type="password"
+        autocomplete="new-password"
+        minlength="12"
+        maxlength="256"
+        required
+      >
+      {% else %}
+        <p class="muted">
+        Your password is already set. This link will not change it.
+       </p>
+    {% endif %}
+
     <label class="check">
       <input type="checkbox" name="consent" required>
-      <span>I consent to the one-time ID verification and the live face checks at staff sign-in described above.</span>
+      <span>
+        I consent to the one-time identity verification described above
+        and understand how my verification data is processed.
+      </span>
     </label>
-    <button class="btn btn-primary btn-block" type="submit">Continue</button>
+
+    <button class="btn btn-primary btn-block" type="submit">
+      Continue to identity verification
+    </button>
   </form>
 {% endblock %}

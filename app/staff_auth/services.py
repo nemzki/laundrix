@@ -1,7 +1,8 @@
-"""Business logic for the staff portal (no HTTP rendering here).
+"""Business logic for the staff portal.
 
-Sign-in = email + Staff ID + a live face check performed by Didit (Biometric Authentication).
-Laundrix stores no face data: only a hashed Staff ID, lockout state and audit events.
+Staff sign-in uses email and password.
+Didit identity verification is performed during enrollment, not every login.
+Laundrix stores password and legacy Staff ID hashes, but no face data.
 """
 import hashlib
 import re
@@ -219,3 +220,14 @@ def verify_staff_id(cred, entered: str) -> bool:
     stored = cred.staff_id_hash if cred else dummy_hash()
     ok = check_password_hash(stored, entered)
     return bool(ok and cred)
+
+def verify_staff_password(cred, entered: str) -> bool:
+    """Verify a staff password without revealing whether an account exists."""
+    stored = (
+        cred.password_hash
+        if cred and cred.password_hash
+        else dummy_hash()
+    )
+
+    ok = check_password_hash(stored, entered or "")
+    return bool(ok and cred and cred.password_hash)

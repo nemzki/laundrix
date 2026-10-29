@@ -1,5 +1,6 @@
 import time
 from datetime import datetime, timedelta, timezone
+from werkzeug.security import generate_password_hash
 
 from flask import (
     current_app, flash, redirect, render_template, request, session, url_for,
@@ -16,7 +17,7 @@ from app.staff_auth.services import (
     ENROLL_KEY, GENERIC_FAIL, LOCKED_MSG,
     clear_wizard, find_credential_by_token, get_wizard, is_enrolled, log_event, mask_email,
     normalize_email, normalize_staff_id, register_failure, register_success, save_wizard,
-    start_wizard, valid_email, verify_staff_id,
+    start_wizard, valid_email, verify_staff_id, verify_staff_password
 )
 
 LOGIN_LIMIT = "10 per minute; 40 per hour"
@@ -31,18 +32,30 @@ ENROLL_STEPS = ["Consent", "Verify", "Done"]
 
 @bp.before_request
 def _fail_closed_without_didit():
-    """Require Didit configuration before allowing access to the staff portal."""
+    """Require Didit only for identity-enrollment routes."""
     if request.endpoint and request.endpoint.endswith(".static"):
         return None
 
-    cfg = current_app.config
+    # Password login must work without the old biometric-login workflow.
+    endpoint = request.endpoint or ""
+    if endpoint in {"staff_auth.login"}:
+        return None
 
-    if not cfg["IDV_ENABLED"] or not cfg.get("DIDIT_BIOMETRIC_WORKFLOW_ID"):
-        current_app.logger.error(
-            "Staff identity verification unavailable: configure IDV_ENABLED and "
-            "DIDIT_BIOMETRIC_WORKFLOW_ID."
-        )
-        return render_template("staff_auth/unavailable.html"), 503
+    # Identity enrollment must fail closed when Didit is unavailable.
+    if endpoint.startswith("staff_auth.enroll"):
+        cfg = current_app.config
+        if (
+            not cfg.get("IDV_ENABLED")
+            or cfg.get("IDV_PROVIDER") != "didit"
+            or not cfg.get("DIDIT_API_KEY")
+            or not cfg.get("DIDIT_WORKFLOW_ID")
+            or not cfg.get("DIDIT_WEBHOOK_SECRET")
+        ):
+            current_app.logger.error(
+                "Staff enrollment unavailable: Didit identity verification "
+                "is not fully configured."
+            )
+            return render_template("staff_auth/unavailable.html"), 503
 
     return None
 
@@ -59,26 +72,75 @@ def _naive_utc(epoch: float) -> datetime:
 # =========================================================================================
 # LOGIN WIZARD:  1) email   2) Staff ID   3) face check by Didit
 # =========================================================================================
+
+
 @bp.route("/login", methods=["GET", "POST"])
 @limiter.limit(LOGIN_LIMIT, methods=["POST"])
 def login():
-    """Step 1 — email."""
+    """Staff login using email and password."""
     if current_user.is_authenticated:
         return redirect(url_for("dashboard.index"))
 
     if request.method == "POST":
         email = normalize_email(request.form.get("email"))
-        if not valid_email(email):
-            flash("Please enter a valid email address.", "error")
+        password = request.form.get("password", "")
+
+        if not valid_email(email) or not password:
+            flash("Invalid email or password.", "error")
             return render_template("staff_auth/login_email.html"), 400
 
-        user = db.session.execute(db.select(User).filter_by(email=email)).scalar_one_or_none()
-        start_wizard(user, email)  # always continue, so we never reveal whether the email exists
-        log_event("email_submitted", True, user=user, email=email)
-        return redirect(url_for("staff_auth.verify_id"))
+        user = db.session.execute(
+            db.select(User).filter_by(email=email)
+        ).scalar_one_or_none()
+
+        cred = getattr(user, "staff_credential", None) if user else None
+
+        # Authenticate only active staff accounts with credentials.
+        if (
+            not user
+            or user.role != "staff"
+            or not user.is_active
+            or not cred
+        ):
+            log_event("password_login_failed", False, user=user, email=email)
+            flash("Invalid email or password.", "error")
+            return render_template("staff_auth/login_email.html"), 401
+
+        if cred.is_locked:
+            log_event("password_login_locked", False, user=user, email=email)
+            flash(LOCKED_MSG, "error")
+            return render_template("staff_auth/login_email.html"), 423
+
+        if not verify_staff_password(cred, password):
+            locked = register_failure(cred)
+            log_event("password_login_failed", False, user=user, email=email)
+
+            flash(LOCKED_MSG if locked else "Invalid email or password.", "error")
+            return render_template("staff_auth/login_email.html"), 401
+
+        # A password alone must not bypass one-time identity enrollment.
+        if not is_enrolled(user):
+            log_event("password_login_not_enrolled", False, user=user, email=email)
+            flash(
+                "Your account setup is incomplete. Please contact your administrator.",
+                "error",
+            )
+            return render_template("staff_auth/login_email.html"), 403
+
+        cred.failed_attempts = 0
+        cred.locked_until = None
+        user.last_login_at = utcnow()
+        db.session.commit()
+
+        log_event("password_login_success", True, user=user, email=email)
+        clear_wizard()
+        login_user(user)
+        return redirect(url_for("dashboard.index"))
 
     clear_wizard()
     return render_template("staff_auth/login_email.html")
+
+
 
 
 @bp.route("/verify-id", methods=["GET", "POST"])
@@ -263,6 +325,7 @@ def restart():
 # =========================================================================================
 # ENROLLMENT (one-time link from an admin):  1) consent + Staff ID   2) Didit ID check   3) done
 # =========================================================================================
+
 @bp.route("/enroll/<token>", methods=["GET", "POST"])
 @limiter.limit("10 per minute")
 def enroll(token):
@@ -273,23 +336,59 @@ def enroll(token):
     if request.method == "POST":
         if cred.is_locked:
             return render_template("staff_auth/enroll_invalid.html"), 423
-        entered = normalize_staff_id(request.form.get("staff_id"))
+
         consent = request.form.get("consent") == "on"
-        if not verify_staff_id(cred, entered):
-            register_failure(cred)
-            log_event("enroll_id_failed", False, user=cred.user)
-            flash(GENERIC_FAIL, "error")
-            return render_template("staff_auth/enroll_consent.html", name=cred.user.full_name), 401
+
         if not consent:
             flash("You must agree to the notice to continue.", "error")
-            return render_template("staff_auth/enroll_consent.html", name=cred.user.full_name), 400
+            return render_template(
+                "staff_auth/enroll_consent.html",
+                name=cred.user.full_name,
+                has_password=bool(cred.password_hash),
+            ), 400
 
-        session[ENROLL_KEY] = {"cid": cred.id, "exp": time.time() + ENROLL_WINDOW_SECONDS,
-                               "consent": True, "polls": 0}
+        # Set a password only for accounts that do not have one yet.
+        # An enrollment/re-verification link must not overwrite an existing password.
+        if not cred.password_hash:
+            password = request.form.get("password", "")
+            confirm_password = request.form.get("confirm_password", "")
+
+            if len(password) < 12 or len(password) > 256:
+                flash("Your password must be between 12 and 256 characters.", "error")
+                return render_template(
+                    "staff_auth/enroll_consent.html",
+                    name=cred.user.full_name,
+                    has_password=False,
+                ), 400
+
+            if password != confirm_password:
+                flash("The passwords do not match.", "error")
+                return render_template(
+                    "staff_auth/enroll_consent.html",
+                    name=cred.user.full_name,
+                    has_password=False,
+                ), 400
+
+            cred.password_hash = generate_password_hash(password)
+
+        session[ENROLL_KEY] = {
+            "cid": cred.id,
+            "exp": time.time() + ENROLL_WINDOW_SECONDS,
+            "consent": True,
+            "polls": 0,
+        }
+
+        db.session.commit()
         log_event("enroll_started", True, user=cred.user)
+
         return redirect(url_for("staff_auth.enroll_verify"))
 
-    return render_template("staff_auth/enroll_consent.html", name=cred.user.full_name)
+    return render_template(
+        "staff_auth/enroll_consent.html",
+        name=cred.user.full_name,
+        has_password=bool(cred.password_hash),
+    )
+
 
 
 def _enroll_session():
