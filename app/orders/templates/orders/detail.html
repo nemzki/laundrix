@@ -1,0 +1,77 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% block title %}{{ order.reference }} · Laundrix{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% block page_title %}<span class="mono">{{ order.reference }}</span>{% endblock %}
+{% block page_subtitle %}Created {{ order.created_at|localdt }}{% if order.created_by %} by {{ order.created_by.full_name or order.created_by.email }}{% endif %}{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-outline" href="{{ url_for('orders.index') }}">{{ icon('arrow-left', 16) }}<span>All orders</span></a>
+  <a class="btn btn-primary" href="{{ url_for('orders.stub', reference=order.reference) }}" target="_blank" rel="noopener">{{ icon('printer', 16) }}<span>Printable stub</span></a>
+{% endblock %}
+{% block content %}
+<div class="grid grid-2">
+  <div>
+    <div class="card">
+      <div class="card-head"><h2>Items</h2><span class="status status-{{ order.status|status_tone }}">{{ order.status|status_label }}</span></div>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
+        <tbody>
+        {% for i in order.items %}
+          <tr>
+            <td><strong>{{ i.name }}</strong>
+              {% if i.description %}<span class="sub">{{ i.description }}</span>{% endif %}
+              {% if i.measurement %}<span class="sub">{{ i.measurement|qty }} {{ i.measurement_unit }}</span>{% endif %}
+              {% if i.instructions %}<span class="sub">Note: {{ i.instructions }}</span>{% endif %}</td>
+            <td class="num">{{ i.quantity|qty }} {{ i.unit }}</td>
+            <td class="num">{% if i.customer_supplied %}Customer-supplied{% else %}{{ i.unit_price|peso }}{% endif %}</td>
+            <td class="num">{{ i.line_total|peso }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><td colspan="3" class="num muted">Subtotal</td><td class="num">{{ order.subtotal|peso }}</td></tr>
+          {% if order.discount_total and order.discount_total > 0 %}<tr><td colspan="3" class="num muted">Discount</td><td class="num">-{{ order.discount_total|peso }}</td></tr>{% endif %}
+          <tr class="total-row"><td colspan="3" class="num">Total</td><td class="num">{{ order.total|peso }}</td></tr>
+        </tfoot>
+      </table></div>
+      <p class="hint">Prices shown are the prices charged when the order was created.</p>
+      {% if order.notes %}<p><strong>Notes:</strong> {{ order.notes }}</p>{% endif %}
+    </div>
+    <div class="card">
+      <h2>Customer</h2>
+      <dl class="kv"><dt>Name</dt><dd>{{ order.customer_name }}</dd><dt>Contact</dt><dd>{{ order.customer_contact }}</dd></dl>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Update status</h2>
+      {% if transitions %}
+      <form class="status-form" method="post" action="{{ url_for('orders.update_status', reference=order.reference) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field"><label for="note">Note {% if transitions|selectattr(1)|list %}<span class="muted">(required when moving an order back)</span>{% else %}<span class="muted">(optional)</span>{% endif %}</label>
+          <input class="input" id="note" name="note" maxlength="255"></div>
+        <div class="btn-row">
+          {% for status, needs_note in transitions %}
+            <button class="btn {{ 'btn-outline' if needs_note else 'btn-primary' }}" type="submit" name="status" value="{{ status }}">
+              {% if needs_note %}{{ icon('arrow-left', 16) }}<span>Back to {{ status|status_label }}</span>{% else %}<span>Mark as {{ status|status_label }}</span>{{ icon('arrow-right', 16) }}{% endif %}
+            </button>
+          {% endfor %}
+        </div>
+      </form>
+      {% else %}<p class="muted">This order is completed and cannot move forward.</p>{% endif %}
+    </div>
+    <div class="card">
+      <h2>Status history</h2>
+      <ol class="timeline">
+        {% for h in order.history|reverse %}
+          <li><strong>{{ h.to_status|status_label }}</strong>
+            <div class="when">{{ h.created_at|localdt }} &middot; {{ (h.changed_by.full_name or h.changed_by.email) if h.changed_by else 'Unknown user' }}
+              {% if h.from_status %}&middot; from {{ h.from_status|status_label }}{% endif %}</div>
+            {% if h.note %}<div class="small">{{ h.note }}</div>{% endif %}</li>
+        {% endfor %}
+      </ol>
+    </div>
+  </div>
+</div>
+{% endblock %}

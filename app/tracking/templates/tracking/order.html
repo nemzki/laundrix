@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Track Order {{ order.reference }} | WASH UP!</title>
+    <link
+        rel="stylesheet"
+        href="{{ url_for('tracking.static', filename='css/tracking.css') }}"
+    >
+</head>
+<body>
+    <main class="tracking-page">
+        <header class="tracking-header">
+            <h1>WASH UP!</h1>
+            <p>Laundry Shop · Inosluban, Lipa City</p>
+        </header>
+
+        <section class="tracking-card">
+            <p class="eyebrow">ORDER TRACKING</p>
+            <h2>{{ order.reference }}</h2>
+
+            <div class="status-panel">
+                <p class="status-label">Current status</p>
+                <p class="status-value">
+                    {{ order.status|status_label }}
+                </p>
+            </div>
+
+            <p class="updated">
+                Last updated: {{ order.updated_at|localdt }}
+            </p>
+
+            <hr>
+
+            <h3>Order Summary</h3>
+
+            <div class="order-items">
+                {% for item in order.items %}
+                <div class="order-item">
+                    <div>
+                        <strong>{{ item.name }}</strong>
+                        {% if item.description %}
+                        <p>{{ item.description }}</p>
+                        {% endif %}
+                        <small>{{ item.quantity|qty }} {{ item.unit }}</small>
+                    </div>
+                    <strong>{{ item.line_total|peso }}</strong>
+                </div>
+                {% endfor %}
+            </div>
+
+            <hr>
+
+            <div class="total-row">
+                <strong>Total</strong>
+                <strong>{{ order.total|peso }}</strong>
+            </div>
+        </section>
+
+        <footer class="tracking-footer">
+            <p>
+                Please present your order stub when claiming your laundry.
+            </p>
+            <p>Thank you for choosing WASH UP! Laundry Shop.</p>
+        </footer>
+    </main>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Order stub {{ order.reference }}</title>
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">
+</head>
+<body class="stub-page">
+  <div class="stub">
+    <h1>WASH UP! Laundry Shop</h1>
+    <p class="center">Inosluban, Lipa City, Batangas</p>
+    <hr>
+    <p><strong>Order:</strong> {{ order.reference }}<br>
+       <strong>Date:</strong> {{ order.created_at|localdt }}<br>
+       <strong>Customer:</strong> {{ order.customer_name }}<br>
+       <strong>Contact:</strong> {{ order.customer_contact }}</p>
+    <hr>
+    <table>
+      {% for i in order.items %}
+      <tr><td>{{ i.name }}{% if i.description %}<br>{{ i.description }}{% endif %}{% if i.measurement %}<br>{{ i.measurement|qty }} {{ i.measurement_unit }}{% endif %}<br>{{ i.quantity|qty }} {{ i.unit }}{% if i.customer_supplied %} (customer-supplied){% else %} x {{ i.unit_price|peso }}{% endif %}</td>
+          <td class="r">{{ i.line_total|peso }}</td></tr>
+      {% endfor %}
+    </table>
+    <hr>
+    <table><tr><td><strong>TOTAL</strong></td><td class="r"><strong>{{ order.total|peso }}</strong></td></tr></table>
+    <hr>
+    <p class="center">Status: {{ order.status|status_label }}<br>Please present this stub when claiming your laundry.</p>
+    <hr>
+
+    <div class="stub-qr">
+      <p><strong>Scan to Track Your Order</strong></p>
+      <img src="{{ qr_code }}" alt="QR code for tracking order {{ order.reference }}">
+      <p class="small">Scan this QR code to check your order status.</p>
+    </div>
+  </div>
+  <div class="stub-actions"><button class="btn btn-primary" type="button" data-print>Print</button></div>
+  <script src="{{ url_for('core.static', filename='js/app.js') }}" defer></script>
+</body>
+</html>

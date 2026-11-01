@@ -8,4 +8,4 @@ bp = Blueprint(
     static_url_path="/core/static",
 )
 
-from app.core import context, errors  # noqa: E402,F401
+from app.core import context, errors, filters  # noqa: E402,F401

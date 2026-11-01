@@ -1,0 +1,19 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% block title %}Order confirmed · Laundrix{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% block page_title %}Order confirmed{% endblock %}
+{% block page_subtitle %}The order was saved and prices were locked in.{% endblock %}
+{% block content %}
+<div class="card confirm-hero">
+  <span class="confirm-icon">{{ icon('check', 30) }}</span>
+  <div class="muted">Order reference</div>
+  <div class="confirm-ref mono">{{ order.reference }}</div>
+  <p>{{ order.customer_name }} &middot; <strong>{{ order.total|peso }}</strong></p>
+  <div class="btn-row confirm-actions">
+    <a class="btn btn-primary" href="{{ url_for('orders.stub', reference=order.reference) }}" target="_blank" rel="noopener">{{ icon('printer', 16) }}<span>Print order stub</span></a>
+    <a class="btn btn-outline" href="{{ url_for('orders.detail', reference=order.reference) }}">View details</a>
+    <a class="btn btn-outline" href="{{ url_for('orders.new_order') }}">New order</a>
+  </div>
+</div>
+{% endblock %}

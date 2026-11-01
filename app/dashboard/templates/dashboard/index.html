@@ -1,33 +1,52 @@
-{% extends "core/base.html" %}
-{% block title %}Dashboard · Laundrix{% endblock %}
-{% block head %}
-  <link rel="stylesheet" href="{{ url_for('dashboard.static', filename='css/dashboard.css') }}">
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% block title %}{{ dashboard_title }} · Laundrix{% endblock %}
+{% block page_head %}
+  <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">
   {% if config.IDV_ENABLED %}<link rel="stylesheet" href="{{ url_for('identity.static', filename='css/identity.css') }}">{% endif %}
 {% endblock %}
+{% block page_title %}{{ dashboard_title }}{% endblock %}
+{% block page_subtitle %}{{ dashboard_description }}{% endblock %}
+{% block page_actions %}<a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus', 16) }}<span>New order</span></a>{% endblock %}
 
-{% block body %}
-<header class="topbar">
-  <span class="topbar-brand">Laundrix</span>
-  <div class="topbar-user">
-    {% if current_user.picture_url %}
-      <img src="{{ current_user.picture_url }}" alt="" referrerpolicy="no-referrer" class="avatar">
+{% block content %}
+{% if config.IDV_ENABLED %}{% include "identity/_status_card.html" %}{% endif %}
+
+<div class="grid grid-stats">
+  {% if admin_area %}
+    <div class="stat"><div class="stat-label">Total orders</div><div class="stat-value">{{ stats.total_orders }}</div></div>
+  {% endif %}
+  <div class="stat"><div class="stat-label">Today's orders</div><div class="stat-value">{{ stats.today }}</div></div>
+  {% if not admin_area %}<div class="stat"><div class="stat-label">Pending orders</div><div class="stat-value">{{ stats.pending }}</div></div>{% endif %}
+  <div class="stat"><div class="stat-label">Processing</div><div class="stat-value">{{ stats.processing }}</div></div>
+  <div class="stat"><div class="stat-label">Ready for pickup</div><div class="stat-value">{{ stats.ready }}</div></div>
+</div>
+
+<div class="grid {% if admin_area %}grid-2{% endif %}">
+  <div class="card">
+    <div class="card-head"><h2>Recent orders</h2><a href="{{ url_for('orders.index') }}">View all</a></div>
+    {% if stats.recent %}
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Reference</th><th>Customer</th><th class="num">Total</th><th>Status</th></tr></thead>
+      <tbody>{% for o in stats.recent %}
+        <tr><td class="mono"><a href="{{ url_for('orders.detail', reference=o.reference) }}">{{ o.reference }}</a></td>
+            <td>{{ o.customer_name }}</td><td class="num">{{ o.total|peso }}</td>
+            <td><span class="status status-{{ o.status|status_tone }}">{{ o.status|status_label }}</span></td></tr>
+      {% endfor %}</tbody></table></div>
+    {% else %}
+      <div class="empty"><strong>No orders yet</strong>Create the first order to see activity here.</div>
     {% endif %}
-    <div class="who">
-      <strong>{{ current_user.full_name or current_user.email }}</strong>
-      <span class="role role-{{ current_user.role }}">{{ current_user.role }}</span>
-    </div>
-    <form method="post" action="{{ url_for('auth.logout') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="btn btn-outline" type="submit">Sign out</button>
-    </form>
   </div>
-</header>
 
-<main class="dash">
-  <h1>{{ dashboard_title|default("Dashboard") }}</h1>
-<p class="muted">
-  {{ dashboard_description|default("Feature modules will plug in here.") }}
-</p>
-  {% if config.IDV_ENABLED %}{% include "identity/_status_card.html" %}{% endif %}
-</main>
+  {% if admin_area %}
+  <div class="card">
+    <div class="card-head"><h2>Popular services</h2></div>
+    {% if stats.popular %}
+      <ul class="side-list">{% for name, n in stats.popular %}<li>{{ name }} <span class="muted">&middot; {{ n }} order line{{ '' if n == 1 else 's' }}</span></li>{% endfor %}</ul>
+    {% else %}
+      <div class="empty"><strong>No data yet</strong>Popular services appear once orders exist.</div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
 {% endblock %}

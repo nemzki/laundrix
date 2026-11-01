@@ -1,0 +1,36 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% from "core/_forms.html" import text, select, checkbox, icon_fields %}
+{% block title %}{{ 'Edit' if obj else 'Add' }} package · Laundrix{% endblock %}
+{% block page_title %}{{ 'Edit ' ~ obj.display_name if obj else 'Add package' }}{% endblock %}
+{% block page_subtitle %}Packages have a fixed price for a weight or piece range.{% endblock %}
+{% block page_actions %}<a class="btn btn-outline" href="{{ url_for('catalog.index', tab='packages') }}">{{ icon('arrow-left', 16) }}<span>Back</span></a>{% endblock %}
+{% block content %}
+<form class="card form-card" method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% if errors %}<div class="alert alert-error" role="alert">Please fix the highlighted fields.</div>{% endif %}
+  <div class="form-grid">
+    {{ text('Package name', 'name', values, errors, required=True, maxlength=120) }}
+    {{ text('Category', 'category', values, errors, required=True, maxlength=80, hint='e.g. Clothes, Comforter, Curtains, Linens') }}
+    {{ text('Description', 'description', values, errors, required=True, maxlength=120, hint='Shown to staff, e.g. 3KG-5KG') }}
+    {{ text('Size label (optional)', 'size_label', values, errors, maxlength=40, hint='e.g. small or big') }}
+    {{ select('Measured by', 'measure_type', values, errors, [('weight', 'Weight (kg)'), ('pieces', 'Number of pieces')], required=True) }}
+    {{ text('Price (PHP)', 'price', values, errors, required=True, inputmode='decimal', placeholder='0.00') }}
+    {{ text('Minimum', 'min_value', values, errors, required=True, inputmode='decimal') }}
+    {{ text('Maximum', 'max_value', values, errors, required=True, inputmode='decimal') }}
+    <div class="span-2">
+      <fieldset>
+        <legend>Services already included (never charged again)</legend>
+        {% for s in all_services %}
+          <div class="field field-check"><label class="check"><input type="checkbox" name="covers_codes" value="{{ s.code }}" {% if s.code in covers %}checked{% endif %}><span>{{ s.name }}</span></label></div>
+        {% endfor %}
+        {% if errors.get('covers_codes') %}<p class="field-error">{{ errors['covers_codes'] }}</p>{% endif %}
+      </fieldset>
+    </div>
+    {{ icon_fields(values, errors, icon_keys) }}
+    <div class="span-2">{{ checkbox('Active (available to Staff)', 'is_active', values, errors) }}</div>
+  </div>
+  <div class="btn-row"><button class="btn btn-primary" type="submit">{{ 'Save changes' if obj else 'Create package' }}</button>
+    <a class="btn btn-outline" href="{{ url_for('catalog.index', tab='packages') }}">Cancel</a></div>
+</form>
+{% endblock %}

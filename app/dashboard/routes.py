@@ -1,10 +1,23 @@
-
 from flask import abort, render_template
 from flask_login import current_user, login_required
 
 from app.core.decorators import role_required
 from app.dashboard import bp
 from app.models import Role
+from app.orders.services import dashboard_stats
+
+
+def _render(admin_area: bool):
+    return render_template(
+        "dashboard/index.html",
+        dashboard_title="Admin Dashboard" if admin_area else "Staff Dashboard",
+        dashboard_description=(
+            "Orders and activity across the shop." if admin_area
+            else "Today's laundry operations at a glance."
+        ),
+        admin_area=admin_area,
+        stats=dashboard_stats(),
+    )
 
 
 @bp.route("/")
@@ -12,25 +25,9 @@ from app.models import Role
 def index():
     """Keep the existing dashboard URL working for signed-in users."""
     if current_user.role == Role.ADMIN:
-        return render_template(
-            "dashboard/index.html",
-            dashboard_title="Admin Dashboard",
-            dashboard_description=(
-                "Admin access confirmed. Admin features will be added here."
-            ),
-            admin_area=True,
-        )
-
+        return _render(True)
     if current_user.role == Role.STAFF:
-        return render_template(
-            "dashboard/index.html",
-            dashboard_title="Staff Dashboard",
-            dashboard_description=(
-                "Staff access confirmed. Staff features will be added here."
-            ),
-            admin_area=False,
-        )
-
+        return _render(False)
     abort(403)
 
 
@@ -38,25 +35,11 @@ def index():
 @login_required
 @role_required(Role.ADMIN)
 def admin_dashboard():
-    return render_template(
-        "dashboard/index.html",
-        dashboard_title="Admin Dashboard",
-        dashboard_description=(
-            "Admin access confirmed. Admin features will be added here."
-        ),
-        admin_area=True,
-    )
+    return _render(True)
 
 
 @bp.route("/staff")
 @login_required
 @role_required(Role.STAFF)
 def staff_dashboard():
-    return render_template(
-        "dashboard/index.html",
-        dashboard_title="Staff Dashboard",
-        dashboard_description=(
-            "Staff access confirmed. Staff features will be added here."
-        ),
-        admin_area=False,
-    )
+    return _render(False)

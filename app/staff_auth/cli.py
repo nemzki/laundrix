@@ -3,7 +3,8 @@ import click
 from app.extensions import db
 from app.models import Role, User
 from app.staff_auth import services
-
+from getpass import getpass
+from werkzeug.security import generate_password_hash
 
 def _find_staff(email):
     user = db.session.execute(
@@ -77,6 +78,46 @@ def register_staff_commands(app):
                    f"locked={bool(cred and cred.is_locked)}  "
                    f"link_pending={bool(cred and cred.enroll_token_hash)}  "
                    f"last_signin={cred.last_verified_at if cred else None}")
+
+    @app.cli.command("set-staff-password")
+    @click.argument("email")
+    def set_staff_password(email):
+        """Set a staff password without changing Staff ID or Didit records."""
+        user = _find_staff(email)
+
+        if not user.is_active:
+            click.secho("Cannot set a password for an inactive staff account.", fg="red")
+            raise SystemExit(1)
+
+        if not services.is_enrolled(user):
+            click.secho(
+                "Cannot set a password: staff identity verification is incomplete.",
+                fg="red",
+            )
+            raise SystemExit(1)
+
+        cred = user.staff_credential
+        if cred is None:
+            click.secho("Staff credentials were not found.", fg="red")
+            raise SystemExit(1)
+
+        password = getpass("New password (minimum 12 characters): ")
+        confirm = getpass("Confirm password: ")
+
+        if len(password) < 12 or len(password) > 256:
+            click.secho("Password must be between 12 and 256 characters.", fg="red")
+            raise SystemExit(1)
+
+        if password != confirm:
+            click.secho("Passwords do not match.", fg="red")
+            raise SystemExit(1)
+
+        cred.password_hash = generate_password_hash(password)
+        cred.failed_attempts = 0
+        cred.locked_until = None
+        db.session.commit()
+
+        click.secho(f"Password set successfully for {user.email}.", fg="green")
 
     @app.cli.command("deactivate-staff")
     @click.argument("email")

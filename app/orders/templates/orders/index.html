@@ -1,0 +1,42 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% from "core/_forms.html" import render_pagination %}
+{% set is_admin = current_user.role == 'admin' %}
+{% block title %}{{ 'Order Records' if is_admin else 'Manage Orders' }} · Laundrix{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% block page_title %}{{ 'Order Records' if is_admin else 'Manage Orders' }}{% endblock %}
+{% block page_subtitle %}Search by reference, customer name or contact number.{% endblock %}
+{% block page_actions %}<a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus', 16) }}<span>New order</span></a>{% endblock %}
+{% block content %}
+<form class="search-bar" method="get">
+  <input class="input" type="search" name="q" value="{{ term }}" placeholder="Search orders" aria-label="Search orders">
+  <select class="input" name="status" aria-label="Filter by status">
+    <option value="">All statuses</option>
+    {% for s in statuses.FLOW %}<option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s|status_label }} ({{ counts[s] }})</option>{% endfor %}
+  </select>
+  <button class="btn btn-primary" type="submit">{{ icon('search', 16) }}<span>Search</span></button>
+  {% if term or status %}<a class="btn btn-outline" href="{{ url_for('orders.index') }}">Clear</a>{% endif %}
+</form>
+<div class="card">
+  {% if orders %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Reference</th><th>Customer</th><th>Created</th><th class="num">Total</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr>
+        <td class="mono"><a href="{{ url_for('orders.detail', reference=o.reference) }}">{{ o.reference }}</a></td>
+        <td>{{ o.customer_name }}<span class="sub">{{ o.customer_contact }}</span></td>
+        <td>{{ o.created_at|localdt }}</td>
+        <td class="num">{{ o.total|peso }}</td>
+        <td><span class="status status-{{ o.status|status_tone }}">{{ o.status|status_label }}</span></td>
+        <td class="num"><a class="btn btn-outline btn-sm" href="{{ url_for('orders.detail', reference=o.reference) }}">View</a></td>
+      </tr>
+    {% endfor %}
+    </tbody></table></div>
+  {{ render_pagination(pagination, 'orders.index', q=term, status=status) }}
+  {% else %}
+    <div class="empty"><strong>{{ 'No orders match your search' if term or status else 'No orders yet' }}</strong>
+      {% if not (term or status) %}Orders you create will appear here.{% endif %}</div>
+  {% endif %}
+</div>
+{% endblock %}
