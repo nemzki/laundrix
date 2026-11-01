@@ -72,11 +72,14 @@ def _init_extensions(app):
 
 def _register_blueprints(app):
     from app.auth import bp as auth_bp
+    from app.catalog import bp as catalog_bp
     from app.core import bp as core_bp
     from app.dashboard import bp as dashboard_bp
     from app.identity import bp as identity_bp
     from app.landing import bp as landing_bp
+    from app.orders import bp as orders_bp
     from app.staff_auth import bp as staff_bp
+    from app.tracking import bp as tracking_bp
 
     app.register_blueprint(core_bp)
     app.register_blueprint(landing_bp)
@@ -84,7 +87,9 @@ def _register_blueprints(app):
     app.register_blueprint(staff_bp, url_prefix="/staff")
     app.register_blueprint(identity_bp, url_prefix="/identity")
     app.register_blueprint(dashboard_bp, url_prefix="/dashboard")
-
+    app.register_blueprint(catalog_bp, url_prefix="/admin/services")
+    app.register_blueprint(orders_bp, url_prefix="/orders")
+    app.register_blueprint(tracking_bp)
 
 def _register_cli(app):
     from app.cli import register_commands

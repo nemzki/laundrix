@@ -1,0 +1,29 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% from "core/_forms.html" import text, select, checkbox, icon_fields %}
+{% block title %}{{ 'Edit' if obj else 'Add' }} service · Laundrix{% endblock %}
+{% block page_title %}{{ 'Edit ' ~ obj.name if obj else 'Add service' }}{% endblock %}
+{% block page_subtitle %}Changing the price affects new orders only.{% endblock %}
+{% block page_actions %}<a class="btn btn-outline" href="{{ url_for('catalog.index', tab='services') }}">{{ icon('arrow-left', 16) }}<span>Back</span></a>{% endblock %}
+{% block content %}
+<form class="card form-card" method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% if errors %}<div class="alert alert-error" role="alert">Please fix the highlighted fields.</div>{% endif %}
+  <div class="form-grid">
+    {{ text('Name', 'name', values, errors, required=True, maxlength=120) }}
+    {% if obj %}
+      <div class="field"><label>Code</label><input class="input" value="{{ obj.code }}" readonly><p class="hint">Codes are permanent (packages use them to avoid double charging).</p></div>
+    {% else %}
+      {{ text('Code', 'code', values, errors, required=True, maxlength=40, hint='Lowercase letters, numbers, underscores. e.g. wash') }}
+    {% endif %}
+    {{ text('Category', 'category', values, errors, required=True, maxlength=80) }}
+    {{ text('Price (PHP)', 'price', values, errors, required=True, inputmode='decimal', placeholder='0.00') }}
+    {{ select('Pricing unit', 'pricing_unit', values, errors, [('', 'Not set (cannot be ordered)'), ('load', 'Per load'), ('kg', 'Per kilogram'), ('piece', 'Per piece')], hint='Staff enter this quantity when ordering.') }}
+    <div class="span-2">{{ text('Description', 'description', values, errors, maxlength=255) }}</div>
+    {{ icon_fields(values, errors, icon_keys) }}
+    <div class="span-2">{{ checkbox('Active (available to Staff)', 'is_active', values, errors) }}</div>
+  </div>
+  <div class="btn-row"><button class="btn btn-primary" type="submit">{{ 'Save changes' if obj else 'Create service' }}</button>
+    <a class="btn btn-outline" href="{{ url_for('catalog.index', tab='services') }}">Cancel</a></div>
+</form>
+{% endblock %}

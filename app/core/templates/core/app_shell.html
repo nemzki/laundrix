@@ -1,0 +1,68 @@
+{% extends "core/base.html" %}
+{% from "core/_icons.html" import icon %}
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/app.css') }}">
+  {% block page_head %}{% endblock %}
+{% endblock %}
+{% block body_class %}app{% endblock %}
+
+{% block body %}
+{% set bp = request.blueprint %}
+{% set is_admin = current_user.role == 'admin' %}
+<div class="shell">
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="sidebar-brand">
+      <span class="brand-mark">{{ icon('wash', 20) }}</span>
+      <span class="brand-name">Laundrix</span>
+    </div>
+    <nav class="nav">
+      <a class="nav-link {% if bp == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard.index') }}">{{ icon('dashboard') }}<span>Dashboard</span></a>
+      <a class="nav-link {% if request.endpoint == 'orders.new_order' %}active{% endif %}" href="{{ url_for('orders.new_order') }}">{{ icon('plus') }}<span>New Order</span></a>
+      <a class="nav-link {% if bp == 'orders' and request.endpoint not in ('orders.new_order', 'orders.customers') %}active{% endif %}" href="{{ url_for('orders.index') }}">{{ icon('orders') }}<span>{{ 'Order Records' if is_admin else 'Manage Orders' }}</span></a>
+      {% if is_admin %}
+        <a class="nav-link {% if bp == 'catalog' %}active{% endif %}" href="{{ url_for('catalog.index') }}">{{ icon('tag') }}<span>Services &amp; Pricing</span></a>
+        <a class="nav-link {% if request.endpoint == 'orders.customers' %}active{% endif %}" href="{{ url_for('orders.customers') }}">{{ icon('users') }}<span>Customers</span></a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-foot">
+      <div class="sidebar-user">
+        <strong>{{ current_user.full_name or current_user.email }}</strong>
+        <span>{{ current_user.role|capitalize }}</span>
+      </div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="main">
+    <header class="app-topbar">
+      <button class="icon-btn nav-toggle" id="nav-toggle" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">{{ icon('menu', 22) }}</button>
+      <span class="topbar-shop">WASH UP! Laundry Shop</span>
+      <div class="topbar-right">
+        {% if current_user.picture_url %}
+          <img src="{{ current_user.picture_url }}" alt="" referrerpolicy="no-referrer" class="avatar">
+        {% endif %}
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline btn-sm" type="submit">{{ icon('logout', 16) }}<span>Sign out</span></button>
+        </form>
+      </div>
+    </header>
+
+    <main class="content">
+      <div class="page-header">
+        <div>
+          <h1>{% block page_title %}{% endblock %}</h1>
+          <p class="muted">{% block page_subtitle %}{% endblock %}</p>
+        </div>
+        <div class="page-actions">{% block page_actions %}{% endblock %}</div>
+      </div>
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('core.static', filename='js/app.js') }}" defer></script>
+  {% block page_scripts %}{% endblock %}
+{% endblock %}

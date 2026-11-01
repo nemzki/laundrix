@@ -1,0 +1,31 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% from "core/_forms.html" import text, select, checkbox, icon_fields %}
+{% block title %}{{ 'Edit' if obj else 'Add' }} extra · Laundrix{% endblock %}
+{% block page_title %}{{ 'Edit ' ~ obj.name if obj else 'Add extra' }}{% endblock %}
+{% block page_subtitle %}Optional products such as Fabcon or Liquid Soap.{% endblock %}
+{% block page_actions %}<a class="btn btn-outline" href="{{ url_for('catalog.index', tab='addons') }}">{{ icon('arrow-left', 16) }}<span>Back</span></a>{% endblock %}
+{% block content %}
+<form class="card form-card" method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% if errors %}<div class="alert alert-error" role="alert">Please fix the highlighted fields.</div>{% endif %}
+  <div class="form-grid">
+    {{ text('Name', 'name', values, errors, required=True, maxlength=120) }}
+    {% if obj %}
+      <div class="field"><label>Code</label><input class="input" value="{{ obj.code }}" readonly></div>
+    {% else %}
+      {{ text('Code', 'code', values, errors, required=True, maxlength=40, hint='Lowercase letters, numbers, underscores.') }}
+    {% endif %}
+    {{ text('Price per unit (PHP)', 'price', values, errors, required=True, inputmode='decimal', placeholder='0.00') }}
+    <div class="span-2">{{ text('Description', 'description', values, errors, maxlength=255) }}</div>
+    {{ icon_fields(values, errors, icon_keys) }}
+    <div class="span-2">
+      {{ checkbox('Chargeable (staff can add it as a paid extra)', 'is_chargeable', values, errors) }}
+      {{ checkbox('Customer may supply their own (never charged)', 'allow_customer_supplied', values, errors) }}
+      {{ checkbox('Active (available to Staff)', 'is_active', values, errors) }}
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn btn-primary" type="submit">{{ 'Save changes' if obj else 'Create extra' }}</button>
+    <a class="btn btn-outline" href="{{ url_for('catalog.index', tab='addons') }}">Cancel</a></div>
+</form>
+{% endblock %}

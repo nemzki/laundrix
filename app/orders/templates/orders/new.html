@@ -1,0 +1,165 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon, visual %}
+{% block title %}New Order · Laundrix{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% block page_title %}New Order{% endblock %}
+{% block page_subtitle %}Prices come from the official catalog and are calculated by the server.{% endblock %}
+
+{% block content %}
+{% set has_catalog = services or package_groups %}
+<div id="wizard" class="wizard"
+     data-quote-url="{{ url_for('orders.quote') }}" data-confirm-url="{{ url_for('orders.confirm') }}"
+     data-search-url="{{ url_for('orders.customer_search') }}" data-csrf="{{ csrf_token() }}">
+
+  <ol class="steps" aria-label="Order progress">
+    <li class="step-pill is-current" data-pill="1"><span class="step-num">1</span><span class="step-name">Services</span></li>
+    <li class="step-pill" data-pill="2"><span class="step-num">2</span><span class="step-name">Details</span></li>
+    <li class="step-pill" data-pill="3"><span class="step-num">3</span><span class="step-name">Extras</span></li>
+    <li class="step-pill" data-pill="4"><span class="step-num">4</span><span class="step-name">Customer</span></li>
+    <li class="step-pill" data-pill="5"><span class="step-num">5</span><span class="step-name">Review</span></li>
+  </ol>
+
+  <div class="wizard-layout">
+    <div class="wizard-main card">
+      <div id="step-alert" class="alert alert-error" role="alert" hidden></div>
+
+      {# ---------------- STEP 1 ---------------- #}
+      <section class="wstep" data-step="1">
+        <h2>Select services</h2>
+        <p class="muted">Choose one or more. A Wash, Dry &amp; Fold package already includes the services listed on its card.</p>
+        {% if not has_catalog %}
+          <div class="empty"><strong>The catalog is empty</strong>Ask an Admin to add services (Services &amp; Pricing).</div>
+        {% endif %}
+
+        {% if services %}<h3 class="group-title">Individual services</h3>
+        <div class="choice-grid">
+          {% for s in services %}
+          <label class="choice {% if not s.pricing_unit %}is-disabled{% endif %}">
+            <input class="sr-only" type="checkbox" data-kind="service" data-id="{{ s.id }}" data-code="{{ s.code }}"
+                   data-name="{{ s.name }}" data-unit="{{ s.pricing_unit or '' }}" data-unit-label="{{ s.unit_label }}"
+                   {% if not s.pricing_unit %}disabled{% endif %}>
+            <span class="choice-body">
+              <span class="choice-top"><span class="thumb">{{ visual(s, 24) }}</span><span class="tick">{{ icon('check', 14) }}</span></span>
+              <strong>{{ s.name }}</strong>
+              <span class="muted small">{{ s.description or s.category }}</span>
+              <span class="choice-price">{{ s.price|peso }} <small>{{ s.unit_label }}</small></span>
+              <span class="avail {% if s.pricing_unit %}ok{% else %}no{% endif %}" data-avail>{{ 'Available' if s.pricing_unit else 'Unavailable: unit not set by Admin' }}</span>
+            </span>
+          </label>
+          {% endfor %}
+        </div>{% endif %}
+
+        {% for category, pkgs in package_groups.items() %}
+          <h3 class="group-title">Wash, Dry &amp; Fold &middot; {{ category }}</h3>
+          <div class="choice-grid">
+          {% for p in pkgs %}
+          <label class="choice">
+            <input class="sr-only" type="checkbox" data-kind="package" data-id="{{ p.id }}" data-covers="{{ p.covers_codes }}"
+                   data-name="{{ p.display_name }}" data-measure="{{ p.measure_type }}" data-min="{{ p.min_value|qty }}"
+                   data-max="{{ p.max_value|qty }}" data-unit-label="{{ p.unit_label }}">
+            <span class="choice-body">
+              <span class="choice-top"><span class="thumb">{{ visual(p, 24) }}</span><span class="tick">{{ icon('check', 14) }}</span></span>
+              <strong>{{ p.description }}</strong>
+              <span class="muted small">{{ p.name }}{% if p.covers_codes %} &middot; includes {{ p.covers_codes.replace(',', ', ') }}{% endif %}</span>
+              <span class="choice-price">{{ p.price|peso }} <small>per package</small></span>
+              <span class="avail ok" data-avail>Available</span>
+            </span>
+          </label>
+          {% endfor %}
+          </div>
+        {% endfor %}
+      </section>
+
+      {# ---------------- STEP 2 ---------------- #}
+      <section class="wstep" data-step="2" hidden>
+        <h2>Service details</h2>
+        <p class="muted">Enter the measurement for each selected service.</p>
+        <div id="details-list"></div>
+      </section>
+
+      {# ---------------- STEP 3 ---------------- #}
+      <section class="wstep" data-step="3" hidden>
+        <h2>Extras</h2>
+        <p class="muted">Optional products. Customer-supplied products are never charged.</p>
+        {% for a in addons %}
+        <div class="extra" data-extra data-id="{{ a.id }}" data-name="{{ a.name }}"
+             data-chargeable="{{ 1 if a.is_chargeable else 0 }}" data-supplied="{{ 1 if a.allow_customer_supplied else 0 }}">
+          <div class="extra-head"><span class="thumb">{{ visual(a, 22) }}</span>
+            <div><strong>{{ a.name }}</strong><span class="muted small">{{ a.description or '' }}{% if a.is_chargeable %} &middot; {{ a.price|peso }} each{% endif %}</span></div></div>
+          <div class="extra-opts" role="radiogroup" aria-label="{{ a.name }}">
+            <label class="check"><input type="radio" name="extra-{{ a.id }}" value="" checked><span>None</span></label>
+            {% if a.is_chargeable %}<label class="check"><input type="radio" name="extra-{{ a.id }}" value="paid"><span>Paid</span></label>{% endif %}
+            {% if a.allow_customer_supplied %}<label class="check"><input type="radio" name="extra-{{ a.id }}" value="customer_supplied"><span>Customer-supplied</span></label>{% endif %}
+            <label class="extra-qty" hidden>Qty <input class="input" type="number" min="1" max="99" step="1" value="1" data-extra-qty></label>
+          </div>
+          <p class="field-error" data-error-for="addon:{{ a.id }}" hidden></p>
+        </div>
+        {% else %}
+          <div class="empty"><strong>No extras available</strong>You can continue to the next step.</div>
+        {% endfor %}
+      </section>
+
+      {# ---------------- STEP 4 ---------------- #}
+      <section class="wstep" data-step="4" hidden>
+        <h2>Customer information</h2>
+        <div class="seg" role="tablist">
+          <button type="button" class="seg-btn is-on" data-cust-mode="existing">Existing customer</button>
+          <button type="button" class="seg-btn" data-cust-mode="new">New customer</button>
+        </div>
+
+        <div id="cust-existing">
+          <div class="field"><label for="cust-search">Search by name or contact number</label>
+            <input class="input" id="cust-search" type="search" autocomplete="off" placeholder="Type at least 2 characters"></div>
+          <ul class="results" id="cust-results"></ul>
+          <div class="alert alert-info" id="cust-picked" hidden></div>
+        </div>
+
+        <div id="cust-new" hidden>
+          <div class="form-grid">
+            <div class="field"><label for="new-name">Full name <span class="req">*</span></label><input class="input" id="new-name" maxlength="150" autocomplete="off">
+              <p class="field-error" data-error-for="customer_name" hidden></p></div>
+            <div class="field"><label for="new-contact">Contact number <span class="req">*</span></label><input class="input" id="new-contact" inputmode="tel" maxlength="25" autocomplete="off" placeholder="09XXXXXXXXX">
+              <p class="field-error" data-error-for="customer_contact" hidden></p></div>
+          </div>
+        </div>
+        <p class="field-error" data-error-for="customer" hidden></p>
+        <div class="alert alert-warn" id="dupe-box" hidden>
+          <strong>Possible duplicate customer</strong>
+          <p id="dupe-text"></p>
+          <ul class="results" id="dupe-list"></ul>
+          <button type="button" class="btn btn-outline btn-sm" id="dupe-create">Create a new customer anyway</button>
+        </div>
+      </section>
+
+      {# ---------------- STEP 5 ---------------- #}
+      <section class="wstep" data-step="5" hidden>
+        <h2>Review order</h2>
+        <div class="review-block"><div class="card-head"><h3>Customer</h3><button type="button" class="link-btn" data-goto="4">Edit</button></div><p id="rev-customer"></p></div>
+        <div class="review-block"><div class="card-head"><h3>Items</h3><button type="button" class="link-btn" data-goto="1">Edit services</button></div>
+          <div class="table-wrap"><table class="table"><thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
+            <tbody id="rev-lines"></tbody>
+            <tfoot><tr><td colspan="3" class="num muted">Subtotal</td><td class="num" id="rev-subtotal"></td></tr>
+            <tr class="total-row"><td colspan="3" class="num">Total</td><td class="num" id="rev-total"></td></tr></tfoot></table></div>
+          <p class="hint">The total is calculated by the server when you confirm.</p>
+        </div>
+        <div class="field"><label for="order-notes">Order notes (optional)</label><textarea class="input" id="order-notes" maxlength="500"></textarea></div>
+      </section>
+
+      <div class="wizard-nav">
+        <button type="button" class="btn btn-outline" id="btn-back" hidden>{{ icon('arrow-left', 16) }}<span>Back</span></button>
+        <span class="spacer"></span>
+        <button type="button" class="btn btn-primary" id="btn-next">{# label set by JS #}<span>Next</span>{{ icon('arrow-right', 16) }}</button>
+        <button type="button" class="btn btn-primary" id="btn-confirm" hidden>{{ icon('check', 16) }}<span>Confirm order</span></button>
+      </div>
+    </div>
+
+    <aside class="wizard-side card" aria-label="Selection summary">
+      <h2>Your selection</h2>
+      <ul class="side-list" id="side-list"><li class="muted">Nothing selected yet.</li></ul>
+      <p class="hint">Final prices are shown on the review step.</p>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}<script src="{{ url_for('orders.static', filename='js/order_wizard.js') }}" defer></script>{% endblock %}

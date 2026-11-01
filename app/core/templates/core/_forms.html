@@ -1,0 +1,56 @@
+{# Form field macros. `values` is a dict/MultiDict, `errors` a dict of field -> message. #}
+{% macro text(label, name, values, errors, type='text', hint=None, required=False, readonly=False, inputmode=None, maxlength=None, placeholder='') -%}
+<div class="field {% if errors.get(name) %}has-error{% endif %}">
+  <label for="f-{{ name }}">{{ label }}{% if required %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
+  <input class="input" id="f-{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') or '' }}"
+    {% if required %}required{% endif %} {% if readonly %}readonly{% endif %}
+    {% if inputmode %}inputmode="{{ inputmode }}"{% endif %} {% if maxlength %}maxlength="{{ maxlength }}"{% endif %}
+    {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}
+    {% if errors.get(name) %}aria-invalid="true" aria-describedby="e-{{ name }}"{% endif %}>
+  {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+  {% if errors.get(name) %}<p class="field-error" id="e-{{ name }}">{{ errors[name] }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro select(label, name, values, errors, options, hint=None, required=False) -%}
+<div class="field {% if errors.get(name) %}has-error{% endif %}">
+  <label for="f-{{ name }}">{{ label }}{% if required %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
+  <select class="input" id="f-{{ name }}" name="{{ name }}" {% if errors.get(name) %}aria-invalid="true" aria-describedby="e-{{ name }}"{% endif %}>
+    {% for val, text in options %}
+      <option value="{{ val }}" {% if (values.get(name, '') or '') == val %}selected{% endif %}>{{ text }}</option>
+    {% endfor %}
+  </select>
+  {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+  {% if errors.get(name) %}<p class="field-error" id="e-{{ name }}">{{ errors[name] }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro checkbox(label, name, values, errors=None, hint=None) -%}
+<div class="field field-check">
+  <label class="check"><input type="checkbox" name="{{ name }}" {% if values.get(name) %}checked{% endif %}><span>{{ label }}</span></label>
+  {% if hint %}<p class="hint">{{ hint }}</p>{% endif %}
+  {% if errors and errors.get(name) %}<p class="field-error">{{ errors[name] }}</p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro render_pagination(page_data, endpoint) -%}
+{% if page_data.pages > 1 %}
+<nav class="pagination" aria-label="Pagination">
+  {% if page_data.has_prev %}<a class="btn btn-outline btn-sm" href="{{ url_for(endpoint, page=page_data.prev_num, **kwargs) }}">Previous</a>{% endif %}
+  <span class="muted">Page {{ page_data.page }} of {{ page_data.pages }}</span>
+  {% if page_data.has_next %}<a class="btn btn-outline btn-sm" href="{{ url_for(endpoint, page=page_data.next_num, **kwargs) }}">Next</a>{% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}
+
+{% macro icon_fields(values, errors, icon_keys) -%}
+<div class="field {% if errors.get('icon_key') %}has-error{% endif %}">
+  <label for="f-icon_key">Icon (placeholder visual)</label>
+  <select class="input" id="f-icon_key" name="icon_key">
+    {% for k in icon_keys %}<option value="{{ k }}" {% if values.get('icon_key', '') == k %}selected{% endif %}>{{ k|replace('_', ' ')|capitalize }}</option>{% endfor %}
+  </select>
+  <p class="hint">Shown on cards until real images are configured.</p>
+  {% if errors.get('icon_key') %}<p class="field-error">{{ errors['icon_key'] }}</p>{% endif %}
+</div>
+{{ text('Image path (optional)', 'image_url', values, errors, placeholder='/static/img/example.png', hint='Same-site path only. Leave empty to use the icon.') }}
+{%- endmacro %}

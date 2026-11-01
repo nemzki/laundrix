@@ -14,6 +14,10 @@ def register_commands(app):
 
     register_identity_commands(app)
 
+    from app.catalog.cli import register_catalog_commands
+
+    register_catalog_commands(app)
+
     @app.cli.command("check-db")
     def check_db():
         """Test the MySQL connection."""

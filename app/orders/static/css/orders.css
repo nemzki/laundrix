@@ -1,0 +1,94 @@
+/* Order wizard + order pages. External stylesheet (CSP). */
+.small { font-size: .82rem; }
+.steps { list-style: none; display: flex; gap: .5rem; padding: 0; margin: 0 0 1.2rem; overflow-x: auto; }
+.step-pill { flex: 1 1 0; min-width: 110px; display: flex; align-items: center; gap: .55rem; padding: .6rem .8rem; border-radius: 10px; background: var(--white); border: 1px solid var(--border); color: var(--muted); font-weight: 700; font-size: .88rem; }
+.step-num { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: #e2e8f0; color: #334155; font-size: .8rem; flex: none; }
+.step-pill.is-current { border-color: var(--primary); color: var(--primary-dark); background: var(--primary-soft); }
+.step-pill.is-current .step-num { background: var(--primary); color: #fff; }
+.step-pill.is-done .step-num { background: var(--success); color: #fff; }
+.step-pill.is-done { color: var(--text); }
+@media (max-width: 640px) { .step-name { display: none; } .step-pill { min-width: 0; justify-content: center; } }
+
+.wizard-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 1rem; align-items: start; }
+@media (max-width: 1000px) { .wizard-layout { grid-template-columns: 1fr; } .wizard-side { order: -1; } }
+.wizard-side { position: sticky; top: 76px; }
+.wizard-side + .wizard-side, .wizard-main + .wizard-side { margin-top: 0; }
+.side-list { list-style: none; margin: 0 0 .6rem; padding: 0; display: grid; gap: .4rem; font-size: .9rem; }
+.side-list li { padding: .4rem .6rem; background: var(--bg); border-radius: 8px; }
+.group-title { margin: 1.4rem 0 .6rem; color: var(--muted); text-transform: uppercase; font-size: .78rem; letter-spacing: .06em; }
+.group-title:first-of-type { margin-top: 1rem; }
+
+.choice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: .8rem; }
+.choice { display: block; cursor: pointer; }
+.choice.is-disabled { cursor: not-allowed; }
+.choice-body { display: grid; gap: .3rem; height: 100%; padding: 1rem; border: 2px solid var(--border); border-radius: var(--radius); background: var(--white); transition: border-color .15s, background .15s; }
+.choice:hover .choice-body { border-color: #93b4f5; }
+.choice-top { display: flex; justify-content: space-between; align-items: center; }
+.tick { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); color: transparent; }
+.choice input:checked ~ .choice-body { border-color: var(--primary); background: var(--primary-soft); }
+.choice input:checked ~ .choice-body .tick { background: var(--primary); border-color: var(--primary); color: #fff; }
+.choice input:focus-visible ~ .choice-body { outline: 3px solid rgba(37,99,235,.45); outline-offset: 2px; }
+.choice input:disabled ~ .choice-body { opacity: .55; background: #f8fafc; }
+.choice-price { font-weight: 800; color: var(--navy); font-size: 1.05rem; }
+.choice-price small { font-weight: 500; color: var(--muted); font-size: .78rem; }
+.avail { font-size: .78rem; font-weight: 700; }
+.avail.ok { color: var(--success); }
+.avail.no { color: var(--warn); }
+
+.detail-card, .extra { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin-bottom: .8rem; background: #fcfdff; }
+.detail-card h3 { margin-bottom: .6rem; }
+.extra-head { display: flex; align-items: center; gap: .75rem; margin-bottom: .6rem; }
+.extra-head .muted { display: block; font-size: .85rem; }
+.extra-opts { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: center; }
+.extra-qty { display: flex; align-items: center; gap: .5rem; font-weight: 600; }
+.extra-qty .input { width: 80px; }
+
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 1rem; }
+.seg-btn { padding: .55rem 1rem; border: 0; background: var(--white); font: inherit; font-weight: 700; cursor: pointer; color: var(--muted); }
+.seg-btn.is-on { background: var(--primary); color: #fff; }
+.results { list-style: none; margin: 0 0 .8rem; padding: 0; display: grid; gap: .4rem; }
+.results li button { width: 100%; text-align: left; padding: .6rem .8rem; border: 1px solid var(--border); border-radius: 9px; background: var(--white); font: inherit; cursor: pointer; }
+.results li button:hover { border-color: var(--primary); background: var(--primary-soft); }
+.results .sub { display: inline; margin-left: .5rem; }
+
+.review-block { margin-bottom: 1.2rem; }
+.review-block .card-head { margin-bottom: .3rem; }
+.wizard-nav { display: flex; gap: .6rem; align-items: center; margin-top: 1.4rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.spacer { flex: 1; }
+
+/* confirmation / detail / stub */
+.confirm-hero { text-align: center; padding: 2rem 1rem; }
+.confirm-icon { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--success-soft); color: var(--success); margin-bottom: .6rem; }
+.confirm-ref { font-size: 1.8rem; font-weight: 800; letter-spacing: .04em; color: var(--navy); }
+.status-form { display: grid; gap: .6rem; }
+.status-form .btn-row { align-items: stretch; }
+
+.stub-page { background: #fff; color: #000; min-height: 100vh; }
+.stub { width: min(380px, 100%); margin: 1rem auto; padding: 1rem; font-size: 13px; line-height: 1.4; border: 1px dashed #94a3b8; }
+.stub h1 { font-size: 1.1rem; text-align: center; margin: 0; }
+.stub .center { text-align: center; }
+.stub hr { border: 0; border-top: 1px dashed #64748b; margin: .6rem 0; }
+.stub table { width: 100%; border-collapse: collapse; }
+.stub td { padding: .15rem 0; vertical-align: top; }
+.stub td.r { text-align: right; white-space: nowrap; }
+.stub-actions { text-align: center; margin: 1rem; }
+@media print { .stub-actions { display: none; } .stub { border: 0; margin: 0 auto; } }
+.stub-qr {
+    margin-top: .8rem;
+    text-align: center;
+}
+
+.stub-qr img {
+    display: block;
+    width: 150px;
+    height: 150px;
+    margin: .5rem auto;
+}
+
+.stub-qr p {
+    margin: .3rem 0;
+}
+
+.stub-qr .small {
+    font-size: .75rem;
+}

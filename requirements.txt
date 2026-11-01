@@ -12,3 +12,4 @@ cryptography>=42.0   # required by PyMySQL for MySQL 8 (caching_sha2_password)
 python-dotenv>=1.0
 gunicorn>=21.2       # production server (Linux)
 pytest>=8.0
+qrcode[pil]>=8.0,<9.0

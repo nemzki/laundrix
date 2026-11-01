@@ -1,0 +1,24 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_forms.html" import render_pagination %}
+{% from "core/_icons.html" import icon %}
+{% block title %}Customers · Laundrix{% endblock %}
+{% block page_title %}Customers{% endblock %}
+{% block page_subtitle %}Customer records created through order entry.{% endblock %}
+{% block content %}
+<form class="search-bar" method="get">
+  <input class="input" type="search" name="q" value="{{ term }}" placeholder="Search name or number" aria-label="Search customers">
+  <button class="btn btn-primary" type="submit">{{ icon('search', 16) }}<span>Search</span></button>
+</form>
+<div class="card">
+  {% if customers %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Name</th><th>Contact</th><th class="num">Orders</th><th>Registered</th></tr></thead>
+    <tbody>{% for c in customers %}
+      <tr><td><strong>{{ c.full_name }}</strong></td><td>{{ c.contact_number }}</td><td class="num">{{ c.orders.count() }}</td><td>{{ c.created_at|localdt('%b %d, %Y') }}</td></tr>
+    {% endfor %}</tbody></table></div>
+  {{ render_pagination(pagination, 'orders.customers', q=term) }}
+  {% else %}
+    <div class="empty"><strong>No customers yet</strong>Customers are added when staff create an order.</div>
+  {% endif %}
+</div>
+{% endblock %}
