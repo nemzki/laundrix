@@ -501,3 +501,48 @@ Use this checklist on every new developer machine:
 - [ ] Optional Google OAuth / Didit integrations configured only if needed.
 
 If any step fails, record the exact command and full error message and share it with the team. Do not share passwords, API keys, OAuth secrets, or personal identity documents.
+
+---
+
+## Manual Payment Recording
+
+Laundrix records payments that staff have **manually confirmed**. There is no payment gateway, no GCash
+verification and no provider credentials. Choosing a method never marks anything as received: a payment
+exists only because staff typed an amount they actually collected.
+
+### Workflow
+1. **New Order wizard** (6 steps): Services, Details, Extras, Customer, **Payment**, Review.
+2. **Payment step:** choose the arrangement (Full, Partial, Pay Later) and the method(s) (Cash, GCash, Cash + GCash,
+   or any method an Admin enabled). The server validates the amounts against its own total.
+3. **Review** shows customer, items, payment, balance and status. Going back creates nothing; the order is only
+   saved on "Confirm and generate stub".
+4. **Confirmation page:** print the stub (browser print, no external service), then press **Laundry received**.
+   *Order received* and *payment received* are separate events and never share a status.
+5. Later balances are recorded from the order page (Record a payment). Any number of payments per order.
+
+### Data rules
+- `payments` is an append-only ledger. Status (Unpaid / Partially Paid / Paid) and balance are derived from it.
+- Overpayment is rejected. Corrections are Admin-only **reversal** entries with a reason; originals are never changed.
+- Double submits are blocked by a one-time token (new orders) and an idempotency key (later payments).
+- Orders created before this feature show **Payment not tracked** and are excluded from outstanding balances.
+- Every payment, reversal and settings change is written to `payment_events`.
+
+### Pages
+| Page | Who |
+|---|---|
+| `/orders/new` (Payment step), order page payment panel, `/payments/outstanding` | Staff, Admin |
+| `/payments/` records, `/payments/summary` (daily/weekly/monthly, by method and staff), `/payments/settings` | Admin |
+| `/track/<token>` shows payment status and balance due only | Customer |
+
+### Setup
+```powershell
+python -m flask --app run db upgrade        # migration d4e8f1a2b6c7
+python -m flask --app run seed-payments     # creates Cash and GCash methods and the settings row
+```
+Then sign in as Admin, open **Payments > Payment settings**, and enter the GCash display name/number, payment
+instructions and upload your real payment QR image. Until then a neutral placeholder is shown.
+The QR is stored under `instance/uploads/payment_qr/` (gitignored); back that folder up in production.
+No new environment variables are required.
+
+### Known limitations
+Refunds, discounts, per-order cancellation/void, and "start tracking" for legacy orders are not implemented.

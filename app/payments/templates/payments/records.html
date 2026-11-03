@@ -1,0 +1,53 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% from "core/_forms.html" import render_pagination %}
+{% block title %}Payment Records · Laundrix{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% block page_title %}Payments{% endblock %}
+{% block page_subtitle %}Every recorded payment and correction. Entries are never edited or deleted.{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-outline" href="{{ url_for('payments.summary') }}">{{ icon('chart', 16) }}<span>Summaries</span></a>
+  <a class="btn btn-outline" href="{{ url_for('payments.settings') }}">Payment settings</a>
+{% endblock %}
+{% block content %}
+<div class="tabs">
+  <a class="tab active" href="{{ url_for('payments.records') }}">All payments</a>
+  <a class="tab" href="{{ url_for('payments.outstanding') }}">Outstanding balances</a>
+  <a class="tab" href="{{ url_for('payments.summary') }}">Summaries</a>
+</div>
+<form class="search-bar filters" method="get">
+  <select class="input" name="method" aria-label="Method"><option value="">All methods</option>
+    {% for m in methods %}<option value="{{ m.code }}" {% if f.method == m.code %}selected{% endif %}>{{ m.label }}</option>{% endfor %}</select>
+  <select class="input" name="staff" aria-label="Recorded by"><option value="">All staff</option>
+    {% for u in staff %}<option value="{{ u.id }}" {% if f.staff == u.id %}selected{% endif %}>{{ u.full_name or u.email }}</option>{% endfor %}</select>
+  <select class="input" name="kind" aria-label="Type"><option value="">Payments and reversals</option>
+    <option value="payment" {% if f.kind == 'payment' %}selected{% endif %}>Payments only</option>
+    <option value="reversal" {% if f.kind == 'reversal' %}selected{% endif %}>Reversals only</option></select>
+  <input class="input" type="date" name="from" value="{{ f['from'] }}" aria-label="From date">
+  <input class="input" type="date" name="to" value="{{ f['to'] }}" aria-label="To date">
+  <button class="btn btn-primary" type="submit">{{ icon('search', 16) }}<span>Filter</span></button>
+  <a class="btn btn-outline" href="{{ url_for('payments.records') }}">Clear</a>
+</form>
+<div class="card">
+  {% if payments %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>When</th><th>Order</th><th>Method</th><th class="num">Amount</th><th>Recorded by</th><th>Details</th></tr></thead>
+    <tbody>
+    {% for p in payments %}
+      <tr class="{% if p.kind == 'reversal' or p.reversal %}is-reversed{% endif %}">
+        <td>{{ p.paid_at|localdt }}</td>
+        <td class="mono"><a href="{{ url_for('orders.detail', reference=p.order.reference) }}">{{ p.order.reference }}</a><span class="sub">{{ p.order.customer_name }}</span></td>
+        <td>{{ p.method_label }}</td>
+        <td class="num">{% if p.kind == 'reversal' %}-{% endif %}{{ p.amount|peso }}</td>
+        <td>{{ (p.recorded_by.full_name or p.recorded_by.email) if p.recorded_by else 'Unknown user' }}</td>
+        <td>{% if p.kind == 'reversal' %}<span class="pill pill-off">Reversal</span>{% elif p.reversal %}<span class="pill pill-off">Reversed</span>{% endif %}
+            {% if p.reference %}<span class="sub">Ref: {{ p.reference }}</span>{% endif %}{% if p.notes %}<span class="sub">{{ p.notes }}</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody></table></div>
+  {{ render_pagination(pagination, 'payments.records', method=f.method, staff=f.staff, kind=f.kind, **{'from': f['from'], 'to': f['to']}) }}
+  {% else %}
+    <div class="empty"><strong>No payments found</strong>Payments appear here once staff record them.</div>
+  {% endif %}
+</div>
+{% endblock %}

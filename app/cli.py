@@ -18,6 +18,10 @@ def register_commands(app):
 
     register_catalog_commands(app)
 
+    from app.payments.cli import register_payment_commands
+
+    register_payment_commands(app)
+
     @app.cli.command("check-db")
     def check_db():
         """Test the MySQL connection."""

@@ -1,3 +1,5 @@
+import secrets
+
 from flask import abort, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user
 
@@ -6,6 +8,8 @@ from app.extensions import db
 from app.models import Customer, Order, OrderStatus, Role, Service, ServiceAddon, ServicePackage
 from app.orders import bp, services
 from app.orders.pricing import build_quote
+from app.payments import forms as payment_forms
+from app.payments import services as payment_services
 from app.tracking.qr import generate_qr_data_uri
 
 @bp.before_request
@@ -61,6 +65,8 @@ def new_order():
         package_groups.setdefault(p.category, []).append(p)
     return render_template(
         "orders/new.html", services=svc, package_groups=package_groups, addons=addons,
+        methods=payment_services.active_methods(), pay_settings=payment_services.get_settings(),
+        submission_token=secrets.token_urlsafe(18),   # one per wizard load: a double-click saves one order
     )
 
 
@@ -73,8 +79,15 @@ def quote():
     if isinstance(payload, dict) and payload.get("require_customer"):
         _, _, cust_errors, duplicates = services.validate_customer(payload.get("customer"))
         errors.update(cust_errors)
+    payment_preview = None
+    if isinstance(payload, dict) and "payment" in payload and q.ok:
+        plan = payment_services.validate_payment_plan(payload.get("payment"), q.total)
+        errors.update(plan.errors)
+        if not plan.errors:
+            payment_preview = plan.preview()
     return jsonify(
         ok=not errors, errors=errors, duplicates=duplicates,
+        payment=payment_preview, total_raw=str(q.total),
         lines=[{
             "key": l.key, "name": l.name, "description": l.description,
             "quantity": f"{l.quantity.normalize():f}", "unit": l.unit,
@@ -126,7 +139,8 @@ def detail(reference):
     order = _get_order_or_404(reference)
     return render_template(
         "orders/detail.html", order=order, transitions=services.allowed_transitions(order, current_user),
-        statuses=OrderStatus,
+        statuses=OrderStatus, methods=payment_services.active_methods(),
+        idempotency_key=secrets.token_urlsafe(12), is_admin=current_user.role == Role.ADMIN,
     )
 
 
@@ -147,11 +161,24 @@ def stub(reference):
 
     qr_code = generate_qr_data_uri(tracking_url)
 
+    # Customer-facing payment summary: net per method. No references, no staff, no audit data.
+    per_method = {}
+    for p in order.payments:
+        per_method[p.method_label] = per_method.get(p.method_label, 0) + (
+            p.amount if p.kind == "payment" else -p.amount)
+    payment_lines = [(label, amount) for label, amount in per_method.items() if amount != 0]
+    cashier = None
+    if order.created_by is not None:
+        cashier = ((order.created_by.full_name or "").split() or ["Staff"])[0]
+
     return render_template(
         "orders/stub.html",
         order=order,
         tracking_url=tracking_url,
         qr_code=qr_code,
+        payment_lines=payment_lines,
+        cashier=cashier,
+        pay_settings=payment_services.get_settings(),
     )
 
 @bp.post("/<reference>/status")
@@ -165,3 +192,49 @@ def update_status(reference):
     else:
         flash(f"Status updated to {OrderStatus.LABELS[updated.status]}.", "success")
     return redirect(url_for("orders.detail", reference=reference))
+
+@bp.post("/<reference>/payments")
+def record_payment(reference):
+    """Record a later payment (e.g. settling a balance). Amounts are validated against the live
+    server-side balance; the browser's idea of the balance is never used."""
+    order = _get_order_or_404(reference)
+    entries, key = payment_forms.entries_from_request(request)
+    if entries is None:
+        payments, errors, duplicate = [], {"payment": ["Invalid request."]}, False
+    else:
+        payments, errors, duplicate = payment_services.record_payments(order.id, entries, current_user, key)
+    if request.is_json:
+        if errors:
+            return jsonify(ok=False, errors=errors), 422
+        return jsonify(
+            ok=True, duplicate=duplicate, payment_ids=[p.id for p in payments],
+            balance=payment_services.peso(order.balance_due), payment_status=order.payment_status,
+        )
+    if errors:
+        for messages in errors.values():
+            for m in messages:
+                flash(m, "error")
+    elif duplicate:
+        flash("That payment was already recorded.", "info")
+    else:
+        flash("Payment recorded.", "success")
+    return redirect(url_for("orders.detail", reference=reference))
+
+
+@bp.post("/<reference>/confirm-received")
+def confirm_received(reference):
+    """Staff confirm the physical laundry was received. Independent of payment."""
+    order = _get_order_or_404(reference)
+    updated, error, already = services.confirm_received(order.id, current_user)
+    if request.is_json:
+        if error:
+            return jsonify(ok=False, error=error), 422
+        return jsonify(ok=True, already=already)
+    if error:
+        flash(error, "error")
+    elif already:
+        flash("The laundry was already confirmed as received.", "info")
+    else:
+        flash("Laundry confirmed as received.", "success")
+    return redirect(url_for("orders.detail", reference=reference))
+

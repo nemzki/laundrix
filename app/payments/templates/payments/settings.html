@@ -1,0 +1,84 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% from "core/_forms.html" import text, checkbox %}
+{% block title %}Payment Settings · Laundrix{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% block page_title %}Payment Settings{% endblock %}
+{% block page_subtitle %}Manual payment recording only. No payment is verified automatically and no provider credentials are stored.{% endblock %}
+{% block page_actions %}<a class="btn btn-outline" href="{{ url_for('payments.records') }}">{{ icon('arrow-left', 16) }}<span>Payments</span></a>{% endblock %}
+{% block content %}
+<div class="grid grid-2">
+  <div>
+    <form class="card" method="post" action="{{ url_for('payments.update_settings') }}" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="ui" value="1">
+      <h2>Policies and display text</h2>
+      {{ checkbox('Allow Partial Payment', 'partial_enabled', values, errors) }}
+      {{ checkbox('Allow Pay Later', 'pay_later_enabled', values, errors) }}
+      {{ text('GCash account name', 'gcash_account_name', values, errors, maxlength=120, hint='Shown to staff when GCash is selected. Leave empty if not used.') }}
+      {{ text('GCash number or public identifier', 'gcash_account_number', values, errors, maxlength=40, inputmode='tel') }}
+      <div class="field {% if errors.get('payment_instructions') %}has-error{% endif %}">
+        <label for="f-payment_instructions">Payment instructions</label>
+        <textarea class="input" id="f-payment_instructions" name="payment_instructions" maxlength="1000">{{ values.get('payment_instructions') or '' }}</textarea>
+        <p class="hint">Shown to staff in the order wizard, and on stubs that still have a balance.</p>
+        {% if errors.get('payment_instructions') %}<p class="field-error">{{ errors['payment_instructions'] }}</p>{% endif %}
+      </div>
+      {{ text('Payment notice', 'payment_notice', values, errors, maxlength=255, hint='Short policy line, e.g. balances are due on pickup.') }}
+      {{ text('Stub footer', 'stub_footer', values, errors, maxlength=255) }}
+      {{ checkbox('Print the payment QR on stubs that still have a balance', 'show_qr_on_stub', values, errors) }}
+      <button class="btn btn-primary" type="submit">Save settings</button>
+    </form>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Payment QR image</h2>
+      <div class="qr-panel">
+        <img class="qr-preview" src="{{ url_for('payments.qr') }}" alt="Current payment QR" width="160" height="160">
+        <div>
+          <p class="muted">{{ 'This image is shown to staff when GCash is selected.' if settings.qr_filename else 'No QR uploaded yet. A placeholder is shown until you upload your own.' }}</p>
+          <p class="hint">PNG, JPEG or WebP, up to 2 MB, 100 to 2000 pixels per side. The image is re-encoded for safety.</p>
+        </div>
+      </div>
+      <form method="post" action="{{ url_for('payments.upload_qr') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="ui" value="1">
+        <div class="field"><label for="qr-file">Choose image</label>
+          <input class="input" id="qr-file" type="file" name="image" accept="image/png,image/jpeg,image/webp" required></div>
+        <button class="btn btn-primary" type="submit">{{ 'Replace QR' if settings.qr_filename else 'Upload QR' }}</button>
+      </form>
+      {% if settings.qr_filename %}
+      <form class="remove-qr" method="post" action="{{ url_for('payments.remove_qr') }}"
+            data-confirm="Remove the payment QR image? A placeholder will be shown instead." data-confirm-title="Remove QR image">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="ui" value="1">
+        <button class="btn btn-danger btn-sm" type="submit">Remove QR image</button>
+      </form>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <h2>Payment methods</h2>
+      <table class="table"><thead><tr><th>Method</th><th>Reference</th><th>Status</th><th></th></tr></thead><tbody>
+      {% for m in methods %}
+        <tr><td><strong>{{ m.label }}</strong><span class="sub mono">{{ m.code }}</span></td>
+          <td>{{ 'Required' if m.requires_reference else 'Optional' }}</td>
+          <td><span class="pill {{ 'pill-on' if m.is_active else 'pill-off' }}">{{ 'Enabled' if m.is_active else 'Disabled' }}</span></td>
+          <td class="num"><form class="inline-form" method="post" action="{{ url_for('payments.toggle_method', method_id=m.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
+            <button class="btn btn-sm {{ 'btn-danger' if m.is_active else 'btn-outline' }}" type="submit">{{ 'Disable' if m.is_active else 'Enable' }}</button></form></td></tr>
+      {% else %}
+        <tr><td colspan="4"><div class="empty"><strong>No methods</strong>Run <span class="mono">flask --app run seed-payments</span>.</div></td></tr>
+      {% endfor %}
+      </tbody></table>
+      <form method="post" action="{{ url_for('payments.create_method') }}" class="add-method">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
+        <div class="field"><label for="m-label">Add a method (e.g. Bank Transfer)</label>
+          <input class="input" id="m-label" name="label" maxlength="60" required></div>
+        <div class="field field-check"><label class="check"><input type="checkbox" name="requires_reference"><span>Require a reference number</span></label></div>
+        <button class="btn btn-outline" type="submit">Add method</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

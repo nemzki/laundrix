@@ -3,6 +3,7 @@ from decimal import Decimal
 from app.core import bp
 from app.core.timeutil import to_local
 from app.models.order import OrderStatus
+from app.models.payment import PaymentArrangement, PaymentStatus
 
 
 @bp.app_template_filter("peso")
@@ -35,3 +36,16 @@ def status_label(value):
 @bp.app_template_filter("status_tone")
 def status_tone(value):
     return OrderStatus.TONES.get(value, "neutral")
+
+@bp.app_template_filter("payment_status_label")
+def payment_status_label(value):
+    return PaymentStatus.LABELS.get(value, value)
+
+
+@bp.app_template_filter("payment_status_tone")
+def payment_status_tone(value):
+    return PaymentStatus.TONES.get(value, "neutral")
+
+@bp.app_template_filter("arrangement_label")
+def arrangement_label(value):
+    return PaymentArrangement.LABELS.get(value, "Not recorded")

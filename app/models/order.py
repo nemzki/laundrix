@@ -1,6 +1,9 @@
 from app.extensions import db
 from app.models.staff_credential import utcnow
 import secrets
+from decimal import Decimal
+
+from app.models.payment import PaymentKind, PaymentStatus
 
 class OrderStatus:
     RECEIVED = "order_received"
@@ -59,8 +62,18 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=utcnow, index=True)
     updated_at = db.Column(db.DateTime, nullable=False, default=utcnow, onupdate=utcnow)
 
+    # --- manual payment recording -------------------------------------------------------
+    # NULL = created before payment recording existed ("Payment not tracked").
+    payment_arrangement = db.Column(db.String(20))
+    # Physical laundry received by the shop. NULL = stub issued, receipt not yet confirmed.
+    received_at = db.Column(db.DateTime, index=True)
+    received_by_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
+    # One-time token from the wizard; makes a double-clicked "Confirm" harmless.
+    submission_token = db.Column(db.String(64), unique=True)
+
     customer = db.relationship("Customer", backref=db.backref("orders", lazy="dynamic"))
     created_by = db.relationship("User", foreign_keys=[created_by_id])
+    received_by = db.relationship("User", foreign_keys=[received_by_id])
     items = db.relationship(
         "OrderItem", backref="order", cascade="all, delete-orphan", order_by="OrderItem.id"
     )
@@ -72,6 +85,38 @@ class Order(db.Model):
     @property
     def status_label(self) -> str:
         return OrderStatus.LABELS.get(self.status, self.status)
+
+    # --- payment ledger (derived; the browser can never set these) -----------------------
+    @property
+    def is_payment_tracked(self) -> bool:
+        return self.payment_arrangement is not None
+
+    @property
+    def is_received(self) -> bool:
+        return self.received_at is not None
+
+    @property
+    def amount_paid(self) -> Decimal:
+        """Net money received: payments minus reversals."""
+        net = Decimal("0.00")
+        for p in self.payments:
+            net += p.amount if p.kind == PaymentKind.PAYMENT else -p.amount
+        return net
+
+    @property
+    def balance_due(self) -> Decimal:
+        return Decimal(self.total) - self.amount_paid
+
+    @property
+    def payment_status(self) -> str:
+        if not self.is_payment_tracked:
+            return PaymentStatus.NOT_TRACKED
+        paid = self.amount_paid
+        if paid >= Decimal(self.total):
+            return PaymentStatus.PAID
+        if paid > 0:
+            return PaymentStatus.PARTIAL
+        return PaymentStatus.UNPAID
 
 
 class OrderItem(db.Model):

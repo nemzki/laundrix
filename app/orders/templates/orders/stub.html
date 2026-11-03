@@ -15,18 +15,40 @@
     <p><strong>Order:</strong> {{ order.reference }}<br>
        <strong>Date:</strong> {{ order.created_at|localdt }}<br>
        <strong>Customer:</strong> {{ order.customer_name }}<br>
-       <strong>Contact:</strong> {{ order.customer_contact }}</p>
+       <strong>Contact:</strong> {{ order.customer_contact }}{% if cashier %}<br>
+       <strong>Served by:</strong> {{ cashier }}{% endif %}</p>
     <hr>
     <table>
       {% for i in order.items %}
-      <tr><td>{{ i.name }}{% if i.description %}<br>{{ i.description }}{% endif %}{% if i.measurement %}<br>{{ i.measurement|qty }} {{ i.measurement_unit }}{% endif %}<br>{{ i.quantity|qty }} {{ i.unit }}{% if i.customer_supplied %} (customer-supplied){% else %} x {{ i.unit_price|peso }}{% endif %}</td>
+      <tr><td>{{ i.name }}{% if i.description %}<br>{{ i.description }}{% endif %}{% if i.measurement %}<br>{{ i.measurement|qty }} {{ i.measurement_unit }}{% endif %}<br>{{ i.quantity|qty }} {{ i.unit }}{% if i.customer_supplied %} (customer-supplied){% else %} x {{ i.unit_price|peso }}{% endif %}{% if i.instructions %}<br>Note: {{ i.instructions }}{% endif %}</td>
           <td class="r">{{ i.line_total|peso }}</td></tr>
       {% endfor %}
     </table>
     <hr>
     <table><tr><td><strong>TOTAL</strong></td><td class="r"><strong>{{ order.total|peso }}</strong></td></tr></table>
     <hr>
-    <p class="center">Status: {{ order.status|status_label }}<br>Please present this stub when claiming your laundry.</p>
+    {% if order.is_payment_tracked %}
+    <p><strong>Payment</strong></p>
+    <table>
+      <tr><td>Arrangement</td><td class="r">{{ order.payment_arrangement|arrangement_label }}</td></tr>
+      {% for label, amount in payment_lines %}<tr><td>Paid by {{ label }}</td><td class="r">{{ amount|peso }}</td></tr>{% endfor %}
+      <tr><td>Amount received</td><td class="r">{{ order.amount_paid|peso }}</td></tr>
+      <tr><td>Remaining balance</td><td class="r">{{ order.balance_due|peso }}</td></tr>
+      <tr><td><strong>Payment status</strong></td><td class="r"><strong>{{ order.payment_status|payment_status_label }}</strong></td></tr>
+    </table>
+    {% if order.balance_due > 0 %}
+      {% if pay_settings.payment_notice %}<p class="small">{{ pay_settings.payment_notice }}</p>{% endif %}
+      {% if pay_settings.payment_instructions %}<p class="small">{{ pay_settings.payment_instructions }}</p>{% endif %}
+      {% if pay_settings.show_qr_on_stub and pay_settings.qr_filename %}
+        <div class="stub-qr"><img src="{{ url_for('payments.qr') }}" alt="Payment QR code"></div>
+      {% endif %}
+    {% endif %}
+    {% else %}
+    <p class="center">Payment details are not recorded on this stub.</p>
+    {% endif %}
+    {% if order.notes %}<hr><p class="small"><strong>Notes:</strong> {{ order.notes }}</p>{% endif %}
+    <hr>
+    <p class="center">Order status: {{ order.status|status_label }}<br>Please present this stub when claiming your laundry.{% if pay_settings.stub_footer %}<br>{{ pay_settings.stub_footer }}{% endif %}</p>
     <hr>
 
     <div class="stub-qr">

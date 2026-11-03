@@ -1,0 +1,40 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% from "core/_forms.html" import render_pagination %}
+{% block title %}Outstanding Balances · Laundrix{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% block page_title %}Outstanding Balances{% endblock %}
+{% block page_subtitle %}Orders with payments still due. Derived from recorded payments only.{% endblock %}
+{% block content %}
+<div class="grid grid-stats">
+  <div class="stat"><div class="stat-label">Orders with a balance</div><div class="stat-value">{{ owing_count }}</div></div>
+  <div class="stat"><div class="stat-label">Total outstanding</div><div class="stat-value">{{ owing_total|peso }}</div></div>
+</div>
+<div class="tabs">
+  {% for key, label in [('outstanding', 'All outstanding'), ('unpaid', 'Unpaid'), ('partial', 'Partially paid')] + ([('paid', 'Fully paid')] if current_user.role == 'admin' else []) %}
+    <a class="tab {% if status == key %}active{% endif %}" href="{{ url_for('payments.outstanding', status=key) }}">{{ label }}</a>
+  {% endfor %}
+</div>
+<div class="card">
+  {% if orders %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Reference</th><th>Customer</th><th class="num">Total</th><th class="num">Received</th><th class="num">Balance</th><th>Payment</th><th></th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr>
+        <td class="mono"><a href="{{ url_for('orders.detail', reference=o.reference) }}">{{ o.reference }}</a></td>
+        <td>{{ o.customer_name }}<span class="sub">{{ o.customer_contact }}</span></td>
+        <td class="num">{{ o.total|peso }}</td>
+        <td class="num">{{ o.amount_paid|peso }}</td>
+        <td class="num"><strong>{{ o.balance_due|peso }}</strong></td>
+        <td><span class="status status-{{ o.payment_status|payment_status_tone }}">{{ o.payment_status|payment_status_label }}</span></td>
+        <td class="num"><a class="btn btn-outline btn-sm" href="{{ url_for('orders.detail', reference=o.reference) }}#payment">{{ 'Record payment' if o.balance_due > 0 else 'View' }}</a></td>
+      </tr>
+    {% endfor %}
+    </tbody></table></div>
+  {{ render_pagination(pagination, 'payments.outstanding', status=status) }}
+  {% else %}
+    <div class="empty"><strong>Nothing to show</strong>{{ 'No orders owe a balance.' if status != 'paid' else 'No fully paid orders yet.' }}</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% block title %}Payment Summaries · Laundrix{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% block page_title %}Payment Summaries{% endblock %}
+{% block page_subtitle %}Money recorded as received, net of reversals (a reversal counts on the day it is recorded).{% endblock %}
+{% block content %}
+<div class="tabs">
+  <a class="tab" href="{{ url_for('payments.records') }}">All payments</a>
+  <a class="tab" href="{{ url_for('payments.outstanding') }}">Outstanding balances</a>
+  <a class="tab active" href="{{ url_for('payments.summary') }}">Summaries</a>
+</div>
+<div class="tabs">
+  {% for key, name in [('daily', 'Today'), ('weekly', 'This week'), ('monthly', 'This month')] %}
+    <a class="tab {% if period == key %}active{% endif %}" href="{{ url_for('payments.summary', period=key) }}">{{ name }} <span class="muted">{{ totals[key]|peso }}</span></a>
+  {% endfor %}
+</div>
+<div class="grid grid-stats">
+  <div class="stat"><div class="stat-label">Collected ({{ label }})</div><div class="stat-value">{{ collected|peso }}</div></div>
+  <div class="stat"><div class="stat-label">Orders with a balance</div><div class="stat-value">{{ owing_count }}</div></div>
+  <div class="stat"><div class="stat-label">Total outstanding</div><div class="stat-value">{{ owing_total|peso }}</div></div>
+</div>
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-head"><h2>Collections by payment method</h2></div>
+    {% if by_method %}
+    <table class="table"><thead><tr><th>Method</th><th class="num">Collected</th></tr></thead>
+      <tbody>{% for name, amount in by_method %}<tr><td>{{ name }}</td><td class="num">{{ amount|peso }}</td></tr>{% endfor %}</tbody>
+      <tfoot><tr class="total-row"><td>Total</td><td class="num">{{ collected|peso }}</td></tr></tfoot></table>
+    {% else %}<div class="empty"><strong>No collections</strong>Nothing was recorded in this period.</div>{% endif %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Activity by staff member</h2></div>
+    {% if by_staff %}
+    <table class="table"><thead><tr><th>Staff</th><th class="num">Entries</th><th class="num">Net collected</th></tr></thead>
+      <tbody>{% for name, n, amount in by_staff %}<tr><td>{{ name }}</td><td class="num">{{ n }}</td><td class="num">{{ amount|peso }}</td></tr>{% endfor %}</tbody></table>
+    {% else %}<div class="empty"><strong>No activity</strong>No staff recorded payments in this period.</div>{% endif %}
+  </div>
+</div>
+{% endblock %}

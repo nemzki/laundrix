@@ -11,7 +11,9 @@ from app.extensions import db
 from app.models import (
     Customer, Order, OrderItem, OrderStatus, OrderStatusHistory, Role,
 )
+from app.models.staff_credential import utcnow
 from app.orders.pricing import GENERAL, build_quote
+from app.payments import services as payment_services
 
 _REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # no 0/O/1/I confusion on printed stubs
 MAX_NOTES = 500
@@ -95,10 +97,40 @@ def _new_reference() -> str:
     return f"LX-{local_date_code()}-{suffix}"
 
 
+_TOKEN_RE = re.compile(r"^[A-Za-z0-9_-]{16,64}$")
+
+
+def _clean_submission_token(payload):
+    raw = payload.get("submission_token") if isinstance(payload, dict) else None
+    if raw in (None, ""):
+        return None, None
+    if not isinstance(raw, str) or not _TOKEN_RE.match(raw):
+        return None, "Invalid submission token. Reload the page and try again."
+    return raw, None
+
+
+def _order_for_token(token):
+    return db.session.execute(db.select(Order).filter_by(submission_token=token)).scalar_one_or_none()
+
+
 def create_order(payload, user):
     """Validate everything, recalculate prices, and save the order atomically.
 
+    Payment (optional block `payload["payment"]`) is validated against the SERVER total and saved in
+    the same transaction. Without that block (older clients) the order is recorded as Pay Later /
+    unpaid and counted as received, exactly like before payments existed.
+
     Returns (order, errors, duplicates). On any failure nothing is written."""
+    token, token_error = _clean_submission_token(payload)
+    if token_error:
+        return None, {"submission_token": [token_error]}, []
+    if token:  # a replayed/double-clicked submission returns the order it already created
+        existing = _order_for_token(token)
+        if existing is not None:
+            if existing.created_by_id == user.id:
+                return existing, {}, []
+            return None, {GENERAL: ["This submission was already used."]}, []
+
     quote = build_quote(payload)
     errors = {k: list(v) for k, v in quote.errors.items()}
 
@@ -111,6 +143,14 @@ def create_order(payload, user):
         notes = str(payload["notes"]).strip()
         if len(notes) > MAX_NOTES:
             errors.setdefault("notes", []).append(f"Notes must be {MAX_NOTES} characters or fewer.")
+    legacy = not (isinstance(payload, dict) and "payment" in payload)
+    plan = None
+    if not quote.errors:
+        if legacy:
+            plan = payment_services.legacy_plan(quote.total)
+        else:
+            plan = payment_services.validate_payment_plan(payload.get("payment"), quote.total)
+            errors.update(plan.errors)
     if errors:
         return None, errors, duplicates
 
@@ -127,6 +167,9 @@ def create_order(payload, user):
                 status=OrderStatus.RECEIVED, subtotal=quote.subtotal,
                 discount_total=quote.discount_total, total=quote.total,
                 notes=notes, created_by_id=user.id,
+                payment_arrangement=plan.arrangement, submission_token=token,
+                received_at=utcnow() if legacy else None,
+                received_by_id=user.id if legacy else None,
             )
             for line in quote.lines:
                 order.items.append(OrderItem(
@@ -143,11 +186,16 @@ def create_order(payload, user):
                 note="Order created",
             ))
             db.session.add(order)
+            payment_services.add_payment_rows(order, plan.entries, user, token)
             db.session.commit()
             return order, {}, []
         except IntegrityError as exc:
             db.session.rollback()
             last_exc = exc
+            if token:
+                existing = _order_for_token(token)
+                if existing is not None and existing.created_by_id == user.id:
+                    return existing, {}, []
             if customer is not None:
                 customer = db.session.get(Customer, customer.id)
         except Exception:
@@ -178,6 +226,9 @@ def change_status(order_id: int, new_status: str, user, note: str = None):
     ).scalar_one_or_none()
     if order is None:
         return None, "Order not found."
+    if order.received_at is None:
+        db.session.rollback()
+        return order, "Confirm that the laundry was received before changing the order status."
     allowed = dict(allowed_transitions(order, user))
     if new_status not in allowed:
         db.session.rollback()
@@ -200,6 +251,32 @@ def change_status(order_id: int, new_status: str, user, note: str = None):
         db.session.rollback()
         raise
     return order, None
+
+
+def confirm_received(order_id: int, user):
+    """Staff confirm the physical laundry is in the shop. This is NOT a payment event and never
+    touches payment status. Returns (order, error, already_confirmed)."""
+    order = db.session.execute(
+        db.select(Order).where(Order.id == order_id).with_for_update()
+        .execution_options(populate_existing=True)
+    ).scalar_one_or_none()
+    if order is None:
+        return None, "Order not found.", False
+    if order.received_at is not None:
+        db.session.rollback()
+        return order, None, True
+    try:
+        order.received_at = utcnow()
+        order.received_by_id = user.id
+        order.history.append(OrderStatusHistory(
+            from_status=order.status, to_status=order.status, changed_by_id=user.id,
+            note="Laundry received by the shop",
+        ))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+    return order, None, False
 
 
 # ----------------------------------------------------------------------------- listing / stats
@@ -244,7 +321,11 @@ def dashboard_stats():
         .where(OrderItem.item_type != "addon")
         .group_by(OrderItem.name).order_by(func.count(OrderItem.id).desc()).limit(5)
     ).all()
+    owing_count, owing_total = payment_services.outstanding_summary()
+    awaiting = db.session.scalar(db.select(func.count(Order.id)).where(Order.received_at.is_(None)))
     return {
+        "owing_count": owing_count, "owing_total": owing_total, "awaiting_receipt": awaiting or 0,
+        "collected_today": payment_services.collections_total(start, end),
         "total_orders": sum(counts.values()), "today": today or 0, "counts": counts,
         "pending": counts[OrderStatus.RECEIVED] + counts[OrderStatus.PENDING],
         "processing": counts[OrderStatus.PROCESSING], "ready": counts[OrderStatus.READY],
