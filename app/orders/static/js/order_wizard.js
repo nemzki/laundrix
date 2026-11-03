@@ -1,5 +1,7 @@
-/* New Order wizard. The browser only sends WHAT was chosen (ids, measurements, quantities);
-   the server prices everything. All DOM text is inserted with textContent (no HTML injection). */
+/* New Order wizard. The browser only sends WHAT was chosen (ids, measurements, quantities, the
+   amounts staff typed as received). The server prices the order and validates the payment against
+   its own total; figures shown here are for convenience only. All DOM text is inserted with
+   textContent (no HTML injection). */
 (function () {
   "use strict";
   var root = document.getElementById("wizard");
@@ -7,12 +9,14 @@
 
   var URLS = { quote: root.dataset.quoteUrl, confirm: root.dataset.confirmUrl, search: root.dataset.searchUrl };
   var CSRF = root.dataset.csrf;
-  var TOTAL_STEPS = 5;
+  var TOKEN = root.dataset.token;      // one-time token: a double-clicked confirm saves one order
+  var TOTAL_STEPS = 6;
   var step = 1;
   var custMode = "existing";
   var customer = null;            // {id, full_name, contact_number} when an existing one is picked
   var confirmDuplicate = false;
   var busy = false;
+  var dueRaw = null;              // server total as a plain number string, for display/prefill only
 
   var $ = function (sel, ctx) { return (ctx || root).querySelector(sel); };
   var $$ = function (sel, ctx) { return Array.prototype.slice.call((ctx || root).querySelectorAll(sel)); };
@@ -39,6 +43,7 @@
     $("#btn-next").hidden = n === TOTAL_STEPS;
     $("#btn-confirm").hidden = n !== TOTAL_STEPS;
     clearErrors();
+    if (n === 5) syncPayment();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -68,7 +73,10 @@
     var general = [], lowest = 99;
     Object.keys(errors || {}).forEach(function (k) {
       var target = $('[data-error-for="' + k + '"]');
-      var s = k.indexOf("addon:") === 0 ? 3 : k.indexOf("customer") === 0 ? 4 : (k === "notes" ? 5 : 2);
+      var s = k.indexOf("addon:") === 0 ? 3
+            : k.indexOf("customer") === 0 ? 4
+            : k.indexOf("payment") === 0 ? 5
+            : (k === "notes" || k === "submission_token") ? 6 : 2;
       if (target) { target.textContent = errors[k].join(" "); target.hidden = false; }
       else { general = general.concat(errors[k]); }
       if (k === "_general") s = 1;
@@ -103,7 +111,7 @@
     var boxes = selectedBoxes();
     $$('.extra').forEach(function (x) {
       var m = $('input[type=radio]:checked', x);
-      if (m && m.value) boxes.push({ _extra: x, dataset: { name: x.dataset.name + (m.value === "customer_supplied" ? " (customer-supplied)" : "") } });
+      if (m && m.value) boxes.push({ dataset: { name: x.dataset.name + (m.value === "customer_supplied" ? " (customer-supplied)" : "") } });
     });
     if (!boxes.length) { list.appendChild(el("li", { "class": "muted" }, "Nothing selected yet.")); return; }
     boxes.forEach(function (b) { list.appendChild(el("li", {}, b.dataset.name)); });
@@ -112,7 +120,6 @@
   // ---------------------------------------------------------------- step 2: details
   function buildDetails() {
     var host = $("#details-list");
-    // keep values the user already typed
     var kept = {};
     $$("[data-detail]", host).forEach(function (i) { kept[i.dataset.detail] = i.value; });
     host.textContent = "";
@@ -157,8 +164,52 @@
 
   function val(id) { var i = $('[data-detail="' + id + '"]'); return i ? i.value.trim() : ""; }
 
+  // ---------------------------------------------------------------- step 5: payment (display helpers only)
+  function arrangement() { var r = $('input[name="arrangement"]:checked'); return r ? r.value : null; }
+  function pickedMethods() { return $$("input[data-pay-method]:checked").map(function (i) { return i.value; }); }
+  function cents(v) { var n = parseFloat(v); return isFinite(n) ? Math.round(n * 100) : 0; }
+  function peso(c) {
+    return "\u20b1" + (c / 100).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function syncPayment() {
+    var a = arrangement();
+    var takesMoney = a === "full" || a === "partial";
+    $("#pay-methods-block").hidden = !takesMoney;
+    $("#pay-later-note").hidden = a !== "pay_later";
+    var picked = pickedMethods();
+    $$(".pay-entry").forEach(function (e) { e.hidden = !takesMoney || picked.indexOf(e.dataset.entry) === -1; });
+    var gc = $("#gcash-box"); if (gc) gc.hidden = !takesMoney || picked.indexOf("gcash") === -1;
+
+    $$("[data-pay-amount]").forEach(function (inp) {
+      var isOnlyMethod = a === "full" && picked.length === 1 && picked[0] === inp.dataset.payAmount;
+      if (isOnlyMethod && dueRaw && (!inp.value || inp.dataset.auto === "1")) { inp.value = dueRaw; inp.dataset.auto = "1"; }
+      else if (!isOnlyMethod && inp.dataset.auto === "1") { inp.value = ""; inp.dataset.auto = "0"; }
+    });
+
+    var summary = $("#pay-summary");
+    if (a && dueRaw !== null) {
+      var received = 0;
+      if (takesMoney) picked.forEach(function (code) { received += cents($('[data-pay-amount="' + code + '"]').value); });
+      $("#pay-received").textContent = peso(received);
+      $("#pay-balance").textContent = peso(cents(dueRaw) - received);
+      summary.hidden = false;
+    } else { summary.hidden = true; }
+  }
+
+  function buildPayment() {
+    var a = arrangement(), entries = [];
+    if (a === "full" || a === "partial") {
+      pickedMethods().forEach(function (code) {
+        var ref = $('[data-pay-ref="' + code + '"]');
+        entries.push({ method: code, amount: $('[data-pay-amount="' + code + '"]').value.trim(), reference: ref ? ref.value.trim() : "" });
+      });
+    }
+    return { arrangement: a, entries: entries };
+  }
+
   // ---------------------------------------------------------------- payload
-  function buildPayload(withCustomer) {
+  function buildPayload(withCustomer, withPayment) {
     var items = selectedBoxes().map(function (cb) {
       var k = key(cb);
       var base = { kind: cb.dataset.kind, id: cb.dataset.id, quantity: val(k + ":quantity"), instructions: val(k + ":instructions") };
@@ -181,6 +232,7 @@
       else payload.customer = null;
       var notes = $("#order-notes"); if (notes && notes.value.trim()) payload.notes = notes.value.trim();
     }
+    if (withPayment) payload.payment = buildPayment();
     return payload;
   }
 
@@ -249,7 +301,9 @@
     $("#dupe-box").hidden = false;
   }
 
-  // ---------------------------------------------------------------- step 5: review
+  // ---------------------------------------------------------------- step 6: review
+  function kv(dl, term, value) { dl.appendChild(el("dt", {}, term)); dl.appendChild(el("dd", {}, value)); }
+
   function renderReview(data) {
     var c = custMode === "existing" && customer ? customer.full_name + " \u00b7 " + customer.contact_number
       : $("#new-name").value.trim() + " \u00b7 " + $("#new-contact").value.trim() + " (new customer)";
@@ -270,6 +324,18 @@
     });
     $("#rev-subtotal").textContent = data.subtotal;
     $("#rev-total").textContent = data.total;
+
+    var p = data.payment, dl = $("#rev-payment");
+    dl.textContent = "";
+    if (p) {
+      kv(dl, "Arrangement", p.arrangement_label);
+      if (p.entries.length) {
+        p.entries.forEach(function (e) { kv(dl, e.method, e.amount + (e.reference ? " (ref. " + e.reference + ")" : "")); });
+      } else { kv(dl, "Payment method", "None (nothing collected now)"); }
+      kv(dl, "Amount received", p.received);
+      kv(dl, "Remaining balance", p.balance);
+      kv(dl, "Payment status", p.status_label);
+    }
   }
 
   // ---------------------------------------------------------------- actions
@@ -280,11 +346,11 @@
       buildDetails(); show(2); return;
     }
     if (step === 2 || step === 3) {
-      guarded(post(URLS.quote, buildPayload(false))).then(function (r) {
+      guarded(post(URLS.quote, buildPayload(false, false))).then(function (r) {
         if (!r) return;
         if (!r.body.ok) {
           var lowest = applyErrors(r.body.errors);
-          if (lowest < step) show(lowest), applyErrors(r.body.errors);
+          if (lowest < step) { show(lowest); applyErrors(r.body.errors); }
           return;
         }
         show(step + 1);
@@ -292,7 +358,7 @@
       return;
     }
     if (step === 4) {
-      guarded(post(URLS.quote, buildPayload(true))).then(function (r) {
+      guarded(post(URLS.quote, buildPayload(true, false))).then(function (r) {
         if (!r) return;
         if (!r.body.ok) {
           var lowest = applyErrors(r.body.errors);
@@ -300,7 +366,25 @@
           if (lowest < 4) { show(lowest); applyErrors(r.body.errors); }
           return;
         }
-        renderReview(r.body); show(5);
+        dueRaw = r.body.total_raw;                       // the SERVER total (shown, never sent back)
+        $("#pay-due").textContent = r.body.total;
+        show(5);
+      });
+      return;
+    }
+    if (step === 5) {
+      if (!arrangement()) { clearErrors(); showAlert(["Choose Full Payment, Partial Payment or Pay Later."]); return; }
+      if (arrangement() !== "pay_later" && !pickedMethods().length) {
+        clearErrors(); showAlert(["Choose at least one payment method."]); return;
+      }
+      guarded(post(URLS.quote, buildPayload(true, true))).then(function (r) {
+        if (!r) return;
+        if (!r.body.ok) {
+          var lowest = applyErrors(r.body.errors);
+          if (lowest < 5) { var errs = r.body.errors; show(lowest); applyErrors(errs); }
+          return;
+        }
+        renderReview(r.body); show(6);
       });
     }
   }
@@ -309,12 +393,15 @@
 
   function confirmOrder() {
     if (busy) return;
-    guarded(post(URLS.confirm, buildPayload(true))).then(function (r) {
+    var payload = buildPayload(true, true);
+    payload.submission_token = TOKEN;
+    guarded(post(URLS.confirm, payload)).then(function (r) {
       if (!r) return;
-      if (r.body.ok) { window.location.assign(r.body.redirect); return; }
-      var lowest = applyErrors(r.body.errors || { _general: ["Something went wrong."] });
-      if (r.body.duplicates && r.body.duplicates.length) { show(4); applyErrors(r.body.errors); showDuplicates(r.body.duplicates, (r.body.errors.customer_duplicate || [""])[0]); return; }
-      if (lowest < 5) { var errs = r.body.errors; show(lowest); applyErrors(errs); }
+      if (r.body.ok) { setBusy(true); window.location.assign(r.body.redirect); return; }
+      var errs = r.body.errors || { _general: ["Something went wrong."] };
+      var lowest = applyErrors(errs);
+      if (r.body.duplicates && r.body.duplicates.length) { show(4); applyErrors(errs); showDuplicates(r.body.duplicates, (errs.customer_duplicate || [""])[0]); return; }
+      if (lowest < 6) { show(lowest); applyErrors(errs); }
     });
   }
 
@@ -340,6 +427,12 @@
   $("#new-contact").addEventListener("input", function () { confirmDuplicate = false; });
   $("#dupe-create").addEventListener("click", function () {
     setMode("new"); confirmDuplicate = true; $("#dupe-box").hidden = true; next();
+  });
+
+  $$('input[name="arrangement"]').forEach(function (r) { r.addEventListener("change", syncPayment); });
+  $$("[data-pay-method]").forEach(function (c) { c.addEventListener("change", syncPayment); });
+  $$("[data-pay-amount]").forEach(function (i) {
+    i.addEventListener("input", function () { i.dataset.auto = "0"; syncPayment(); });
   });
 
   refreshCompatibility();

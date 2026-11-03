@@ -9,14 +9,16 @@
 {% set has_catalog = services or package_groups %}
 <div id="wizard" class="wizard"
      data-quote-url="{{ url_for('orders.quote') }}" data-confirm-url="{{ url_for('orders.confirm') }}"
-     data-search-url="{{ url_for('orders.customer_search') }}" data-csrf="{{ csrf_token() }}">
+     data-search-url="{{ url_for('orders.customer_search') }}" data-csrf="{{ csrf_token() }}"
+     data-token="{{ submission_token }}">
 
   <ol class="steps" aria-label="Order progress">
     <li class="step-pill is-current" data-pill="1"><span class="step-num">1</span><span class="step-name">Services</span></li>
     <li class="step-pill" data-pill="2"><span class="step-num">2</span><span class="step-name">Details</span></li>
     <li class="step-pill" data-pill="3"><span class="step-num">3</span><span class="step-name">Extras</span></li>
     <li class="step-pill" data-pill="4"><span class="step-num">4</span><span class="step-name">Customer</span></li>
-    <li class="step-pill" data-pill="5"><span class="step-num">5</span><span class="step-name">Review</span></li>
+    <li class="step-pill" data-pill="5"><span class="step-num">5</span><span class="step-name">Payment</span></li>
+    <li class="step-pill" data-pill="6"><span class="step-num">6</span><span class="step-name">Review</span></li>
   </ol>
 
   <div class="wizard-layout">
@@ -131,10 +133,85 @@
         </div>
       </section>
 
-      {# ---------------- STEP 5 ---------------- #}
+      {# ---------------- STEP 5: PAYMENT ---------------- #}
       <section class="wstep" data-step="5" hidden>
+        <h2>Payment</h2>
+        <p class="muted">Record what the customer is paying now. Enter only amounts you have actually received; nothing is marked as paid automatically.</p>
+        {% if not methods %}
+          <div class="alert alert-warn">No payment methods are configured. An Admin must run <span class="mono">flask --app run seed-payments</span> or add methods under Payments.</div>
+        {% endif %}
+        <div class="due-box"><span class="muted">Amount due</span><strong id="pay-due">&mdash;</strong></div>
+
+        <h3 class="group-title">How much is being paid now?</h3>
+        <div class="choice-grid choice-grid-3" id="pay-arrangements">
+          <label class="choice"><input class="sr-only" type="radio" name="arrangement" value="full">
+            <span class="choice-body"><span class="choice-top"><span class="tick">{{ icon('check', 14) }}</span></span>
+              <strong>Full Payment</strong><span class="muted small">The customer pays the whole amount now.</span></span></label>
+          {% if pay_settings.partial_enabled %}
+          <label class="choice"><input class="sr-only" type="radio" name="arrangement" value="partial">
+            <span class="choice-body"><span class="choice-top"><span class="tick">{{ icon('check', 14) }}</span></span>
+              <strong>Partial Payment</strong><span class="muted small">The customer pays part now; the balance stays outstanding.</span></span></label>
+          {% endif %}
+          {% if pay_settings.pay_later_enabled %}
+          <label class="choice"><input class="sr-only" type="radio" name="arrangement" value="pay_later">
+            <span class="choice-body"><span class="choice-top"><span class="tick">{{ icon('check', 14) }}</span></span>
+              <strong>Pay Later</strong><span class="muted small">Nothing is collected now. The whole amount stays due.</span></span></label>
+          {% endif %}
+        </div>
+
+        <div id="pay-later-note" class="alert alert-info" hidden>No payment will be recorded. The balance equals the order total and the order shows as Unpaid.</div>
+
+        <div id="pay-methods-block" hidden>
+          <h3 class="group-title">Payment method</h3>
+          <div class="chip-row">
+            {% for m in methods %}
+            <label class="chip"><input class="sr-only" type="checkbox" data-pay-method value="{{ m.code }}"><span>{{ m.label }}</span></label>
+            {% endfor %}
+          </div>
+          <p class="hint">Choose one method, or two to split the payment (for example Cash + GCash).</p>
+          {% for m in methods %}
+          <div class="pay-entry" data-entry="{{ m.code }}" hidden>
+            <h3>{{ m.label }}</h3>
+            <div class="form-grid">
+              <div class="field"><label for="pay-amt-{{ m.code }}">Amount received (PHP)</label>
+                <input class="input" id="pay-amt-{{ m.code }}" data-pay-amount="{{ m.code }}" type="number" inputmode="decimal" min="0.01" step="0.01" autocomplete="off">
+                <p class="field-error" data-error-for="payment:{{ m.code }}" hidden></p></div>
+              {% if m.code != 'cash' %}
+              <div class="field"><label for="pay-ref-{{ m.code }}">Reference no.{% if m.requires_reference %} <span class="req">*</span>{% else %} (optional){% endif %}</label>
+                <input class="input" id="pay-ref-{{ m.code }}" data-pay-ref="{{ m.code }}" maxlength="64" autocomplete="off"></div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+          {% if methods|selectattr('code', 'equalto', 'gcash')|list %}
+          <div class="gcash-box" id="gcash-box" hidden>
+            <img class="qr-small" src="{{ url_for('payments.qr') }}" alt="Payment QR code" width="140" height="140">
+            <div>
+              <strong>GCash payment details</strong>
+              {% if pay_settings.gcash_account_name %}<div>{{ pay_settings.gcash_account_name }}</div>{% endif %}
+              {% if pay_settings.gcash_account_number %}<div class="mono">{{ pay_settings.gcash_account_number }}</div>{% endif %}
+              {% if pay_settings.payment_instructions %}<p class="small">{{ pay_settings.payment_instructions }}</p>{% endif %}
+              {% if not (pay_settings.gcash_account_name or pay_settings.gcash_account_number or pay_settings.qr_filename) %}<p class="small muted">No GCash details have been configured yet (Admin: Payments &rarr; Settings).</p>{% endif %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+
+        <p class="field-error" data-error-for="payment" hidden></p>
+        <div class="pay-summary" id="pay-summary" hidden>
+          <div><span class="muted">Received</span><strong id="pay-received">&mdash;</strong></div>
+          <div><span class="muted">Remaining balance</span><strong id="pay-balance">&mdash;</strong></div>
+          <p class="hint">Shown for your convenience. The server checks every amount when you continue.</p>
+        </div>
+        {% if pay_settings.payment_notice %}<p class="hint">{{ pay_settings.payment_notice }}</p>{% endif %}
+      </section>
+
+      {# ---------------- STEP 6: REVIEW ---------------- #}
+      <section class="wstep" data-step="6" hidden>
         <h2>Review order</h2>
         <div class="review-block"><div class="card-head"><h3>Customer</h3><button type="button" class="link-btn" data-goto="4">Edit</button></div><p id="rev-customer"></p></div>
+        <div class="review-block"><div class="card-head"><h3>Order</h3></div>
+          <p class="muted">Order reference: assigned when you confirm.</p></div>
         <div class="review-block"><div class="card-head"><h3>Items</h3><button type="button" class="link-btn" data-goto="1">Edit services</button></div>
           <div class="table-wrap"><table class="table"><thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
             <tbody id="rev-lines"></tbody>
@@ -142,6 +219,8 @@
             <tr class="total-row"><td colspan="3" class="num">Total</td><td class="num" id="rev-total"></td></tr></tfoot></table></div>
           <p class="hint">The total is calculated by the server when you confirm.</p>
         </div>
+        <div class="review-block"><div class="card-head"><h3>Payment</h3><button type="button" class="link-btn" data-goto="5">Edit</button></div>
+          <dl class="kv" id="rev-payment"></dl></div>
         <div class="field"><label for="order-notes">Order notes (optional)</label><textarea class="input" id="order-notes" maxlength="500"></textarea></div>
       </section>
 
@@ -149,7 +228,7 @@
         <button type="button" class="btn btn-outline" id="btn-back" hidden>{{ icon('arrow-left', 16) }}<span>Back</span></button>
         <span class="spacer"></span>
         <button type="button" class="btn btn-primary" id="btn-next">{# label set by JS #}<span>Next</span>{{ icon('arrow-right', 16) }}</button>
-        <button type="button" class="btn btn-primary" id="btn-confirm" hidden>{{ icon('check', 16) }}<span>Confirm order</span></button>
+        <button type="button" class="btn btn-primary" id="btn-confirm" hidden>{{ icon('check', 16) }}<span>Confirm and generate stub</span></button>
       </div>
     </div>
 

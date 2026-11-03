@@ -45,8 +45,102 @@
 
   <div>
     <div class="card">
+      <div class="card-head"><h2>Laundry receipt</h2><span class="pill {{ 'pill-on' if order.received_at else 'pill-warn' }}">{{ 'Received' if order.received_at else 'Awaiting confirmation' }}</span></div>
+      {% if order.received_at %}
+        <p class="muted">Received {{ order.received_at|localdt }}{% if order.received_by %} by {{ order.received_by.full_name or order.received_by.email }}{% endif %}.</p>
+      {% else %}
+        <p class="muted">Confirm once the physical laundry is in the shop. Status changes unlock after this. It does not affect payment.</p>
+        <form method="post" action="{{ url_for('orders.confirm_received', reference=order.reference) }}"
+              data-confirm="Confirm that the laundry for {{ order.reference }} has been received by the shop?" data-confirm-title="Confirm laundry received">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-primary" type="submit">{{ icon('check', 16) }}<span>Laundry received</span></button>
+        </form>
+      {% endif %}
+    </div>
+
+    <div class="card" id="payment">
+      <div class="card-head"><h2>Payment</h2><span class="status status-{{ order.payment_status|payment_status_tone }}">{{ order.payment_status|payment_status_label }}</span></div>
+      {% if order.is_payment_tracked %}
+      <dl class="kv">
+        <dt>Order total</dt><dd>{{ order.total|peso }}</dd>
+        <dt>Received</dt><dd>{{ order.amount_paid|peso }}</dd>
+        <dt>Balance due</dt><dd>{{ order.balance_due|peso }}</dd>
+        <dt>Arrangement</dt><dd>{{ order.payment_arrangement|arrangement_label }}</dd>
+      </dl>
+
+      <h3 class="subhead">Payment history</h3>
+      {% if order.payments %}
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>When / by</th><th>Method</th><th class="num">Amount</th><th></th></tr></thead>
+        <tbody>
+        {% for p in order.payments %}
+          <tr class="{% if p.kind == 'reversal' or p.reversal %}is-reversed{% endif %}">
+            <td>{{ p.paid_at|localdt }}<span class="sub">{{ (p.recorded_by.full_name or p.recorded_by.email) if p.recorded_by else 'Unknown user' }}</span></td>
+            <td>{{ p.method_label }}{% if p.reference %}<span class="sub">Ref: {{ p.reference }}</span>{% endif %}{% if p.notes %}<span class="sub">{{ p.notes }}</span>{% endif %}</td>
+            <td class="num">{% if p.kind == 'reversal' %}-{% endif %}{{ p.amount|peso }}</td>
+            <td class="num">
+              {% if p.kind == 'reversal' %}<span class="pill pill-off">Reversal</span>
+              {% elif p.reversal %}<span class="pill pill-off">Reversed</span>
+              {% elif is_admin %}
+                <details class="correct">
+                  <summary>Correct</summary>
+                  <form method="post" action="{{ url_for('payments.reverse', payment_id=p.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <label class="sr-only" for="reason-{{ p.id }}">Reason</label>
+                    <input class="input" id="reason-{{ p.id }}" name="reason" maxlength="255" placeholder="Reason for reversal" required>
+                    <button class="btn btn-danger btn-sm" type="submit">Reverse payment</button>
+                  </form>
+                </details>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody></table></div>
+      {% else %}
+        <p class="muted">No payments recorded yet.</p>
+      {% endif %}
+
+      {% if order.balance_due > 0 %}
+      <h3 class="subhead">Record a payment</h3>
+      <form method="post" action="{{ url_for('orders.record_payment', reference=order.reference) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
+        <div class="form-grid">
+          <div class="field"><label for="pm-1">Method</label>
+            <select class="input" id="pm-1" name="method">{% for m in methods %}<option value="{{ m.code }}">{{ m.label }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="pa-1">Amount received (PHP)</label>
+            <input class="input" id="pa-1" name="amount" type="number" inputmode="decimal" step="0.01" min="0.01" max="{{ order.balance_due }}" required></div>
+          <div class="field span-2"><label for="pr-1">Reference no. (optional)</label>
+            <input class="input" id="pr-1" name="reference" maxlength="64" autocomplete="off"></div>
+        </div>
+        <details class="correct">
+          <summary>Split across a second method</summary>
+          <div class="form-grid">
+            <div class="field"><label for="pm-2">Second method</label>
+              <select class="input" id="pm-2" name="method"><option value="">None</option>{% for m in methods %}<option value="{{ m.code }}">{{ m.label }}</option>{% endfor %}</select></div>
+            <div class="field"><label for="pa-2">Amount (PHP)</label>
+              <input class="input" id="pa-2" name="amount" type="number" inputmode="decimal" step="0.01" min="0.01"></div>
+            <div class="field span-2"><label for="pr-2">Reference no. (optional)</label>
+              <input class="input" id="pr-2" name="reference" maxlength="64" autocomplete="off"></div>
+          </div>
+        </details>
+        <div class="field"><label for="pn">Note (optional)</label><input class="input" id="pn" name="notes" maxlength="255"></div>
+        <p class="hint">Balance due: {{ order.balance_due|peso }}. Amounts above the balance are rejected.</p>
+        <button class="btn btn-primary" type="submit">Record payment</button>
+      </form>
+      {% elif order.payment_status == 'paid' %}
+        <p class="muted">This order is fully paid.</p>
+      {% endif %}
+      {% else %}
+        <p class="muted">This order was created before payment recording was introduced, so its payments are not tracked.</p>
+      {% endif %}
+    </div>
+
+    <div class="card">
       <h2>Update status</h2>
-      {% if transitions %}
+      {% if not order.received_at %}
+        <p class="muted">Confirm that the laundry was received before changing the order status.</p>
+      {% elif transitions %}
       <form class="status-form" method="post" action="{{ url_for('orders.update_status', reference=order.reference) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="field"><label for="note">Note {% if transitions|selectattr(1)|list %}<span class="muted">(required when moving an order back)</span>{% else %}<span class="muted">(optional)</span>{% endif %}</label>

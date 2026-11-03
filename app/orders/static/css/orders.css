@@ -92,3 +92,96 @@
 .stub-qr .small {
     font-size: .75rem;
 }
+
+/* ---------- payment step, panels and pages ---------- */
+.choice-grid-3 { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.due-box { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .9rem 1.1rem; margin: 1rem 0; border: 1px solid #bfdbfe; border-radius: var(--radius); background: var(--primary-soft); }
+.due-box strong { font-size: 1.6rem; color: var(--navy); }
+.chip-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .4rem; }
+.chip span { display: inline-block; padding: .5rem 1.1rem; border: 2px solid var(--border); border-radius: 999px; font-weight: 700; cursor: pointer; background: var(--white); }
+.chip:hover span { border-color: #93b4f5; }
+.chip input:checked + span { border-color: var(--primary); background: var(--primary-soft); color: var(--primary-dark); }
+.chip input:focus-visible + span { outline: 3px solid rgba(37, 99, 235, .45); outline-offset: 2px; }
+.pay-entry { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin: .8rem 0; background: #fcfdff; }
+.pay-entry h3 { margin-bottom: .5rem; }
+.pay-summary { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-top: 1rem; padding: .9rem 1.1rem; border: 1px solid var(--border); border-radius: var(--radius); }
+.pay-summary strong { display: block; font-size: 1.25rem; color: var(--navy); }
+.pay-summary .hint { flex-basis: 100%; margin: 0; }
+.gcash-box { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin: .8rem 0; padding: 1rem; border: 1px dashed #93b4f5; border-radius: var(--radius); background: var(--primary-soft); }
+.qr-small, .qr-preview { object-fit: contain; background: #fff; border: 1px solid var(--border); border-radius: 8px; }
+.qr-small { width: 140px; height: 140px; }
+.qr-preview { width: 160px; height: 160px; }
+.qr-panel { display: flex; gap: 1rem; align-items: flex-start; flex-wrap: wrap; margin-bottom: 1rem; }
+.subhead { margin: 1.2rem 0 .4rem; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+tr.is-reversed td { color: var(--muted); }
+details.correct { margin: .4rem 0 .8rem; }
+details.correct summary { cursor: pointer; color: var(--primary-dark); font-weight: 600; font-size: .85rem; }
+details.correct form { display: grid; gap: .5rem; margin-top: .5rem; text-align: left; }
+.remove-qr, .add-method { margin-top: 1rem; }
+.filters .input { max-width: 190px; }
+
+
+/* 80mm thermal receipt printing */
+@media print {
+    @page {
+        size: 80mm auto;
+        margin: 3mm;
+    }
+
+    html,
+    body.stub-page {
+        width: 74mm;
+        margin: 0;
+        padding: 0;
+        background: #fff;
+        color: #000;
+    }
+
+    body.stub-page {
+        font-family: Arial, sans-serif;
+        font-size: 9pt;
+        line-height: 1.35;
+    }
+
+    .stub {
+        width: 74mm;
+        max-width: 74mm;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+        font-size: 9pt;
+        overflow-wrap: break-word;
+    }
+
+    .stub h1 {
+        font-size: 14pt;
+        text-align: center;
+    }
+
+    .stub table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .stub td {
+        padding: 2px 0;
+        vertical-align: top;
+    }
+
+    .stub-qr {
+        text-align: center;
+        break-inside: avoid;
+    }
+
+    .stub-qr img {
+        width: 32mm;
+        height: 32mm;
+        object-fit: contain;
+    }
+
+    .stub-actions {
+        display: none !important;
+    }
+}
+

@@ -57,6 +57,18 @@
                 <strong>Total</strong>
                 <strong>{{ order.total|peso }}</strong>
             </div>
+            {% if order.is_payment_tracked %}
+            <div class="total-row">
+                <span>Payment</span>
+                <strong>{{ order.payment_status|payment_status_label }}</strong>
+            </div>
+            {% if order.balance_due > 0 %}
+            <div class="total-row">
+                <span>Balance due</span>
+                <strong>{{ order.balance_due|peso }}</strong>
+            </div>
+            {% endif %}
+            {% endif %}
         </section>
 
         <footer class="tracking-footer">

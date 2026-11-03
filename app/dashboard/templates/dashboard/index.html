@@ -20,6 +20,10 @@
   {% if not admin_area %}<div class="stat"><div class="stat-label">Pending orders</div><div class="stat-value">{{ stats.pending }}</div></div>{% endif %}
   <div class="stat"><div class="stat-label">Processing</div><div class="stat-value">{{ stats.processing }}</div></div>
   <div class="stat"><div class="stat-label">Ready for pickup</div><div class="stat-value">{{ stats.ready }}</div></div>
+  <div class="stat"><div class="stat-label">Awaiting receipt confirmation</div><div class="stat-value">{{ stats.awaiting_receipt }}</div></div>
+  <div class="stat"><div class="stat-label">Orders with a balance</div><div class="stat-value">{{ stats.owing_count }}</div></div>
+  <div class="stat"><div class="stat-label">Outstanding balance</div><div class="stat-value">{{ stats.owing_total|peso }}</div></div>
+  {% if admin_area %}<div class="stat"><div class="stat-label">Collected today</div><div class="stat-value">{{ stats.collected_today|peso }}</div></div>{% endif %}
 </div>
 
 <div class="grid {% if admin_area %}grid-2{% endif %}">

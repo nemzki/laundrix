@@ -19,7 +19,9 @@
       <a class="nav-link {% if bp == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard.index') }}">{{ icon('dashboard') }}<span>Dashboard</span></a>
       <a class="nav-link {% if request.endpoint == 'orders.new_order' %}active{% endif %}" href="{{ url_for('orders.new_order') }}">{{ icon('plus') }}<span>New Order</span></a>
       <a class="nav-link {% if bp == 'orders' and request.endpoint not in ('orders.new_order', 'orders.customers') %}active{% endif %}" href="{{ url_for('orders.index') }}">{{ icon('orders') }}<span>{{ 'Order Records' if is_admin else 'Manage Orders' }}</span></a>
+      <a class="nav-link {% if request.endpoint == 'payments.outstanding' %}active{% endif %}" href="{{ url_for('payments.outstanding') }}">{{ icon('wallet') }}<span>Outstanding Balances</span></a>
       {% if is_admin %}
+        <a class="nav-link {% if request.endpoint in ('payments.records', 'payments.summary', 'payments.settings') %}active{% endif %}" href="{{ url_for('payments.records') }}">{{ icon('chart') }}<span>Payments</span></a>
         <a class="nav-link {% if bp == 'catalog' %}active{% endif %}" href="{{ url_for('catalog.index') }}">{{ icon('tag') }}<span>Services &amp; Pricing</span></a>
         <a class="nav-link {% if request.endpoint == 'orders.customers' %}active{% endif %}" href="{{ url_for('orders.customers') }}">{{ icon('users') }}<span>Customers</span></a>
       {% endif %}
