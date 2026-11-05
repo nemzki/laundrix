@@ -52,6 +52,15 @@ class BaseConfig:
     STAFF_LOGIN_WINDOW_SECONDS = int(os.getenv("STAFF_LOGIN_WINDOW_SECONDS", "600"))
     STAFF_ENROLL_TOKEN_HOURS = int(os.getenv("STAFF_ENROLL_TOKEN_HOURS", "24"))
 
+    # --- Administrator bootstrap + username/password sign-in ---
+    # The initial administrator is created ONLY by `flask bootstrap-admin`, from these values.
+    # The password is never stored anywhere except as a hash, and is never re-applied once the
+    # account exists (rotate it with `flask rotate-admin-password`).
+    ADMIN_PASSWORD_LOGIN_ENABLED = _bool("ADMIN_PASSWORD_LOGIN_ENABLED", True)
+    INITIAL_ADMIN_USERNAME = (os.getenv("INITIAL_ADMIN_USERNAME") or "admin").strip().lower()
+    INITIAL_ADMIN_PASSWORD = os.getenv("INITIAL_ADMIN_PASSWORD")
+    INITIAL_ADMIN_EMAIL = (os.getenv("INITIAL_ADMIN_EMAIL") or "").strip().lower() or None
+
     # --- Identity verification (ID + liveness + face match via Didit hosted flow) ---
     # Disabled by default so the app boots without any provider credentials.
     IDV_ENABLED = _bool("IDV_ENABLED", False)

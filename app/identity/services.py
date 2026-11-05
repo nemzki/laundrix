@@ -323,6 +323,11 @@ def apply_provider_status(
             if new in (st.IdvStatus.VERIFIED, st.IdvStatus.REJECTED):
                 v.decided_at = utcnow()
             v.completed_at = None if new == st.IdvStatus.IN_PROGRESS else utcnow()
+            if new == st.IdvStatus.VERIFIED and v.purpose == PURPOSE_KYC:
+                # Staff Management: a newly created staff account now waits for an administrator.
+                # No-op for every other account (including already-active staff and admins).
+                from app.staff_admin.services import mark_identity_verified
+                mark_identity_verified(v.user)
 
     elif plan.outcome == st.INVALID:
         log.warning("Ignored invalid transition %s -> %s (verification %s)",

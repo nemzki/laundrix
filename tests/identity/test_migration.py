@@ -23,6 +23,11 @@ CHAIN = [
     "11b2bcbca728",
 ]
 IDENTITY_TABLES = {"identity_verifications", "identity_verification_events"}
+# Later revisions that change the tables compared in test_the_full_chain_matches_the_models.
+# The revisions between CHAIN and these (orders/payments) never touch those tables, and the order
+# tracking migration is MySQL-only, so they are not replayed on SQLite here. The guard test
+# test_skipped_revisions_do_not_touch_the_compared_tables enforces that assumption.
+LATER_REVISIONS_ON_COMPARED_TABLES = ["e7b3c9a4d1f6"]
 FACE_COLUMNS = {"face_id", "face_enrolled_at", "biometric_consent_at"}
 
 
@@ -131,7 +136,7 @@ def test_the_full_chain_matches_the_models(conn):
     from app.extensions import db
     import app.models  # noqa: F401  (registers every table on db.metadata)
 
-    _upgrade(conn, *CHAIN)
+    _upgrade(conn, *CHAIN, *LATER_REVISIONS_ON_COMPARED_TABLES)
     insp = sa.inspect(conn)
     for name in ["users", "auth_events", "staff_credentials", *IDENTITY_TABLES]:
         model_cols = {c.name: c for c in db.metadata.tables[name].columns}
@@ -139,3 +144,46 @@ def test_the_full_chain_matches_the_models(conn):
         assert set(model_cols) == set(db_cols), f"{name}: columns differ"
         for col, mc in model_cols.items():
             assert mc.nullable == db_cols[col]["nullable"], f"{name}.{col}: nullability differs"
+
+def _revision_graph():
+    """{revision: down_revision} read from the real migration files."""
+    import re
+    graph = {}
+    for path in VERSIONS.glob("*.py"):
+        text = path.read_text(encoding="utf-8")
+        rev = re.search(r"^revision\s*=\s*['\"](\w+)['\"]", text, re.M).group(1)
+        down = re.search(r"^down_revision\s*=\s*(?:None|['\"](\w+)['\"])", text, re.M).group(1)
+        graph[rev] = (down, path)
+    return graph
+
+
+def test_the_revision_graph_is_one_straight_line_with_a_single_head():
+    graph = _revision_graph()
+    heads = [r for r in graph if not any(d == r for d, _ in graph.values())]
+    roots = [r for r, (d, _) in graph.items() if d is None]
+    assert len(heads) == 1 and len(roots) == 1
+    assert len({d for d, _ in graph.values() if d}) == len(graph) - 1          # no revision has two children
+    seen, cur = [], heads[0]
+    while cur:
+        seen.append(cur)
+        cur = graph[cur][0]
+    assert set(seen) == set(graph)                                              # every revision reachable
+    assert seen[::-1][: len(CHAIN)] == CHAIN                                    # identity chain is the real start
+
+
+def test_skipped_revisions_do_not_touch_the_compared_tables():
+    import re
+    graph = _revision_graph()
+    for rev in LATER_REVISIONS_ON_COMPARED_TABLES:
+        cur = rev
+        while cur and cur != CHAIN[-1]:
+            cur = graph[cur][0]
+        assert cur == CHAIN[-1], f"{rev} must descend from {CHAIN[-1]}"
+    skipped = set(graph) - set(CHAIN) - set(LATER_REVISIONS_ON_COMPARED_TABLES)
+    touching = re.compile(
+        r"(alter_table|add_column|drop_column|alter_column|create_index|drop_index)\(\s*['\"]"
+        r"(users|auth_events|staff_credentials|identity_verifications|identity_verification_events)['\"]")
+    for rev in skipped:
+        source = graph[rev][1].read_text(encoding="utf-8")
+        assert not touching.search(source), f"{rev} changes a compared table; add it to LATER_REVISIONS_ON_COMPARED_TABLES"
+

@@ -1,0 +1,31 @@
+{% extends "core/base.html" %}
+{% block title %}Administrator sign-in · Laundrix{% endblock %}
+{% block head %}
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="{{ url_for('auth.static', filename='css/auth.css') }}">
+{% endblock %}
+{% block body_class %}centered{% endblock %}
+
+{% block body %}
+<main class="auth-card">
+  <a class="auth-brand" href="{{ url_for('landing.index') }}"><span>L</span>Laundrix</a>
+  <h1>Administrator sign-in</h1>
+  <p class="muted">Enter your administrator username and password.</p>
+
+  <form method="post" novalidate class="auth-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label for="username">Username</label>
+    <input id="username" name="username" type="text" autocomplete="username" required autofocus
+           maxlength="64" value="{{ request.form.get('username', '') }}">
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256">
+
+    <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+  </form>
+
+  <p class="staff-access"><a href="{{ url_for('auth.login') }}">Sign in with Google instead</a></p>
+  <p class="fineprint">Access is limited to administrator accounts.</p>
+</main>
+{% endblock %}

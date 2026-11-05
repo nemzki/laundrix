@@ -1,4 +1,4 @@
-from app.models.user import Role, User
+from app.models.user import AccountStatus, Role, User
 from app.models.staff_credential import StaffCredential
 from app.models.auth_event import AuthEvent
 from app.models.identity_verification import IdentityVerification, IdentityVerificationEvent
@@ -12,7 +12,7 @@ from app.models.payment import (
 )
 
 __all__ = [
-    "Role", "User", "StaffCredential", "AuthEvent",
+    "AccountStatus", "Role", "User", "StaffCredential", "AuthEvent",
     "IdentityVerification", "IdentityVerificationEvent",
     "ICON_KEYS", "PackageMeasure", "PricingUnit", "Service", "ServiceAddon", "ServicePackage",
     "Customer", "ItemType", "Order", "OrderItem", "OrderStatus", "OrderStatusHistory",

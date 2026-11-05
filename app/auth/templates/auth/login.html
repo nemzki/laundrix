@@ -9,7 +9,7 @@
 <main class="auth-card">
   <a class="auth-brand" href="{{ url_for('landing.index') }}"><span>L</span>Laundrix</a>
   <h1>Welcome back</h1>
-  <p class="muted">Sign in with your Google account to continue.</p>
+  <p class="muted">Sign in to manage orders, payments and your team.</p>
 
   <a class="google-btn" id="googleBtn" href="{{ url_for('auth.google_login') }}">
     <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
@@ -21,7 +21,20 @@
     <span>Continue with Google</span>
   </a>
 
-  <p class="staff-access"><a href="{{ url_for('staff_auth.login') }}">Staff Portal sign-in</a></p>
+  <div class="auth-divider" role="separator" aria-label="or"><span>OR</span></div>
+
+  <form class="auth-form" method="post" action="{{ url_for('auth.login') }}" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label for="identifier">Username or email</label>
+    <input id="identifier" name="identifier" type="text" inputmode="email" autocomplete="username"
+           autocapitalize="none" spellcheck="false" maxlength="254" required value="{{ identifier or '' }}">
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" maxlength="256" required>
+
+    <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+  </form>
 
   <p class="fineprint">Access is limited to accounts authorized by your administrator.</p>
 </main>

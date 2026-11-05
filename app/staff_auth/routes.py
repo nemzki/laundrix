@@ -12,6 +12,8 @@ from app.identity import services as idv
 from app.identity.statuses import IdvStatus
 from app.models import IdentityVerification, StaffCredential, User
 from app.models.staff_credential import utcnow
+from app.auth.credentials import INVALID, authenticate, establish_session
+from app.models import Role
 from app.staff_auth import bp
 from app.staff_auth.services import (
     ENROLL_KEY, GENERIC_FAIL, LOCKED_MSG,
@@ -77,7 +79,9 @@ def _naive_utc(epoch: float) -> datetime:
 @bp.route("/login", methods=["GET", "POST"])
 @limiter.limit(LOGIN_LIMIT, methods=["POST"])
 def login():
-    """Staff login using email and password."""
+    """Legacy staff sign-in page (email + password). No longer linked from the public login page,
+    which accepts the same credentials. Both use app/auth/credentials.py, so lockout, enrollment
+    and account-status rules are identical."""
     if current_user.is_authenticated:
         return redirect(url_for("dashboard.index"))
 
@@ -89,58 +93,20 @@ def login():
             flash("Invalid email or password.", "error")
             return render_template("staff_auth/login_email.html"), 400
 
-        user = db.session.execute(
-            db.select(User).filter_by(email=email)
-        ).scalar_one_or_none()
+        outcome = authenticate(email, password, only_role=Role.STAFF)
+        if not outcome.ok:
+            message = "Invalid email or password." if outcome.kind == INVALID and not outcome.just_locked else outcome.message
+            flash(message, "error")
+            return render_template("staff_auth/login_email.html"), outcome.http_status
 
-        cred = getattr(user, "staff_credential", None) if user else None
-
-        # Authenticate only active staff accounts with credentials.
-        if (
-            not user
-            or user.role != "staff"
-            or not user.is_active
-            or not cred
-        ):
-            log_event("password_login_failed", False, user=user, email=email)
-            flash("Invalid email or password.", "error")
-            return render_template("staff_auth/login_email.html"), 401
-
-        if cred.is_locked:
-            log_event("password_login_locked", False, user=user, email=email)
-            flash(LOCKED_MSG, "error")
-            return render_template("staff_auth/login_email.html"), 423
-
-        if not verify_staff_password(cred, password):
-            locked = register_failure(cred)
-            log_event("password_login_failed", False, user=user, email=email)
-
-            flash(LOCKED_MSG if locked else "Invalid email or password.", "error")
-            return render_template("staff_auth/login_email.html"), 401
-
-        # A password alone must not bypass one-time identity enrollment.
-        if not is_enrolled(user):
-            log_event("password_login_not_enrolled", False, user=user, email=email)
-            flash(
-                "Your account setup is incomplete. Please contact your administrator.",
-                "error",
-            )
-            return render_template("staff_auth/login_email.html"), 403
-
-        cred.failed_attempts = 0
-        cred.locked_until = None
-        user.last_login_at = utcnow()
-        db.session.commit()
-
-        log_event("password_login_success", True, user=user, email=email)
         clear_wizard()
-        login_user(user)
+        if not establish_session(outcome.user):
+            flash("Unable to sign in. Please contact your administrator.", "error")
+            return render_template("staff_auth/login_email.html"), 403
         return redirect(url_for("dashboard.index"))
 
     clear_wizard()
     return render_template("staff_auth/login_email.html")
-
-
 
 
 @bp.route("/verify-id", methods=["GET", "POST"])
