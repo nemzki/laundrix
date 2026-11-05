@@ -546,3 +546,42 @@ No new environment variables are required.
 
 ### Known limitations
 Refunds, discounts, per-order cancellation/void, and "start tracking" for legacy orders are not implemented.
+
+---
+
+## Staff Management and unified sign-in
+
+### One sign-in page
+`/auth/login` is the only public sign-in page: **Continue with Google**, or a **username or email + password**.
+Administrators and staff use the same form and are sent to their own dashboards. Google sign-in is unchanged:
+it only signs in accounts an administrator already created, never creates one, and never changes a role.
+The old `/staff/login` and `/auth/admin` pages still work (they share the same code) but are no longer linked.
+
+* Administrators sign in with their **username** (e.g. `admin`) or email. Create the first one with
+  `python -m flask --app run bootstrap-admin` (see `.env.example`), rotate it with `rotate-admin-password`.
+* Staff sign in with their **email**. (Staff Management does not assign usernames; one is honoured only if an
+  account already has it.)
+* Wrong passwords, unknown users and blocked accounts all get the same generic message. Repeated failures lock
+  the account temporarily. Pending staff are told their status only after entering the correct password.
+
+### Staff lifecycle (Admin > Staff Management, `/admin/staff/`)
+1. **Add staff** (name + email). The account starts as *Pending verification* and a one-time enrollment link is shown
+   **once** (copy button, expiry shown). Only a hash is stored; lost links are replaced from the staff member's page.
+2. The staff member opens the link, sets a password, consents and completes Didit ID verification.
+3. When Didit approves the ID the account becomes *Pending approval* and appears in the dashboard.
+4. An administrator **approves** it (re-checks Didit) and the account is *Active*: the staff member can sign in.
+
+Other actions (all admin-only, confirmed in the browser, audited): **reject** (reason), **suspend** (reason; the
+person is signed out on their next request), **reactivate** (only if identity-verified), **deactivate** (reason;
+the record is kept for orders and payments), **new enrollment link**. Administrators cannot act on themselves
+or on other administrators, and no role can be changed from this module.
+`is_active` (may hold a session) and `account_status` (lifecycle) are set together by the service and enforced
+on every request by the account gate (`app/core/account_gate.py`).
+
+Accounts created with `flask create-staff` keep their old behaviour (active as soon as they enrol); only accounts
+created from Staff Management go through approval. Everything is recorded in `auth_events` (actor, target, action,
+time, non-sensitive detail; never passwords or tokens).
+
+### Migrations
+No new migration was needed for this feature (the columns were added by `e7b3c9a4d1f6`).
+Run `python -m flask --app run db upgrade` as usual.

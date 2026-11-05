@@ -8,3 +8,4 @@ bp = Blueprint(
 )
 
 from app.auth import routes  # noqa: E402,F401
+from app.auth import admin_login  # noqa: E402,F401

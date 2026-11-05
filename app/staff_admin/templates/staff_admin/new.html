@@ -1,0 +1,18 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% from "core/_forms.html" import text %}
+{% block title %}Add staff · Laundrix{% endblock %}
+{% block page_title %}Add staff{% endblock %}
+{% block page_subtitle %}The staff member sets a password and completes ID verification through a one-time link.{% endblock %}
+{% block page_actions %}<a class="btn btn-outline" href="{{ url_for('staff_admin.index') }}">{{ icon('arrow-left', 16) }}<span>Back</span></a>{% endblock %}
+{% block content %}
+<form class="card form-card" method="post" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+  {{ text('Full name', 'full_name', values, {}, required=True, maxlength=150) }}
+  {{ text('Email', 'email', values, {}, type='email', required=True, maxlength=254, hint='Used to sign in. Staff cannot register themselves; only an administrator can create accounts.') }}
+  <p class="inline-note">The new account starts as <strong>Pending verification</strong>. After the staff member completes ID verification it moves to <strong>Pending approval</strong>, and you approve it from this page.</p>
+  <div class="btn-row"><button class="btn btn-primary" type="submit">Create account and generate link</button>
+    <a class="btn btn-outline" href="{{ url_for('staff_admin.index') }}">Cancel</a></div>
+</form>
+{% endblock %}

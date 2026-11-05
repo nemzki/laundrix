@@ -5,6 +5,7 @@ from flask import (
     flash,
     redirect,
     render_template,
+    request,
     session,
     url_for,
 )
@@ -16,6 +17,7 @@ from flask_login import (
 )
 
 from app.auth import bp
+from app.auth.credentials import authenticate, establish_session
 from app.auth.services import authorize_google_user
 from app.extensions import limiter, oauth
 from app.models import Role
@@ -32,8 +34,10 @@ def _dashboard_endpoint(user):
     return None
 
 
-@bp.route("/login")
+@bp.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute; 40 per hour", methods=["POST"])
 def login():
+    """One sign-in page for everyone: Google, or username/email + password (admins and staff)."""
     if current_user.is_authenticated:
         endpoint = _dashboard_endpoint(current_user)
 
@@ -43,6 +47,20 @@ def login():
         logout_user()
         session.clear()
         flash("Your account has an unsupported role.", "error")
+
+    if request.method == "POST":
+        identifier = request.form.get("identifier", "")
+        outcome = authenticate(identifier, request.form.get("password", ""))
+        if not outcome.ok:
+            flash(outcome.message, "error")
+            return render_template("auth/login.html", identifier=identifier[:254]), outcome.http_status
+
+        endpoint = _dashboard_endpoint(outcome.user)
+        if endpoint is None or not establish_session(outcome.user):
+            session.clear()
+            flash("Unable to sign in. Please contact your administrator.", "error")
+            return render_template("auth/login.html", identifier=identifier[:254]), 403
+        return redirect(url_for(endpoint))
 
     return render_template("auth/login.html")
 

@@ -1,0 +1,9 @@
+.copy-row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: stretch; }
+.copy-row .input { flex: 1 1 320px; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .85rem; }
+.action-grid { display: grid; gap: 1rem; }
+.action-box { border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; background: #fcfdff; }
+.action-box h3 { margin-bottom: .25rem; }
+.action-box p { margin: 0 0 .7rem; }
+.action-box.danger { border-color: #fecaca; background: #fffafa; }
+.action-box .field { margin-bottom: .7rem; }
+.inline-note { color: var(--muted); font-size: .86rem; }

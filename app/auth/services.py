@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from flask import current_app
 
 from app.extensions import db
-from app.models import Role, User
+from app.models import AccountStatus, Role, User
 
 DENIED = "This Google account is not authorized for Laundrix. Please contact your administrator."
 
@@ -32,9 +32,11 @@ def authorize_google_user(userinfo: dict):
 
     if user is None or not user.is_active:
         return None, DENIED
+    if user.account_status != AccountStatus.ACTIVE:      # pending, rejected, suspended, deactivated
+        return None, DENIED
 
     if user.role == Role.STAFF and not current_app.config.get("STAFF_GOOGLE_LOGIN_ALLOWED"):
-        return None, "Staff accounts sign in through the Staff Portal."
+        return None, "Staff Portal accounts sign in with their email and password instead of Google."
 
     user.google_sub = sub
     user.email = email

@@ -30,6 +30,9 @@ def create_app(config_class=None):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     _init_extensions(app)
+    from app.core.account_gate import enforce_account_status
+
+    app.before_request(enforce_account_status)   # default-deny account-state check on every request
     _register_blueprints(app)
     _register_cli(app)
     _configure_logging(app)
@@ -79,6 +82,7 @@ def _register_blueprints(app):
     from app.landing import bp as landing_bp
     from app.orders import bp as orders_bp
     from app.payments import bp as payments_bp
+    from app.staff_admin import bp as staff_admin_bp
     from app.staff_auth import bp as staff_bp
     from app.tracking import bp as tracking_bp
 
@@ -91,6 +95,7 @@ def _register_blueprints(app):
     app.register_blueprint(catalog_bp, url_prefix="/admin/services")
     app.register_blueprint(orders_bp, url_prefix="/orders")
     app.register_blueprint(payments_bp, url_prefix="/payments")
+    app.register_blueprint(staff_admin_bp, url_prefix="/admin/staff")
     app.register_blueprint(tracking_bp)
 
 def _register_cli(app):

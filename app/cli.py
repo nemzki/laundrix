@@ -22,6 +22,10 @@ def register_commands(app):
 
     register_payment_commands(app)
 
+    from app.auth.cli import register_auth_commands
+
+    register_auth_commands(app)
+
     @app.cli.command("check-db")
     def check_db():
         """Test the MySQL connection."""

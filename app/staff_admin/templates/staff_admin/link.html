@@ -1,0 +1,29 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% block title %}Enrollment link · Laundrix{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('staff_admin.static', filename='css/staff_admin.css') }}">{% endblock %}
+{% block page_title %}{{ 'New enrollment link' if replacement else 'Account created' }}{% endblock %}
+{% block page_subtitle %}{{ staff.full_name or staff.email }} &middot; {{ staff.email }}{% endblock %}
+{% block page_actions %}<a class="btn btn-outline" href="{{ url_for('staff_admin.detail', user_id=staff.id) }}">View account</a>{% endblock %}
+{% block content %}
+<div class="alert alert-warn" role="alert">
+  {{ icon('alert', 16) }} This link is shown <strong>only once</strong>. It is stored as a hash and cannot be displayed again.
+  If it is lost, issue a replacement from the staff member's page.
+</div>
+<div class="card">
+  <h2>Enrollment link</h2>
+  <p class="muted">Send it to {{ staff.full_name or 'the staff member' }} privately. It works once and expires {{ expires|localdt }}.</p>
+  <div class="copy-row">
+    <label class="sr-only" for="enroll-url">Enrollment link</label>
+    <input class="input" id="enroll-url" type="text" readonly value="{{ enroll_url }}" autocomplete="off" spellcheck="false">
+    <button class="btn btn-primary" type="button" data-copy-target="#enroll-url">{{ icon('check', 16) }}<span>Copy link</span></button>
+  </div>
+  <h3 class="subhead">What happens next</h3>
+  <ol class="muted">
+    <li>The staff member opens the link, sets a password and gives consent.</li>
+    <li>They complete one-time ID verification with Didit.</li>
+    <li>The account moves to <strong>Pending approval</strong> and appears in Staff Management for you to approve.</li>
+  </ol>
+</div>
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('staff_admin.static', filename='js/staff_admin.js') }}" defer></script>{% endblock %}

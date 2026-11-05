@@ -14,7 +14,7 @@ from flask import current_app, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db
-from app.models import AuthEvent, Role, StaffCredential, User
+from app.models import AccountStatus, AuthEvent, Role, StaffCredential, User
 from app.models.staff_credential import utcnow
 
 WIZARD_KEY = "staff_login"
@@ -83,7 +83,7 @@ def _checked_staff_id(staff_id):
     return staff_id
 
 
-def create_staff(email: str, full_name=None, staff_id=None):
+def create_staff(email: str, full_name=None, staff_id=None, account_status=None):
     email = normalize_email(email)
     if not valid_email(email):
         raise ValueError("Invalid email address.")
@@ -92,7 +92,11 @@ def create_staff(email: str, full_name=None, staff_id=None):
 
     staff_id = _checked_staff_id(staff_id)
     token, token_hash, expires = _new_token_fields()
+    if account_status is not None and account_status not in AccountStatus.ALL:
+        raise ValueError("Unknown account status.")
     user = User(email=email, full_name=full_name, role=Role.STAFF, is_active=True)
+    if account_status is not None:           # Staff Management starts accounts at pending_verification
+        user.account_status = account_status
     user.staff_credential = StaffCredential(
         staff_id_hash=generate_password_hash(staff_id),
         enroll_token_hash=token_hash,
