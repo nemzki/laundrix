@@ -549,39 +549,75 @@ Refunds, discounts, per-order cancellation/void, and "start tracking" for legacy
 
 ---
 
-## Staff Management and unified sign-in
+## SMS notifications (UniSMS)
 
-### One sign-in page
-`/auth/login` is the only public sign-in page: **Continue with Google**, or a **username or email + password**.
-Administrators and staff use the same form and are sent to their own dashboards. Google sign-in is unchanged:
-it only signs in accounts an administrator already created, never creates one, and never changes a role.
-The old `/staff/login` and `/auth/admin` pages still work (they share the same code) but are no longer linked.
+Laundrix can text a customer **once**, when their order first reaches **Ready for Pickup**. It is **off by
+default** and nothing is ever sent unless the customer consented on that order.
 
-* Administrators sign in with their **username** (e.g. `admin`) or email. Create the first one with
-  `python -m flask --app run bootstrap-admin` (see `.env.example`), rotate it with `rotate-admin-password`.
-* Staff sign in with their **email**. (Staff Management does not assign usernames; one is honoured only if an
-  account already has it.)
-* Wrong passwords, unknown users and blocked accounts all get the same generic message. Repeated failures lock
-  the account temporarily. Pending staff are told their status only after entering the correct password.
+### Set up
+1. Create a UniSMS account, top up credits, and copy your **API secret key** from the UniSMS dashboard.
+   Use the Sender ID your account is approved for (`Unisoft` is the default).
+2. Add to `.env` (never commit it; `.env.example` shows the format):
+   ```
+   SMS_ENABLED=false
+   UNISMS_API_BASE_URL=https://unismsapi.com/api
+   UNISMS_API_SECRET_KEY=<your secret key>
+   UNISMS_SENDER_ID=Unisoft
+   SMS_CONNECT_TIMEOUT=3.05
+   SMS_READ_TIMEOUT=10
+   ```
+3. Run the migration: `python -m flask --app run db upgrade`.
+4. **Test with your own phone first**: set `SMS_ENABLED=true`, restart, create an order with the consent box
+   ticked and *your* number, and move it to Ready for Pickup. Leave `SMS_ENABLED=false` until you are happy.
+   (With `SMS_ENABLED=true` and no key, or a non-https URL, the app refuses to start.)
 
-### Staff lifecycle (Admin > Staff Management, `/admin/staff/`)
-1. **Add staff** (name + email). The account starts as *Pending verification* and a one-time enrollment link is shown
-   **once** (copy button, expiry shown). Only a hash is stored; lost links are replaced from the staff member's page.
-2. The staff member opens the link, sets a password, consents and completes Didit ID verification.
-3. When Didit approves the ID the account becomes *Pending approval* and appears in the dashboard.
-4. An administrator **approves** it (re-checks Didit) and the account is *Active*: the staff member can sign in.
+The secret is read only on the server (HTTP Basic auth: key as username, empty password). It is never put in
+pages, JavaScript, logs or stored errors.
 
-Other actions (all admin-only, confirmed in the browser, audited): **reject** (reason), **suspend** (reason; the
-person is signed out on their next request), **reactivate** (only if identity-verified), **deactivate** (reason;
-the record is kept for orders and payments), **new enrollment link**. Administrators cannot act on themselves
-or on other administrators, and no role can be changed from this module.
-`is_active` (may hold a session) and `account_status` (lifecycle) are set together by the service and enforced
-on every request by the account gate (`app/core/account_gate.py`).
+### How it works
+* **Consent:** the Customer step of New Order has an optional, unticked checkbox. It is recorded **per order**
+  (`sms_consent`, `sms_consent_at`); an earlier consent from the same customer never carries over. Existing
+  orders migrate as "no consent".
+* **Trigger:** the first time an order moves to Ready for Pickup, one notification record is created together
+  with the status change. Returning to Ready later cannot create or send a second one (unique per order).
+  No other status sends anything.
+* **Message:** `Wash Up! Laundry Shop: Hi {name}, your laundry order {reference} is ready for pickup. Please present your order stub when claiming. Thank you.`
+  It uses the order's saved name and contact number, never the customer's current record, and only Philippine
+  mobile numbers (`09171234567`, `+639171234567`, `639171234567`) are accepted.
+* **Safety:** the provider is contacted only after the status change is committed, so an SMS outage can never
+  undo or block a status change. Nothing is retried automatically.
 
-Accounts created with `flask create-staff` keep their old behaviour (active as soon as they enrol); only accounts
-created from Staff Management go through approval. Everything is recorded in `auth_events` (actor, target, action,
-time, non-sensitive detail; never passwords or tokens).
+### What staff see (order page, "SMS notification")
+| Status | Meaning |
+|---|---|
+| Pending | Not sent yet (SMS disabled, or waiting for staff to press **Send SMS**) |
+| Queued / Retrying | UniSMS accepted it and is processing it. Accepted does **not** mean delivered |
+| Sent by provider | UniSMS reports it sent. It does not prove the phone received it |
+| Failed | Definitely not sent (see the last error). Staff may press **Retry SMS** |
+| Outcome unknown | We cannot tell whether UniSMS queued it (timeout, dropped connection, server error) |
+| Skipped | No consent, or the saved number is not a valid Philippine mobile number |
+
+* **Refresh status** asks UniSMS about the stored reference (only for Queued, Retrying or Unknown with a reference).
+  It never sends a message.
+* **Retry SMS / Send SMS** appears only for a definite failure or a message that was never submitted, and only
+  while consent, a valid number and an enabled service all hold. It is a protected POST for signed-in staff/admins.
+* **Outcome unknown is never retried automatically, and the button is hidden.** The message may already be on its
+  way; sending again could text the customer twice. Open the UniSMS dashboard (or press Refresh if a reference
+  exists), confirm what happened, and decide manually.
+
+### Troubleshooting
+| Symptom | Likely cause |
+|---|---|
+| Failed: "authentication failed" | Wrong or revoked API secret key in `.env` (restart after editing) |
+| Failed: "insufficient credits" | Top up the UniSMS account, then press Retry SMS |
+| Failed: "rejected the request" | Invalid number, or the Sender ID is not allowed for that network. Check Sender ID approval in UniSMS |
+| Failed: "rate limiting" | Too many requests; wait and retry |
+| Outcome unknown | Timeout or provider error: check the UniSMS dashboard before doing anything |
+| Skipped: invalid number | The contact saved on the order is not a Philippine mobile number |
+| Pending but nothing happens | `SMS_ENABLED` is false or misconfigured; enable it, then press **Send SMS** |
 
 ### Migrations
-No new migration was needed for this feature (the columns were added by `e7b3c9a4d1f6`).
-Run `python -m flask --app run db upgrade` as usual.
+The SMS migration is `f2b7d4c9a1e3`, chained after `d4e8f1a2b6c7`. If you merge this branch with another that
+also added a migration after `d4e8f1a2b6c7` (for example staff management's `e7b3c9a4d1f6`), Alembic will report
+two heads: either run `python -m flask --app run db merge -m "merge sms and staff" <head1> <head2>` or change
+this file's `down_revision` to the other branch's head.

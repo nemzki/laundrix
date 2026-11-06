@@ -13,6 +13,7 @@ from app.models import (
 )
 from app.models.staff_credential import utcnow
 from app.orders.pricing import GENERAL, build_quote
+from app.sms import services as sms_services
 from app.payments import services as payment_services
 
 _REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # no 0/O/1/I confusion on printed stubs
@@ -113,6 +114,16 @@ def _order_for_token(token):
     return db.session.execute(db.select(Order).filter_by(submission_token=token)).scalar_one_or_none()
 
 
+def _parse_sms_consent(payload):
+    """(consent, error). Absent means "no"; anything that is not a real boolean is rejected."""
+    raw = payload.get("sms_consent") if isinstance(payload, dict) else None
+    if raw is None:
+        return False, None
+    if isinstance(raw, bool):
+        return raw, None
+    return False, "Invalid SMS consent value."
+
+
 def create_order(payload, user):
     """Validate everything, recalculate prices, and save the order atomically.
 
@@ -151,6 +162,9 @@ def create_order(payload, user):
         else:
             plan = payment_services.validate_payment_plan(payload.get("payment"), quote.total)
             errors.update(plan.errors)
+    sms_consent, consent_error = _parse_sms_consent(payload)
+    if consent_error:
+        errors.setdefault("sms_consent", []).append(consent_error)
     if errors:
         return None, errors, duplicates
 
@@ -167,6 +181,7 @@ def create_order(payload, user):
                 status=OrderStatus.RECEIVED, subtotal=quote.subtotal,
                 discount_total=quote.discount_total, total=quote.total,
                 notes=notes, created_by_id=user.id,
+                sms_consent=sms_consent, sms_consent_at=utcnow() if sms_consent else None,
                 payment_arrangement=plan.arrangement, submission_token=token,
                 received_at=utcnow() if legacy else None,
                 received_by_id=user.id if legacy else None,
@@ -240,16 +255,23 @@ def change_status(order_id: int, new_status: str, user, note: str = None):
     if note and len(note) > 255:
         db.session.rollback()
         return order, "Note must be 255 characters or fewer."
+    previous = order.status
     try:
         db.session.add(OrderStatusHistory(
-            order_id=order.id, from_status=order.status, to_status=new_status,
+            order_id=order.id, from_status=previous, to_status=new_status,
             changed_by_id=user.id, note=note,
         ))
         order.status = new_status
+        if new_status == OrderStatus.READY and previous != OrderStatus.READY:
+            # One row per order (unique constraint): a later return to Ready finds it and adds nothing.
+            sms_services.create_ready_notification(order)
         db.session.commit()
     except Exception:
         db.session.rollback()
         raise
+    if new_status == OrderStatus.READY:
+        # Only now, with the status change safely committed and no lock held, may the provider be contacted.
+        sms_services.submit_after_commit(order.id)
     return order, None
 
 

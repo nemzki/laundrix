@@ -7,6 +7,7 @@ from app.models.catalog import (
 )
 from app.models.customer import Customer
 from app.models.order import ItemType, Order, OrderItem, OrderStatus, OrderStatusHistory
+from app.models.sms import SMSNotification, SMSStatus
 from app.models.payment import (
     Payment, PaymentArrangement, PaymentEvent, PaymentKind, PaymentMethod, PaymentSettings, PaymentStatus,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "IdentityVerification", "IdentityVerificationEvent",
     "ICON_KEYS", "PackageMeasure", "PricingUnit", "Service", "ServiceAddon", "ServicePackage",
     "Customer", "ItemType", "Order", "OrderItem", "OrderStatus", "OrderStatusHistory",
+    "SMSNotification", "SMSStatus",
     "Payment", "PaymentArrangement", "PaymentEvent", "PaymentKind", "PaymentMethod",
     "PaymentSettings", "PaymentStatus",
 ]

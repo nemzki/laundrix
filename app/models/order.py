@@ -3,6 +3,8 @@ from app.models.staff_credential import utcnow
 import secrets
 from decimal import Decimal
 
+from sqlalchemy import false
+
 from app.models.payment import PaymentKind, PaymentStatus
 
 class OrderStatus:
@@ -70,6 +72,10 @@ class Order(db.Model):
     received_by_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="SET NULL"))
     # One-time token from the wizard; makes a double-clicked "Confirm" harmless.
     submission_token = db.Column(db.String(64), unique=True)
+
+    # --- SMS consent: recorded per order, never inherited from the customer record ---------
+    sms_consent = db.Column(db.Boolean, nullable=False, default=False, server_default=false())
+    sms_consent_at = db.Column(db.DateTime)
 
     customer = db.relationship("Customer", backref=db.backref("orders", lazy="dynamic"))
     created_by = db.relationship("User", foreign_keys=[created_by_id])

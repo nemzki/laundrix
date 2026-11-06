@@ -1,4 +1,5 @@
 """Central configuration. All secrets come from environment variables (.env)."""
+import math
 import os
 from datetime import timedelta
 
@@ -11,6 +12,15 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 def _bool(name: str, default: bool = False) -> bool:
     return os.getenv(name, str(default)).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _float(name: str, default: float) -> float:
+    """Numeric env var; anything missing, non-numeric or not positive falls back to the default."""
+    try:
+        value = float(os.getenv(name, default))
+    except (TypeError, ValueError):
+        return default
+    return value if math.isfinite(value) and value > 0 else default
 
 
 def _database_uri() -> str:
@@ -52,14 +62,13 @@ class BaseConfig:
     STAFF_LOGIN_WINDOW_SECONDS = int(os.getenv("STAFF_LOGIN_WINDOW_SECONDS", "600"))
     STAFF_ENROLL_TOKEN_HOURS = int(os.getenv("STAFF_ENROLL_TOKEN_HOURS", "24"))
 
-    # --- Administrator bootstrap + username/password sign-in ---
-    # The initial administrator is created ONLY by `flask bootstrap-admin`, from these values.
-    # The password is never stored anywhere except as a hash, and is never re-applied once the
-    # account exists (rotate it with `flask rotate-admin-password`).
-    ADMIN_PASSWORD_LOGIN_ENABLED = _bool("ADMIN_PASSWORD_LOGIN_ENABLED", True)
-    INITIAL_ADMIN_USERNAME = (os.getenv("INITIAL_ADMIN_USERNAME") or "admin").strip().lower()
-    INITIAL_ADMIN_PASSWORD = os.getenv("INITIAL_ADMIN_PASSWORD")
-    INITIAL_ADMIN_EMAIL = (os.getenv("INITIAL_ADMIN_EMAIL") or "").strip().lower() or None
+    # --- SMS notifications (UniSMS). Off by default; the secret is read only on the server. ---
+    SMS_ENABLED = _bool("SMS_ENABLED", False)
+    UNISMS_API_BASE_URL = (os.getenv("UNISMS_API_BASE_URL") or "https://unismsapi.com/api").strip().rstrip("/")
+    UNISMS_API_SECRET_KEY = (os.getenv("UNISMS_API_SECRET_KEY") or "").strip() or None
+    UNISMS_SENDER_ID = (os.getenv("UNISMS_SENDER_ID") or "Unisoft").strip()
+    SMS_CONNECT_TIMEOUT = _float("SMS_CONNECT_TIMEOUT", 3.05)
+    SMS_READ_TIMEOUT = _float("SMS_READ_TIMEOUT", 10.0)
 
     # --- Identity verification (ID + liveness + face match via Didit hosted flow) ---
     # Disabled by default so the app boots without any provider credentials.
@@ -112,6 +121,17 @@ class BaseConfig:
                 "Copy .env.example to .env and fill them in."
             )
         cls._validate_identity_verification()
+        cls._validate_sms()
+
+    @classmethod
+    def _validate_sms(cls):
+        """Fail fast on a half-configured SMS setup. Never echoes the secret."""
+        if not cls.SMS_ENABLED:
+            return
+        if not cls.UNISMS_API_SECRET_KEY:
+            raise RuntimeError("SMS_ENABLED=true but UNISMS_API_SECRET_KEY is not set.")
+        if not cls.UNISMS_API_BASE_URL.startswith("https://"):
+            raise RuntimeError("UNISMS_API_BASE_URL must be an https:// URL.")
 
     @classmethod
     def _validate_identity_verification(cls):
@@ -174,6 +194,8 @@ class TestingConfig(BaseConfig):
     DIDIT_WORKFLOW_ID = "11111111-2222-3333-4444-555555555555"
     DIDIT_WEBHOOK_SECRET = "test-webhook-secret"
     DIDIT_ENVIRONMENT = "sandbox"
+    SMS_ENABLED = False                 # tests never contact the SMS provider, whatever .env says
+    UNISMS_API_SECRET_KEY = None
 
     @classmethod
     def validate(cls):

@@ -74,7 +74,7 @@
     Object.keys(errors || {}).forEach(function (k) {
       var target = $('[data-error-for="' + k + '"]');
       var s = k.indexOf("addon:") === 0 ? 3
-            : k.indexOf("customer") === 0 ? 4
+            : (k.indexOf("customer") === 0 || k === "sms_consent") ? 4
             : k.indexOf("payment") === 0 ? 5
             : (k === "notes" || k === "submission_token") ? 6 : 2;
       if (target) { target.textContent = errors[k].join(" "); target.hidden = false; }
@@ -230,6 +230,7 @@
         confirm_duplicate: confirmDuplicate,
       };
       else payload.customer = null;
+      payload.sms_consent = !!($("#sms-consent") && $("#sms-consent").checked);   // a real boolean, per order
       var notes = $("#order-notes"); if (notes && notes.value.trim()) payload.notes = notes.value.trim();
     }
     if (withPayment) payload.payment = buildPayment();
@@ -307,7 +308,7 @@
   function renderReview(data) {
     var c = custMode === "existing" && customer ? customer.full_name + " \u00b7 " + customer.contact_number
       : $("#new-name").value.trim() + " \u00b7 " + $("#new-contact").value.trim() + " (new customer)";
-    $("#rev-customer").textContent = c;
+    $("#rev-customer").textContent = c + " \u00b7 SMS when ready: " + ($("#sms-consent").checked ? "Yes" : "No");
     var body = $("#rev-lines"); body.textContent = "";
     data.lines.forEach(function (l) {
       var tr = el("tr"), td = el("td");

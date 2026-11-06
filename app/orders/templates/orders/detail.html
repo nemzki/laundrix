@@ -58,6 +58,39 @@
       {% endif %}
     </div>
 
+    <div class="card" id="sms">
+      <div class="card-head"><h2>SMS notification</h2>
+        {% if sms.notification %}<span class="status status-{{ sms.tone }}">{{ sms.label }}</span>
+        {% else %}<span class="pill pill-off">{{ 'Consented' if sms.consent else 'No consent' }}</span>{% endif %}</div>
+      <dl class="kv">
+        <dt>Customer consent</dt><dd>{% if sms.consent %}Yes{% if sms.consent_at %} <span class="inline-note">{{ sms.consent_at|localdt }}</span>{% endif %}{% else %}No{% endif %}</dd>
+        {% if sms.notification %}
+          <dt>Recipient</dt><dd>{{ sms.masked }}</dd>
+          <dt>Attempts</dt><dd>{{ sms.notification.attempt_count }}</dd>
+          <dt>Last attempt</dt><dd>{{ sms.notification.last_attempt_at|localdt if sms.notification.last_attempt_at else '—' }}</dd>
+          {% if sms.notification.provider_message_id %}<dt>Provider reference</dt><dd class="mono">{{ sms.notification.provider_message_id }}</dd>{% endif %}
+          {% if sms.notification.last_error %}<dt>Last error</dt><dd>{{ sms.notification.last_error }}</dd>{% endif %}
+        {% endif %}
+      </dl>
+      {% if not sms.notification %}
+        <p class="muted">{{ 'A text message will be prepared when this order is first marked Ready for Pickup.' if sms.consent else 'The customer did not ask for an SMS, so none will be sent.' }}</p>
+      {% elif sms.help %}<p class="muted">{{ sms.help }}</p>{% endif %}
+      {% if sms.can_retry or sms.can_refresh %}
+      <div class="btn-row">
+        {% if sms.can_retry %}
+        <form class="inline-form" method="post" action="{{ url_for('orders.sms_retry', reference=order.reference) }}"
+              data-confirm="Send the ready-for-pickup SMS to the number saved on this order?" data-confirm-title="{{ sms.retry_label }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-primary btn-sm" type="submit">{{ sms.retry_label }}</button>
+        </form>{% endif %}
+        {% if sms.can_refresh %}
+        <form class="inline-form" method="post" action="{{ url_for('orders.sms_refresh', reference=order.reference) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline btn-sm" type="submit">Refresh status</button>
+        </form>{% endif %}
+      </div>{% endif %}
+    </div>
+
     <div class="card" id="payment">
       <div class="card-head"><h2>Payment</h2><span class="status status-{{ order.payment_status|payment_status_tone }}">{{ order.payment_status|payment_status_label }}</span></div>
       {% if order.is_payment_tracked %}

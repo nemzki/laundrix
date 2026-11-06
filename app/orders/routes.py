@@ -9,6 +9,7 @@ from app.models import Customer, Order, OrderStatus, Role, Service, ServiceAddon
 from app.orders import bp, services
 from app.orders.pricing import build_quote
 from app.payments import forms as payment_forms
+from app.sms import services as sms_services
 from app.payments import services as payment_services
 from app.tracking.qr import generate_qr_data_uri
 
@@ -141,6 +142,7 @@ def detail(reference):
         "orders/detail.html", order=order, transitions=services.allowed_transitions(order, current_user),
         statuses=OrderStatus, methods=payment_services.active_methods(),
         idempotency_key=secrets.token_urlsafe(12), is_admin=current_user.role == Role.ADMIN,
+        sms=sms_services.view(order),
     )
 
 
@@ -236,5 +238,31 @@ def confirm_received(reference):
         flash("The laundry was already confirmed as received.", "info")
     else:
         flash("Laundry confirmed as received.", "success")
+    return redirect(url_for("orders.detail", reference=reference))
+
+@bp.post("/<reference>/sms/retry")
+def sms_retry(reference):
+    """Send (or manually retry a definite failure of) the ready-for-pickup SMS. Staff/Admin only, CSRF
+    protected. The notification is taken from the order in the URL, never from a submitted id."""
+    order = _get_order_or_404(reference)
+    notification = order.sms_notification
+    if notification is None:
+        flash("No SMS notification exists for this order yet.", "error")
+    else:
+        result = sms_services.submit_notification(notification.id)
+        flash(result.message, "success" if result.ok else "error")
+    return redirect(url_for("orders.detail", reference=reference))
+
+
+@bp.post("/<reference>/sms/refresh")
+def sms_refresh(reference):
+    """Ask UniSMS for the latest status of the stored reference. Never sends a message."""
+    order = _get_order_or_404(reference)
+    notification = order.sms_notification
+    if notification is None:
+        flash("No SMS notification exists for this order yet.", "error")
+    else:
+        result = sms_services.refresh_status(notification.id)
+        flash(result.message, "success" if result.ok else "error")
     return redirect(url_for("orders.detail", reference=reference))
 
