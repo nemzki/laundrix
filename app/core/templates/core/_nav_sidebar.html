@@ -1,0 +1,27 @@
+{% from "core/_icons.html" import icon %}
+{% from "core/_brand.html" import brand_logo %}
+{% from "core/_nav_shared.html" import nav_groups, logout_button, user_initials %}
+<aside class="lx-sidebar" id="app-sidebar" aria-label="Main navigation">
+  <div class="lx-sidebar__brand">
+    {{ brand_logo('sidebar', href=url_for('dashboard.index')) }}
+  </div>
+
+  <nav class="lx-sidebar__nav" aria-label="Application">
+    {{ nav_groups(is_admin, ep, bp, 'lx-nav__link', true) }}
+  </nav>
+
+  <div class="lx-sidebar__foot">
+    <div class="lx-sidebar__user">
+      {% if current_user.picture_url %}
+        <img class="lx-sidebar__avatar" src="{{ current_user.picture_url }}" alt="" referrerpolicy="no-referrer" width="40" height="40">
+      {% else %}
+        <span class="lx-sidebar__avatar lx-sidebar__avatar--initials" aria-hidden="true">{{ user_initials(current_user) }}</span>
+      {% endif %}
+      <div class="lx-sidebar__user-meta">
+        <strong class="lx-sidebar__user-name">{{ current_user.full_name or current_user.email }}</strong>
+        <span class="lx-sidebar__role">{{ 'Admin' if is_admin else 'Staff' }}</span>
+      </div>
+    </div>
+    {{ logout_button('lx-sidebar__logout') }}
+  </div>
+</aside>

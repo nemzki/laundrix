@@ -1,5 +1,6 @@
 {% extends "core/app_shell.html" %}
 {% from "core/_icons.html" import icon, visual %}
+{% set is_admin = current_user.role == 'admin' %}
 {% block title %}New Order · Laundrix{% endblock %}
 {% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
 {% block page_title %}New Order{% endblock %}
@@ -7,52 +8,76 @@
 
 {% block content %}
 {% set has_catalog = services or package_groups %}
+{% set step_names = ['Services', 'Details', 'Extras', 'Customer', 'Payment', 'Review'] %}
 <div id="wizard" class="wizard"
      data-quote-url="{{ url_for('orders.quote') }}" data-confirm-url="{{ url_for('orders.confirm') }}"
      data-search-url="{{ url_for('orders.customer_search') }}" data-csrf="{{ csrf_token() }}"
      data-token="{{ submission_token }}">
 
-  <ol class="steps" aria-label="Order progress">
-    <li class="step-pill is-current" data-pill="1"><span class="step-num">1</span><span class="step-name">Services</span></li>
-    <li class="step-pill" data-pill="2"><span class="step-num">2</span><span class="step-name">Details</span></li>
-    <li class="step-pill" data-pill="3"><span class="step-num">3</span><span class="step-name">Extras</span></li>
-    <li class="step-pill" data-pill="4"><span class="step-num">4</span><span class="step-name">Customer</span></li>
-    <li class="step-pill" data-pill="5"><span class="step-num">5</span><span class="step-name">Payment</span></li>
-    <li class="step-pill" data-pill="6"><span class="step-num">6</span><span class="step-name">Review</span></li>
-  </ol>
+  <div class="wiz-progress" aria-label="Order progress">
+    <ol class="wiz-steps" aria-label="Wizard steps">
+      {% for name in step_names %}
+      <li class="wiz-step{% if loop.first %} is-current{% endif %}" data-pill="{{ loop.index }}">
+        <span class="wiz-step__num" aria-hidden="true">{{ loop.index }}</span>
+        <span class="wiz-step__name">{{ name }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+    <div class="wiz-progress-mobile" aria-live="polite">
+      <div class="wiz-progress-mobile__meta">
+        <span class="wiz-progress-mobile__count">Step <strong id="wiz-step-num">1</strong> of 6</span>
+        <strong class="wiz-progress-mobile__title" id="wiz-step-title">Services</strong>
+      </div>
+      <div class="wiz-progress-mobile__track" aria-hidden="true">
+        <span class="wiz-progress-mobile__fill" id="wiz-step-fill"></span>
+      </div>
+    </div>
+  </div>
 
   <div class="wizard-layout">
     <div class="wizard-main card">
       <div id="step-alert" class="alert alert-error" role="alert" hidden></div>
 
       {# ---------------- STEP 1 ---------------- #}
-      <section class="wstep" data-step="1">
-        <h2>Select services</h2>
-        <p class="muted">Choose one or more. A Wash, Dry &amp; Fold package already includes the services listed on its card.</p>
+      <section class="wstep" data-step="1" data-step-title="Services">
+        <h2 class="wiz-heading">Select services</h2>
+        <p class="muted wiz-lead">Choose one or more. A Wash, Dry &amp; Fold package already includes the services listed on its card.</p>
         {% if not has_catalog %}
           <div class="empty"><strong>The catalog is empty</strong>Ask an Admin to add services (Services &amp; Pricing).</div>
         {% endif %}
 
-        {% if services %}<h3 class="group-title">Individual services</h3>
+        {% if services %}
+        <h3 class="group-title">Individual services</h3>
         <div class="choice-grid">
           {% for s in services %}
-          <label class="choice {% if not s.pricing_unit %}is-disabled{% endif %}">
-            <input class="sr-only" type="checkbox" data-kind="service" data-id="{{ s.id }}" data-code="{{ s.code }}"
-                   data-name="{{ s.name }}" data-unit="{{ s.pricing_unit or '' }}" data-unit-label="{{ s.unit_label }}"
-                   {% if not s.pricing_unit %}disabled{% endif %}>
-            <span class="choice-body">
-              <span class="choice-top"><span class="thumb">{{ visual(s, 24) }}</span><span class="tick">{{ icon('check', 14) }}</span></span>
-              <strong>{{ s.name }}</strong>
-              <span class="muted small">{{ s.description or s.category }}</span>
-              <span class="choice-price">{{ s.price|peso }} <small>{{ s.unit_label }}</small></span>
-              <span class="avail {% if s.pricing_unit %}ok{% else %}no{% endif %}" data-avail>{{ 'Available' if s.pricing_unit else 'Unavailable: unit not set by Admin' }}</span>
-            </span>
-          </label>
+          <div class="choice-wrap">
+            <label class="choice {% if not s.pricing_unit %}is-disabled{% endif %}">
+              <input class="sr-only" type="checkbox" data-kind="service" data-id="{{ s.id }}" data-code="{{ s.code }}"
+                     data-name="{{ s.name }}" data-unit="{{ s.pricing_unit or '' }}" data-unit-label="{{ s.unit_label }}"
+                     {% if not s.pricing_unit %}disabled{% endif %}>
+              <span class="choice-body">
+                <span class="choice-top">
+                  <span class="thumb">{{ visual(s, 22) }}</span>
+                  <span class="tick">{{ icon('check', 14) }}</span>
+                </span>
+                <strong>{{ s.name }}</strong>
+                {% if s.description or s.category %}<span class="muted small">{{ s.description or s.category }}</span>{% endif %}
+                <span class="choice-price">{{ s.price|peso }} <small>{{ s.unit_label }}</small></span>
+                <span class="avail {% if s.pricing_unit %}ok{% else %}no{% endif %}" data-avail>
+                  {% if s.pricing_unit %}Available{% else %}Unavailable — pricing unit needs configuration.{% endif %}
+                </span>
+              </span>
+            </label>
+            {% if not s.pricing_unit and is_admin %}
+              <a class="choice-admin-link" href="{{ url_for('catalog.index') }}">Configure in Services &amp; Pricing</a>
+            {% endif %}
+          </div>
           {% endfor %}
-        </div>{% endif %}
+        </div>
+        {% endif %}
 
         {% for category, pkgs in package_groups.items() %}
-          <h3 class="group-title">Wash, Dry &amp; Fold &middot; {{ category }}</h3>
+          <h3 class="group-title">Wash, Dry &amp; Fold · {{ category }}</h3>
           <div class="choice-grid">
           {% for p in pkgs %}
           <label class="choice">
@@ -60,9 +85,12 @@
                    data-name="{{ p.display_name }}" data-measure="{{ p.measure_type }}" data-min="{{ p.min_value|qty }}"
                    data-max="{{ p.max_value|qty }}" data-unit-label="{{ p.unit_label }}">
             <span class="choice-body">
-              <span class="choice-top"><span class="thumb">{{ visual(p, 24) }}</span><span class="tick">{{ icon('check', 14) }}</span></span>
+              <span class="choice-top">
+                <span class="thumb">{{ visual(p, 22) }}</span>
+                <span class="tick">{{ icon('check', 14) }}</span>
+              </span>
               <strong>{{ p.description }}</strong>
-              <span class="muted small">{{ p.name }}{% if p.covers_codes %} &middot; includes {{ p.covers_codes.replace(',', ', ') }}{% endif %}</span>
+              <span class="muted small">{{ p.name }}{% if p.covers_codes %} · includes {{ p.covers_codes.replace(',', ', ') }}{% endif %}</span>
               <span class="choice-price">{{ p.price|peso }} <small>per package</small></span>
               <span class="avail ok" data-avail>Available</span>
             </span>
@@ -73,21 +101,26 @@
       </section>
 
       {# ---------------- STEP 2 ---------------- #}
-      <section class="wstep" data-step="2" hidden>
-        <h2>Service details</h2>
-        <p class="muted">Enter the measurement for each selected service.</p>
+      <section class="wstep" data-step="2" data-step-title="Details" hidden>
+        <h2 class="wiz-heading">Service details</h2>
+        <p class="muted wiz-lead">Enter the measurement for each selected service. Required fields are marked.</p>
         <div id="details-list"></div>
       </section>
 
       {# ---------------- STEP 3 ---------------- #}
-      <section class="wstep" data-step="3" hidden>
-        <h2>Extras</h2>
-        <p class="muted">Optional products. Customer-supplied products are never charged.</p>
+      <section class="wstep" data-step="3" data-step-title="Extras" hidden>
+        <h2 class="wiz-heading">Extras</h2>
+        <p class="muted wiz-lead">Optional products. Customer-supplied products are never charged.</p>
         {% for a in addons %}
         <div class="extra" data-extra data-id="{{ a.id }}" data-name="{{ a.name }}"
              data-chargeable="{{ 1 if a.is_chargeable else 0 }}" data-supplied="{{ 1 if a.allow_customer_supplied else 0 }}">
-          <div class="extra-head"><span class="thumb">{{ visual(a, 22) }}</span>
-            <div><strong>{{ a.name }}</strong><span class="muted small">{{ a.description or '' }}{% if a.is_chargeable %} &middot; {{ a.price|peso }} each{% endif %}</span></div></div>
+          <div class="extra-head">
+            <span class="thumb">{{ visual(a, 22) }}</span>
+            <div>
+              <strong>{{ a.name }}</strong>
+              <span class="muted small">{{ a.description or '' }}{% if a.is_chargeable %} · {{ a.price|peso }} each{% endif %}</span>
+            </div>
+          </div>
           <div class="extra-opts" role="radiogroup" aria-label="{{ a.name }}">
             <label class="check"><input type="radio" name="extra-{{ a.id }}" value="" checked><span>None</span></label>
             {% if a.is_chargeable %}<label class="check"><input type="radio" name="extra-{{ a.id }}" value="paid"><span>Paid</span></label>{% endif %}
@@ -102,31 +135,44 @@
       </section>
 
       {# ---------------- STEP 4 ---------------- #}
-      <section class="wstep" data-step="4" hidden>
-        <h2>Customer information</h2>
-        <div class="seg" role="tablist">
+      <section class="wstep" data-step="4" data-step-title="Customer" hidden>
+        <h2 class="wiz-heading">Customer information</h2>
+        <p class="muted wiz-lead">Search an existing customer or enter a new one. New customers are saved when you confirm the order.</p>
+        <div class="seg" role="tablist" aria-label="Customer mode">
           <button type="button" class="seg-btn is-on" data-cust-mode="existing">Existing customer</button>
           <button type="button" class="seg-btn" data-cust-mode="new">New customer</button>
         </div>
 
-        <div id="cust-existing">
-          <div class="field"><label for="cust-search">Search by name or contact number</label>
-            <input class="input" id="cust-search" type="search" autocomplete="off" placeholder="Type at least 2 characters"></div>
+        <div id="cust-existing" class="wiz-panel">
+          <div class="field">
+            <label for="cust-search">Search by name or contact number</label>
+            <input class="input" id="cust-search" type="search" autocomplete="off" placeholder="Type at least 2 characters">
+          </div>
           <ul class="results" id="cust-results"></ul>
           <div class="alert alert-info" id="cust-picked" hidden></div>
         </div>
 
-        <div id="cust-new" hidden>
+        <div id="cust-new" class="wiz-panel" hidden>
           <div class="form-grid">
-            <div class="field"><label for="new-name">Full name <span class="req">*</span></label><input class="input" id="new-name" maxlength="150" autocomplete="off">
-              <p class="field-error" data-error-for="customer_name" hidden></p></div>
-            <div class="field"><label for="new-contact">Contact number <span class="req">*</span></label><input class="input" id="new-contact" inputmode="tel" maxlength="25" autocomplete="off" placeholder="09XXXXXXXXX">
-              <p class="field-error" data-error-for="customer_contact" hidden></p></div>
+            <div class="field">
+              <label for="new-name">Full name <span class="req">*</span></label>
+              <input class="input" id="new-name" maxlength="150" autocomplete="off">
+              <p class="field-error" data-error-for="customer_name" hidden></p>
+            </div>
+            <div class="field">
+              <label for="new-contact">Contact number <span class="req">*</span></label>
+              <input class="input" id="new-contact" inputmode="tel" maxlength="25" autocomplete="off" placeholder="09XXXXXXXXX">
+              <p class="hint">Used for order contact{% if config.SMS_ENABLED %} and optional SMS{% endif %}.</p>
+              <p class="field-error" data-error-for="customer_contact" hidden></p>
+            </div>
           </div>
         </div>
         <p class="field-error" data-error-for="customer" hidden></p>
         <div class="field field-check consent-box">
-          <label class="check"><input type="checkbox" id="sms-consent" name="sms_consent"><span>I agree to receive an SMS notification when this laundry order is ready for pickup.</span></label>
+          <label class="check">
+            <input type="checkbox" id="sms-consent" name="sms_consent">
+            <span>I agree to receive an SMS notification when this laundry order is ready for pickup.</span>
+          </label>
           <p class="hint">Optional and recorded for this order only. One text is sent to the contact number saved on the order.</p>
           <p class="field-error" data-error-for="sms_consent" hidden></p>
         </div>
@@ -139,9 +185,9 @@
       </section>
 
       {# ---------------- STEP 5: PAYMENT ---------------- #}
-      <section class="wstep" data-step="5" hidden>
-        <h2>Payment</h2>
-        <p class="muted">Record what the customer is paying now. Enter only amounts you have actually received; nothing is marked as paid automatically.</p>
+      <section class="wstep" data-step="5" data-step-title="Payment" hidden>
+        <h2 class="wiz-heading">Payment</h2>
+        <p class="muted wiz-lead">Record what the customer is paying now. Enter only amounts you have actually received; nothing is marked as paid automatically.</p>
         {% if not methods %}
           <div class="alert alert-warn">No payment methods are configured. An Admin must run <span class="mono">flask --app run seed-payments</span> or add methods under Payments.</div>
         {% endif %}
@@ -149,18 +195,33 @@
 
         <h3 class="group-title">How much is being paid now?</h3>
         <div class="choice-grid choice-grid-3" id="pay-arrangements">
-          <label class="choice"><input class="sr-only" type="radio" name="arrangement" value="full">
-            <span class="choice-body"><span class="choice-top"><span class="tick">{{ icon('check', 14) }}</span></span>
-              <strong>Full Payment</strong><span class="muted small">The customer pays the whole amount now.</span></span></label>
+          <label class="choice">
+            <input class="sr-only" type="radio" name="arrangement" value="full">
+            <span class="choice-body">
+              <span class="choice-top"><span class="tick">{{ icon('check', 14) }}</span></span>
+              <strong>Full Payment</strong>
+              <span class="muted small">The customer pays the whole amount now.</span>
+            </span>
+          </label>
           {% if pay_settings.partial_enabled %}
-          <label class="choice"><input class="sr-only" type="radio" name="arrangement" value="partial">
-            <span class="choice-body"><span class="choice-top"><span class="tick">{{ icon('check', 14) }}</span></span>
-              <strong>Partial Payment</strong><span class="muted small">The customer pays part now; the balance stays outstanding.</span></span></label>
+          <label class="choice">
+            <input class="sr-only" type="radio" name="arrangement" value="partial">
+            <span class="choice-body">
+              <span class="choice-top"><span class="tick">{{ icon('check', 14) }}</span></span>
+              <strong>Partial Payment</strong>
+              <span class="muted small">The customer pays part now; the balance stays outstanding.</span>
+            </span>
+          </label>
           {% endif %}
           {% if pay_settings.pay_later_enabled %}
-          <label class="choice"><input class="sr-only" type="radio" name="arrangement" value="pay_later">
-            <span class="choice-body"><span class="choice-top"><span class="tick">{{ icon('check', 14) }}</span></span>
-              <strong>Pay Later</strong><span class="muted small">Nothing is collected now. The whole amount stays due.</span></span></label>
+          <label class="choice">
+            <input class="sr-only" type="radio" name="arrangement" value="pay_later">
+            <span class="choice-body">
+              <span class="choice-top"><span class="tick">{{ icon('check', 14) }}</span></span>
+              <strong>Pay Later</strong>
+              <span class="muted small">Nothing is collected now. The whole amount stays due.</span>
+            </span>
+          </label>
           {% endif %}
         </div>
 
@@ -178,12 +239,16 @@
           <div class="pay-entry" data-entry="{{ m.code }}" hidden>
             <h3>{{ m.label }}</h3>
             <div class="form-grid">
-              <div class="field"><label for="pay-amt-{{ m.code }}">Amount received (PHP)</label>
+              <div class="field">
+                <label for="pay-amt-{{ m.code }}">Amount received (PHP)</label>
                 <input class="input" id="pay-amt-{{ m.code }}" data-pay-amount="{{ m.code }}" type="number" inputmode="decimal" min="0.01" step="0.01" autocomplete="off">
-                <p class="field-error" data-error-for="payment:{{ m.code }}" hidden></p></div>
+                <p class="field-error" data-error-for="payment:{{ m.code }}" hidden></p>
+              </div>
               {% if m.code != 'cash' %}
-              <div class="field"><label for="pay-ref-{{ m.code }}">Reference no.{% if m.requires_reference %} <span class="req">*</span>{% else %} (optional){% endif %}</label>
-                <input class="input" id="pay-ref-{{ m.code }}" data-pay-ref="{{ m.code }}" maxlength="64" autocomplete="off"></div>
+              <div class="field">
+                <label for="pay-ref-{{ m.code }}">Reference no.{% if m.requires_reference %} <span class="req">*</span>{% else %} (optional){% endif %}</label>
+                <input class="input" id="pay-ref-{{ m.code }}" data-pay-ref="{{ m.code }}" maxlength="64" autocomplete="off">
+              </div>
               {% endif %}
             </div>
           </div>
@@ -196,7 +261,7 @@
               {% if pay_settings.gcash_account_name %}<div>{{ pay_settings.gcash_account_name }}</div>{% endif %}
               {% if pay_settings.gcash_account_number %}<div class="mono">{{ pay_settings.gcash_account_number }}</div>{% endif %}
               {% if pay_settings.payment_instructions %}<p class="small">{{ pay_settings.payment_instructions }}</p>{% endif %}
-              {% if not (pay_settings.gcash_account_name or pay_settings.gcash_account_number or pay_settings.qr_filename) %}<p class="small muted">No GCash details have been configured yet (Admin: Payments &rarr; Settings).</p>{% endif %}
+              {% if not (pay_settings.gcash_account_name or pay_settings.gcash_account_number or pay_settings.qr_filename) %}<p class="small muted">No GCash details have been configured yet (Admin: Payments → Settings).</p>{% endif %}
             </div>
           </div>
           {% endif %}
@@ -212,35 +277,58 @@
       </section>
 
       {# ---------------- STEP 6: REVIEW ---------------- #}
-      <section class="wstep" data-step="6" hidden>
-        <h2>Review order</h2>
-        <div class="review-block"><div class="card-head"><h3>Customer</h3><button type="button" class="link-btn" data-goto="4">Edit</button></div><p id="rev-customer"></p></div>
-        <div class="review-block"><div class="card-head"><h3>Order</h3></div>
-          <p class="muted">Order reference: assigned when you confirm.</p></div>
-        <div class="review-block"><div class="card-head"><h3>Items</h3><button type="button" class="link-btn" data-goto="1">Edit services</button></div>
-          <div class="table-wrap"><table class="table"><thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
-            <tbody id="rev-lines"></tbody>
-            <tfoot><tr><td colspan="3" class="num muted">Subtotal</td><td class="num" id="rev-subtotal"></td></tr>
-            <tr class="total-row"><td colspan="3" class="num">Total</td><td class="num" id="rev-total"></td></tr></tfoot></table></div>
+      <section class="wstep" data-step="6" data-step-title="Review" hidden>
+        <h2 class="wiz-heading">Review order</h2>
+        <p class="muted wiz-lead">Confirm everything below. You can edit a section before generating the stub.</p>
+
+        <div class="review-block">
+          <div class="card-head"><h3>Customer information</h3><button type="button" class="link-btn" data-goto="4">Edit</button></div>
+          <p id="rev-customer"></p>
+        </div>
+        <div class="review-block">
+          <div class="card-head"><h3>Selected services &amp; details</h3><button type="button" class="link-btn" data-goto="1">Edit services</button></div>
+          <p class="muted">Order reference is assigned when you confirm.</p>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
+              <tbody id="rev-lines"></tbody>
+              <tfoot>
+                <tr><td colspan="3" class="num muted">Subtotal</td><td class="num" id="rev-subtotal"></td></tr>
+                <tr class="total-row"><td colspan="3" class="num">Total</td><td class="num" id="rev-total"></td></tr>
+              </tfoot>
+            </table>
+          </div>
           <p class="hint">The total is calculated by the server when you confirm.</p>
         </div>
-        <div class="review-block"><div class="card-head"><h3>Payment</h3><button type="button" class="link-btn" data-goto="5">Edit</button></div>
-          <dl class="kv" id="rev-payment"></dl></div>
-        <div class="field"><label for="order-notes">Order notes (optional)</label><textarea class="input" id="order-notes" maxlength="500"></textarea></div>
+        <div class="review-block">
+          <div class="card-head"><h3>Payment information</h3><button type="button" class="link-btn" data-goto="5">Edit</button></div>
+          <dl class="kv" id="rev-payment"></dl>
+        </div>
+        <div class="field">
+          <label for="order-notes">Order notes (optional)</label>
+          <textarea class="input" id="order-notes" maxlength="500" rows="3" placeholder="Special handling notes for the shop"></textarea>
+        </div>
       </section>
 
       <div class="wizard-nav">
         <button type="button" class="btn btn-outline" id="btn-back" hidden>{{ icon('arrow-left', 16) }}<span>Back</span></button>
         <span class="spacer"></span>
-        <button type="button" class="btn btn-primary" id="btn-next">{# label set by JS #}<span>Next</span>{{ icon('arrow-right', 16) }}</button>
+        <button type="button" class="btn btn-primary" id="btn-next"><span data-next-label>Next</span>{{ icon('arrow-right', 16) }}</button>
         <button type="button" class="btn btn-primary" id="btn-confirm" hidden>{{ icon('check', 16) }}<span>Confirm and generate stub</span></button>
       </div>
     </div>
 
-    <aside class="wizard-side card" aria-label="Selection summary">
-      <h2>Your selection</h2>
-      <ul class="side-list" id="side-list"><li class="muted">Nothing selected yet.</li></ul>
-      <p class="hint">Final prices are shown on the review step.</p>
+    <aside class="wizard-side" aria-label="Order summary">
+      <details class="wiz-summary card" open>
+        <summary class="wiz-summary__toggle">
+          <span>Order summary</span>
+          <span class="wiz-summary__hint muted" id="side-count">Nothing selected</span>
+        </summary>
+        <div class="wiz-summary__body">
+          <ul class="side-list" id="side-list"><li class="muted">Nothing selected yet.</li></ul>
+          <p class="hint">Estimates appear as you select items. Final prices are calculated by the server on Review.</p>
+        </div>
+      </details>
     </aside>
   </div>
 </div>

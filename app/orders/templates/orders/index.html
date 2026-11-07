@@ -2,42 +2,327 @@
 {% from "core/_icons.html" import icon %}
 {% from "core/_forms.html" import render_pagination %}
 {% set is_admin = current_user.role == 'admin' %}
-{% block title %}{{ 'Order Records' if is_admin else 'Manage Orders' }} · Laundrix{% endblock %}
+{% set total_orders = counts.values()|sum %}
+{% set has_filters = term or status %}
+{% block title %}Manage Orders · Laundrix{% endblock %}
 {% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
-{% block page_title %}{{ 'Order Records' if is_admin else 'Manage Orders' }}{% endblock %}
-{% block page_subtitle %}Search by reference, customer name or contact number.{% endblock %}
+{% block page_title %}Manage Orders{% endblock %}
+{% block page_subtitle %}View, track, and manage laundry orders.{% endblock %}
 {% block page_actions %}<a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus', 16) }}<span>New order</span></a>{% endblock %}
+
 {% block content %}
-<form class="search-bar" method="get">
-  <input class="input" type="search" name="q" value="{{ term }}" placeholder="Search orders" aria-label="Search orders">
-  <select class="input" name="status" aria-label="Filter by status">
-    <option value="">All statuses</option>
-    {% for s in statuses.FLOW %}<option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s|status_label }} ({{ counts[s] }})</option>{% endfor %}
-  </select>
-  <button class="btn btn-primary" type="submit">{{ icon('search', 16) }}<span>Search</span></button>
-  {% if term or status %}<a class="btn btn-outline" href="{{ url_for('orders.index') }}">Clear</a>{% endif %}
-</form>
-<div class="card">
-  {% if orders %}
-  <div class="table-wrap"><table class="table">
-    <thead><tr><th>Reference</th><th>Customer</th><th>Created</th><th class="num">Total</th><th>Status</th><th>Payment</th><th></th></tr></thead>
-    <tbody>
-    {% for o in orders %}
-      <tr>
-        <td class="mono"><a href="{{ url_for('orders.detail', reference=o.reference) }}">{{ o.reference }}</a></td>
-        <td>{{ o.customer_name }}<span class="sub">{{ o.customer_contact }}</span></td>
-        <td>{{ o.created_at|localdt }}</td>
-        <td class="num">{{ o.total|peso }}</td>
-        <td><span class="status status-{{ o.status|status_tone }}">{{ o.status|status_label }}</span>{% if not o.received_at %}<span class="sub">Awaiting receipt</span>{% endif %}</td>
-        <td><span class="status status-{{ o.payment_status|payment_status_tone }}">{{ o.payment_status|payment_status_label }}</span>{% if o.is_payment_tracked and o.balance_due > 0 %}<span class="sub">Balance {{ o.balance_due|peso }}</span>{% endif %}</td>
-        <td class="num"><a class="btn btn-outline btn-sm" href="{{ url_for('orders.detail', reference=o.reference) }}">View</a></td>
-      </tr>
+<section class="orders-list" aria-label="Manage orders">
+
+  <div class="orders-summary" role="navigation" aria-label="Order status summary">
+    <a class="orders-summary__chip{% if not status %} is-active{% endif %}"
+       href="{{ url_for('orders.index', q=term or None) }}">
+      <span class="orders-summary__label">All Orders</span>
+      <strong class="orders-summary__count">{{ total_orders }}</strong>
+    </a>
+    {% for s in statuses.FLOW %}
+    <a class="orders-summary__chip{% if status == s %} is-active{% endif %}"
+       href="{{ url_for('orders.index', q=term or None, status=s) }}">
+      <span class="orders-summary__label">{{ s|status_label }}</span>
+      <strong class="orders-summary__count">{{ counts[s] }}</strong>
+    </a>
     {% endfor %}
-    </tbody></table></div>
-  {{ render_pagination(pagination, 'orders.index', q=term, status=status) }}
-  {% else %}
-    <div class="empty"><strong>{{ 'No orders match your search' if term or status else 'No orders yet' }}</strong>
-      {% if not (term or status) %}Orders you create will appear here.{% endif %}</div>
-  {% endif %}
+  </div>
+
+  <form class="orders-toolbar search-bar" method="get" role="search">
+    <div class="orders-toolbar__search field">
+      <label class="visually-hidden" for="orders-search">Search orders</label>
+      <input class="input" id="orders-search" type="search" name="q" value="{{ term }}"
+             placeholder="Search by reference, name, or contact" autocomplete="off">
+    </div>
+    <div class="orders-toolbar__filter field">
+      <label class="visually-hidden" for="orders-status">Filter by laundry status</label>
+      <select class="input" id="orders-status" name="status">
+        <option value="">All statuses</option>
+        {% for s in statuses.FLOW %}
+        <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s|status_label }} ({{ counts[s] }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="orders-toolbar__actions">
+      <button class="btn btn-primary" type="submit">{{ icon('search', 16) }}<span>Search</span></button>
+      {% if has_filters %}
+      <a class="btn btn-outline" href="{{ url_for('orders.index') }}">Clear</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <div class="card orders-panel">
+    {% if orders %}
+    <div class="table-wrap orders-table-wrap">
+      <table class="table orders-table">
+        <thead>
+          <tr>
+            <th scope="col">Order Reference</th>
+            <th scope="col">Customer</th>
+            <th scope="col">Date Created</th>
+            <th class="num" scope="col">Total Amount</th>
+            <th scope="col">Laundry Status</th>
+            <th scope="col">Payment Status</th>
+            <th class="orders-table__actions" scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for o in orders %}
+          {% set detail_url = url_for('orders.detail', reference=o.reference) %}
+          {% set stub_url = url_for('orders.stub', reference=o.reference) %}
+          {% set confirm_url = url_for('orders.confirm_received', reference=o.reference) %}
+          {% set awaiting = not o.received_at %}
+          {% set pay_label = o.payment_status|payment_status_label %}
+          {% set laundry_label = o.status|status_label %}
+          <tr class="orders-row"
+              data-ref="{{ o.reference }}"
+              data-customer="{{ o.customer_name }}"
+              data-contact="{{ o.customer_contact }}"
+              data-created="{{ o.created_at|localdt }}"
+              data-total="{{ o.total|peso }}"
+              data-paid="{% if o.is_payment_tracked %}{{ o.amount_paid|peso }}{% else %}—{% endif %}"
+              data-balance="{% if o.is_payment_tracked %}{{ o.balance_due|peso }}{% else %}—{% endif %}"
+              data-laundry="{{ laundry_label }}"
+              data-laundry-tone="{{ o.status|status_tone }}"
+              data-payment="{{ pay_label }}"
+              data-payment-tone="{{ o.payment_status|payment_status_tone }}"
+              data-awaiting="{{ '1' if awaiting else '0' }}"
+              data-detail-url="{{ detail_url }}">
+            <td class="mono">
+              <a class="orders-ref" href="{{ detail_url }}">{{ o.reference }}</a>
+            </td>
+            <td>
+              <span class="orders-customer">{{ o.customer_name }}</span>
+              <span class="sub">{{ o.customer_contact }}</span>
+            </td>
+            <td>{{ o.created_at|localdt }}</td>
+            <td class="num">{{ o.total|peso }}</td>
+            <td>
+              <span class="status status-{{ o.status|status_tone }}">{{ laundry_label }}</span>
+              {% if awaiting %}<span class="sub">Awaiting receipt</span>{% endif %}
+            </td>
+            <td>
+              <span class="status status-{{ o.payment_status|payment_status_tone }}">{{ pay_label }}</span>
+              {% if o.is_payment_tracked and o.balance_due > 0 %}
+              <span class="sub">Balance {{ o.balance_due|peso }}</span>
+              {% endif %}
+            </td>
+            <td class="orders-table__actions">
+              <div class="orders-actions">
+                <a class="btn btn-outline btn-sm" href="{{ detail_url }}">View details</a>
+                <div class="dropdown">
+                  <button class="btn btn-outline btn-sm orders-actions__more" type="button"
+                          data-bs-toggle="dropdown" aria-expanded="false"
+                          aria-label="More actions for {{ o.reference }}">
+                    {{ icon('more', 16) }}
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <button class="dropdown-item" type="button" data-order-summary>
+                        Quick summary
+                      </button>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="{{ stub_url }}" target="_blank" rel="noopener">
+                        Printable stub
+                      </a>
+                    </li>
+                    {% if awaiting %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                      <button class="dropdown-item" type="button"
+                              data-confirm-received
+                              data-ref="{{ o.reference }}"
+                              data-action="{{ confirm_url }}">
+                        Confirm laundry received
+                      </button>
+                    </li>
+                    {% endif %}
+                  </ul>
+                </div>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="orders-cards" aria-label="Orders list">
+      {% for o in orders %}
+        {% set detail_url = url_for('orders.detail', reference=o.reference) %}
+        {% set stub_url = url_for('orders.stub', reference=o.reference) %}
+        {% set confirm_url = url_for('orders.confirm_received', reference=o.reference) %}
+        {% set awaiting = not o.received_at %}
+        {% set pay_label = o.payment_status|payment_status_label %}
+        {% set laundry_label = o.status|status_label %}
+        <article class="orders-card"
+                 data-ref="{{ o.reference }}"
+                 data-customer="{{ o.customer_name }}"
+                 data-contact="{{ o.customer_contact }}"
+                 data-created="{{ o.created_at|localdt }}"
+                 data-total="{{ o.total|peso }}"
+                 data-paid="{% if o.is_payment_tracked %}{{ o.amount_paid|peso }}{% else %}—{% endif %}"
+                 data-balance="{% if o.is_payment_tracked %}{{ o.balance_due|peso }}{% else %}—{% endif %}"
+                 data-laundry="{{ laundry_label }}"
+                 data-laundry-tone="{{ o.status|status_tone }}"
+                 data-payment="{{ pay_label }}"
+                 data-payment-tone="{{ o.payment_status|payment_status_tone }}"
+                 data-awaiting="{{ '1' if awaiting else '0' }}"
+                 data-detail-url="{{ detail_url }}">
+          <header class="orders-card__head">
+            <a class="orders-ref mono" href="{{ detail_url }}">{{ o.reference }}</a>
+            <time class="orders-card__date muted">{{ o.created_at|localdt }}</time>
+          </header>
+          <p class="orders-card__customer">
+            <strong>{{ o.customer_name }}</strong>
+            <span class="sub">{{ o.customer_contact }}</span>
+          </p>
+          <dl class="orders-card__meta">
+            <div>
+              <dt>Total</dt>
+              <dd class="num">{{ o.total|peso }}</dd>
+            </div>
+            <div>
+              <dt>Laundry</dt>
+              <dd>
+                <span class="status status-{{ o.status|status_tone }}">{{ laundry_label }}</span>
+                {% if awaiting %}<span class="sub">Awaiting receipt</span>{% endif %}
+              </dd>
+            </div>
+            <div>
+              <dt>Payment</dt>
+              <dd>
+                <span class="status status-{{ o.payment_status|payment_status_tone }}">{{ pay_label }}</span>
+                {% if o.is_payment_tracked and o.balance_due > 0 %}
+                <span class="sub">Balance {{ o.balance_due|peso }}</span>
+                {% endif %}
+              </dd>
+            </div>
+          </dl>
+          <div class="orders-actions orders-card__actions">
+            <a class="btn btn-outline btn-sm" href="{{ detail_url }}">View details</a>
+            <button class="btn btn-outline btn-sm" type="button" data-order-summary>Summary</button>
+            <a class="btn btn-outline btn-sm" href="{{ stub_url }}" target="_blank" rel="noopener">Stub</a>
+            {% if awaiting %}
+            <button class="btn btn-primary btn-sm" type="button"
+                    data-confirm-received
+                    data-ref="{{ o.reference }}"
+                    data-action="{{ confirm_url }}">
+              Confirm received
+            </button>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+
+    <div class="orders-pagination">
+      {{ render_pagination(pagination, 'orders.index', q=term, status=status) }}
+    </div>
+    {% else %}
+    <div class="empty orders-empty">
+      {% if has_filters %}
+      <strong>No matching orders</strong>
+      <p class="muted">Try a different reference, customer name, contact number, or status filter.</p>
+      <a class="btn btn-outline" href="{{ url_for('orders.index') }}">Clear search and filters</a>
+      {% else %}
+      <strong>No orders yet</strong>
+      <p class="muted">Orders you create will appear here for tracking and management.</p>
+      <a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus', 16) }}<span>New order</span></a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{# Reusable read-only summary modal #}
+<div class="modal fade" id="orderSummaryModal" tabindex="-1" aria-labelledby="orderSummaryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content orders-modal">
+      <div class="modal-header">
+        <h2 class="modal-title h5" id="orderSummaryModalLabel">Order summary</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <dl class="orders-modal__grid">
+          <div>
+            <dt>Order reference</dt>
+            <dd class="mono" data-field="ref">—</dd>
+          </div>
+          <div>
+            <dt>Customer</dt>
+            <dd data-field="customer">—</dd>
+          </div>
+          <div>
+            <dt>Contact</dt>
+            <dd data-field="contact">—</dd>
+          </div>
+          <div>
+            <dt>Date created</dt>
+            <dd data-field="created">—</dd>
+          </div>
+          <div>
+            <dt>Total amount</dt>
+            <dd class="num" data-field="total">—</dd>
+          </div>
+          <div>
+            <dt>Amount paid</dt>
+            <dd class="num" data-field="paid">—</dd>
+          </div>
+          <div>
+            <dt>Remaining balance</dt>
+            <dd class="num" data-field="balance">—</dd>
+          </div>
+          <div>
+            <dt>Laundry status</dt>
+            <dd>
+              <span class="status" data-field="laundry">—</span>
+              <span class="sub" data-field="awaiting" hidden>Awaiting receipt</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Payment status</dt>
+            <dd><span class="status" data-field="payment">—</span></dd>
+          </div>
+        </dl>
+        <p class="hint orders-modal__hint">This is a quick summary. Open the full order for status updates, payments, and SMS tools.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Close</button>
+        <a class="btn btn-primary" data-field="detail" href="#">Open full order</a>
+      </div>
+    </div>
+  </div>
 </div>
+
+{# Confirm laundry received — posts to existing Flask route #}
+<div class="modal fade" id="confirmReceivedModal" tabindex="-1" aria-labelledby="confirmReceivedModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content orders-modal">
+      <form id="confirmReceivedForm" method="post" action="#">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="confirmReceivedModalLabel">Confirm laundry received</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Confirm that the laundry for <strong class="mono" data-confirm-ref>—</strong> has been received by the shop?</p>
+          <p class="muted">This records receipt on the order and cannot be undone from this screen.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-confirm-submit>
+            <span data-label>Confirm received</span>
+            <span data-busy hidden>Confirming…</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('orders.static', filename='js/orders_list.js') }}" defer></script>
 {% endblock %}

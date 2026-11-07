@@ -30,15 +30,46 @@
   function key(cb) { return cb.dataset.kind + ":" + cb.dataset.id; }
   function selectedBoxes() { return $$('input[data-kind]:checked'); }
 
+  var STEP_TITLES = {
+    1: "Services", 2: "Details", 3: "Extras", 4: "Customer", 5: "Payment", 6: "Review"
+  };
+  var NEXT_LABELS = {
+    1: "Continue to details",
+    2: "Continue to extras",
+    3: "Continue to customer",
+    4: "Continue to payment",
+    5: "Continue to review"
+  };
+
   // ---------------------------------------------------------------- navigation
+  function syncProgress(n) {
+    $$(".wiz-step").forEach(function (p) {
+      var i = Number(p.dataset.pill);
+      p.classList.toggle("is-current", i === n);
+      p.classList.toggle("is-done", i < n);
+      if (i === n) p.setAttribute("aria-current", "step");
+      else p.removeAttribute("aria-current");
+    });
+    var num = $("#wiz-step-num");
+    var title = $("#wiz-step-title");
+    var fill = $("#wiz-step-fill");
+    if (num) num.textContent = String(n);
+    if (title) title.textContent = STEP_TITLES[n] || "";
+    if (fill) fill.style.width = ((n / TOTAL_STEPS) * 100).toFixed(3) + "%";
+    var nextLabel = $("[data-next-label]");
+    if (nextLabel) nextLabel.textContent = NEXT_LABELS[n] || "Next";
+  }
+
   function show(n) {
     step = n;
     $$(".wstep").forEach(function (s) { s.hidden = Number(s.dataset.step) !== n; });
+    // Legacy class support if old markup remains
     $$(".step-pill").forEach(function (p) {
       var i = Number(p.dataset.pill);
       p.classList.toggle("is-current", i === n);
       p.classList.toggle("is-done", i < n);
     });
+    syncProgress(n);
     $("#btn-back").hidden = n === 1;
     $("#btn-next").hidden = n === TOTAL_STEPS;
     $("#btn-confirm").hidden = n !== TOTAL_STEPS;
@@ -101,7 +132,7 @@
       label.classList.toggle("is-disabled", cb.disabled);
       var avail = $("[data-avail]", label);
       if (inPkg) { avail.textContent = "Included in " + covered[cb.dataset.code]; avail.className = "avail no"; }
-      else if (unitMissing) { avail.textContent = "Unavailable: unit not set by Admin"; avail.className = "avail no"; }
+      else if (unitMissing) { avail.textContent = "Unavailable — pricing unit needs configuration."; avail.className = "avail no"; }
       else { avail.textContent = "Available"; avail.className = "avail ok"; }
     });
   }
@@ -113,8 +144,14 @@
       var m = $('input[type=radio]:checked', x);
       if (m && m.value) boxes.push({ dataset: { name: x.dataset.name + (m.value === "customer_supplied" ? " (customer-supplied)" : "") } });
     });
-    if (!boxes.length) { list.appendChild(el("li", { "class": "muted" }, "Nothing selected yet.")); return; }
+    var count = $("#side-count");
+    if (!boxes.length) {
+      list.appendChild(el("li", { "class": "muted" }, "Nothing selected yet."));
+      if (count) count.textContent = "Nothing selected";
+      return;
+    }
     boxes.forEach(function (b) { list.appendChild(el("li", {}, b.dataset.name)); });
+    if (count) count.textContent = boxes.length + (boxes.length === 1 ? " item" : " items");
   }
 
   // ---------------------------------------------------------------- step 2: details
@@ -394,6 +431,7 @@
 
   function confirmOrder() {
     if (busy) return;
+    if (!window.confirm("Create this order and generate the stub? Prices and payment will be saved as shown.")) return;
     var payload = buildPayload(true, true);
     payload.submission_token = TOKEN;
     guarded(post(URLS.confirm, payload)).then(function (r) {

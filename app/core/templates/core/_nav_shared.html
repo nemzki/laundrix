@@ -1,0 +1,50 @@
+{# Shared nav helpers for authenticated shell. #}
+{% from "core/_icons.html" import icon %}
+
+{% macro user_initials(user) -%}
+{%- set name = (user.full_name or user.email or '?')|trim -%}
+{%- set parts = name.split() -%}
+{%- if parts|length >= 2 -%}{{ (parts[0][0] ~ parts[1][0])|upper }}
+{%- else -%}{{ name[:2]|upper }}{%- endif -%}
+{%- endmacro %}
+
+{% macro logout_button(class_name='lx-nav__logout') -%}
+<form class="{{ class_name }}" method="post" action="{{ url_for('auth.logout') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button class="btn btn-outline btn-sm" type="submit">{{ icon('logout', 16) }}<span>Logout</span></button>
+</form>
+{%- endmacro %}
+
+{% macro nav_link(href, label, icon_name, active=False, class_name='lx-nav__link') -%}
+<a
+  class="{{ class_name }}{% if active %} is-active{% endif %}"
+  href="{{ href }}"
+  {% if active %}aria-current="page"{% endif %}
+>
+  {{ icon(icon_name) }}
+  <span>{{ label }}</span>
+</a>
+{%- endmacro %}
+
+{% macro nav_groups(is_admin, ep, bp, link_class='lx-nav__link', show_groups=True) -%}
+  {% set orders_list_active = bp == 'orders' and ep not in ('orders.new_order', 'orders.customers') %}
+  {% if show_groups %}<p class="lx-nav__group-label">Overview</p>{% endif %}
+  {{ nav_link(url_for('dashboard.index'), 'Dashboard', 'dashboard', bp == 'dashboard', link_class) }}
+
+  {% if show_groups %}<p class="lx-nav__group-label">Operations</p>{% endif %}
+  {{ nav_link(url_for('orders.new_order'), 'New Order', 'plus', ep == 'orders.new_order', link_class) }}
+  {{ nav_link(url_for('orders.index'), 'Manage Orders' if not is_admin else 'Manage Orders', 'orders', orders_list_active, link_class) }}
+  {{ nav_link(url_for('payments.outstanding'), 'Outstanding Balances', 'wallet', ep == 'payments.outstanding', link_class) }}
+
+  {% if is_admin %}
+    {% if show_groups %}<p class="lx-nav__group-label">Management</p>{% endif %}
+    {{ nav_link(url_for('orders.customers'), 'Customers', 'users', ep == 'orders.customers', link_class) }}
+    {{ nav_link(url_for('catalog.index'), 'Services & Pricing', 'tag', bp == 'catalog', link_class) }}
+    {{ nav_link(url_for('staff_admin.index'), 'Staff Management', 'users', bp == 'staff_admin', link_class) }}
+
+    {% if show_groups %}<p class="lx-nav__group-label">Finance</p>{% endif %}
+    {{ nav_link(url_for('payments.records'), 'Payment Records', 'receipt', ep == 'payments.records', link_class) }}
+    {{ nav_link(url_for('payments.summary'), 'Payment Summary', 'chart', ep == 'payments.summary', link_class) }}
+    {{ nav_link(url_for('payments.settings'), 'Payment Settings', 'settings', ep == 'payments.settings', link_class) }}
+  {% endif %}
+{%- endmacro %}

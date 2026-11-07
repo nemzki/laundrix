@@ -1,204 +1,555 @@
 {% extends "core/app_shell.html" %}
 {% from "core/_icons.html" import icon %}
+{% set laundry_label = order.status|status_label %}
+{% set service_items = order.items|selectattr('item_type', 'equalto', 'service')|list %}
+{% set package_items = order.items|selectattr('item_type', 'equalto', 'package')|list %}
+{% set addon_items = order.items|selectattr('item_type', 'equalto', 'addon')|list %}
+{% set main_items = service_items + package_items %}
+{% set flow = statuses.FLOW %}
+{% set current_idx = flow.index(order.status) if order.status in flow else -1 %}
+{% set awaiting_receipt = not order.received_at %}
+{% set reached = [] %}
+{% for h in order.history %}
+  {% if h.to_status and h.to_status not in reached %}
+    {% if reached.append(h.to_status) %}{% endif %}
+  {% endif %}
+{% endfor %}
+{% set move = namespace(forward=none, backs=[]) %}
+{% for status, needs_note in transitions %}
+  {% if needs_note %}
+    {% if move.backs.append(status) %}{% endif %}
+  {% else %}
+    {% set move.forward = status %}
+  {% endif %}
+{% endfor %}
+
 {% block title %}{{ order.reference }} · Laundrix{% endblock %}
 {% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
-{% block page_title %}<span class="mono">{{ order.reference }}</span>{% endblock %}
-{% block page_subtitle %}Created {{ order.created_at|localdt }}{% if order.created_by %} by {{ order.created_by.full_name or order.created_by.email }}{% endif %}{% endblock %}
+{% block page_title %}Order #{{ order.reference }}{% endblock %}
+{% block page_subtitle %}{{ order.customer_name }} · {{ order.created_at|localdt }}{% endblock %}
 {% block page_actions %}
-  <a class="btn btn-outline" href="{{ url_for('orders.index') }}">{{ icon('arrow-left', 16) }}<span>All orders</span></a>
-  <a class="btn btn-primary" href="{{ url_for('orders.stub', reference=order.reference) }}" target="_blank" rel="noopener">{{ icon('printer', 16) }}<span>Printable stub</span></a>
+<div class="order-detail-head-actions">
+  <span class="status status-{{ order.status|status_tone }}" aria-label="Current laundry status">{{ laundry_label }}</span>
+  <div class="order-detail-head-actions__btns">
+    <a class="btn btn-outline btn-sm" href="{{ url_for('orders.index') }}">{{ icon('arrow-left', 16) }}<span>Manage Orders</span></a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('orders.stub', reference=order.reference) }}" target="_blank" rel="noopener">{{ icon('printer', 16) }}<span>Printable stub</span></a>
+  </div>
+</div>
 {% endblock %}
+
 {% block content %}
-<div class="grid grid-2">
-  <div>
-    <div class="card">
-      <div class="card-head"><h2>Items</h2><span class="status status-{{ order.status|status_tone }}">{{ order.status|status_label }}</span></div>
-      <div class="table-wrap"><table class="table">
-        <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
-        <tbody>
-        {% for i in order.items %}
-          <tr>
-            <td><strong>{{ i.name }}</strong>
-              {% if i.description %}<span class="sub">{{ i.description }}</span>{% endif %}
-              {% if i.measurement %}<span class="sub">{{ i.measurement|qty }} {{ i.measurement_unit }}</span>{% endif %}
-              {% if i.instructions %}<span class="sub">Note: {{ i.instructions }}</span>{% endif %}</td>
-            <td class="num">{{ i.quantity|qty }} {{ i.unit }}</td>
-            <td class="num">{% if i.customer_supplied %}Customer-supplied{% else %}{{ i.unit_price|peso }}{% endif %}</td>
-            <td class="num">{{ i.line_total|peso }}</td>
-          </tr>
-        {% endfor %}
-        </tbody>
-        <tfoot>
-          <tr><td colspan="3" class="num muted">Subtotal</td><td class="num">{{ order.subtotal|peso }}</td></tr>
-          {% if order.discount_total and order.discount_total > 0 %}<tr><td colspan="3" class="num muted">Discount</td><td class="num">-{{ order.discount_total|peso }}</td></tr>{% endif %}
-          <tr class="total-row"><td colspan="3" class="num">Total</td><td class="num">{{ order.total|peso }}</td></tr>
-        </tfoot>
-      </table></div>
-      <p class="hint">Prices shown are the prices charged when the order was created.</p>
-      {% if order.notes %}<p><strong>Notes:</strong> {{ order.notes }}</p>{% endif %}
+<section class="order-detail" aria-label="Order details"
+         data-ref="{{ order.reference }}"
+         data-current-status="{{ laundry_label }}">
+
+  <div class="order-detail__tracker card" aria-label="Laundry status progress">
+    <div class="order-detail__tracker-head">
+      <h2 class="order-detail__section-title">Laundry status</h2>
+      <span class="status status-{{ order.status|status_tone }}">{{ laundry_label }}</span>
     </div>
-    <div class="card">
-      <h2>Customer</h2>
-      <dl class="kv"><dt>Name</dt><dd>{{ order.customer_name }}</dd><dt>Contact</dt><dd>{{ order.customer_contact }}</dd></dl>
+
+    {% if awaiting_receipt %}
+    <div class="order-detail__gate alert alert-warn" role="status">
+      Confirm that the laundry was received before changing the order status. Receipt confirmation does not affect payment.
+    </div>
+    {% endif %}
+
+    <ol class="order-tracker" aria-label="Six-stage laundry workflow">
+      {% for s in flow %}
+      {% set i = loop.index0 %}
+      {% set state = 'is-upcoming' %}
+      {% if current_idx >= 0 and i == current_idx %}
+        {% set state = 'is-current' %}
+      {% elif current_idx >= 0 and i < current_idx and s in reached %}
+        {% set state = 'is-done' %}
+      {% elif current_idx >= 0 and i < current_idx %}
+        {% set state = 'is-gap' %}
+      {% endif %}
+      <li class="order-tracker__step {{ state }}">
+        <span class="order-tracker__marker" aria-hidden="true">
+          {% if state == 'is-done' %}{{ icon('check', 14) }}{% else %}{{ loop.index }}{% endif %}
+        </span>
+        <span class="order-tracker__label">{{ s|status_label }}</span>
+        {% if state == 'is-current' %}<span class="visually-hidden">(current)</span>{% endif %}
+        {% if state == 'is-done' %}<span class="visually-hidden">(completed per history)</span>{% endif %}
+        {% if state == 'is-gap' %}<span class="visually-hidden">(before current; not recorded in history)</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+
+    <div class="order-detail__actions">
+      {% if awaiting_receipt %}
+      <button class="btn btn-primary" type="button"
+              data-confirm-received
+              data-action="{{ url_for('orders.confirm_received', reference=order.reference) }}">
+        {{ icon('check', 16) }}<span>Confirm laundry received</span>
+      </button>
+      <p class="hint order-detail__actions-hint">Status updates unlock after receipt is confirmed.</p>
+      {% elif move.forward %}
+      <button class="btn btn-primary" type="button"
+              data-status-update
+              data-status="{{ move.forward }}"
+              data-label="{{ move.forward|status_label }}"
+              data-needs-note="0">
+        <span>Mark as {{ move.forward|status_label }}</span>{{ icon('arrow-right', 16) }}
+      </button>
+      {% for status in move.backs %}
+      <button class="btn btn-outline" type="button"
+              data-status-update
+              data-status="{{ status }}"
+              data-label="{{ status|status_label }}"
+              data-needs-note="1">
+        {{ icon('arrow-left', 16) }}<span>Back to {{ status|status_label }}</span>
+      </button>
+      {% endfor %}
+      {% elif order.status == 'completed' %}
+      <p class="muted order-detail__actions-hint">This order is completed and cannot move forward.</p>
+      {% for status in move.backs %}
+      <button class="btn btn-outline" type="button"
+              data-status-update
+              data-status="{{ status }}"
+              data-label="{{ status|status_label }}"
+              data-needs-note="1">
+        {{ icon('arrow-left', 16) }}<span>Back to {{ status|status_label }}</span>
+      </button>
+      {% endfor %}
+      {% else %}
+      <p class="muted order-detail__actions-hint">No status changes are available for this order right now.</p>
+      {% endif %}
     </div>
   </div>
 
-  <div>
-    <div class="card">
-      <div class="card-head"><h2>Laundry receipt</h2><span class="pill {{ 'pill-on' if order.received_at else 'pill-warn' }}">{{ 'Received' if order.received_at else 'Awaiting confirmation' }}</span></div>
-      {% if order.received_at %}
-        <p class="muted">Received {{ order.received_at|localdt }}{% if order.received_by %} by {{ order.received_by.full_name or order.received_by.email }}{% endif %}.</p>
-      {% else %}
-        <p class="muted">Confirm once the physical laundry is in the shop. Status changes unlock after this. It does not affect payment.</p>
-        <form method="post" action="{{ url_for('orders.confirm_received', reference=order.reference) }}"
-              data-confirm="Confirm that the laundry for {{ order.reference }} has been received by the shop?" data-confirm-title="Confirm laundry received">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="btn btn-primary" type="submit">{{ icon('check', 16) }}<span>Laundry received</span></button>
-        </form>
-      {% endif %}
+  <div class="order-detail__layout">
+    <div class="order-detail__main">
+      <section class="card order-detail__card">
+        <h2 class="order-detail__section-title">Customer</h2>
+        <dl class="kv order-detail__kv">
+          <dt>Name</dt><dd>{{ order.customer_name }}</dd>
+          <dt>Contact</dt><dd><span class="order-detail__phone">{{ order.customer_contact }}</span></dd>
+          {% if order.created_by %}
+          <dt>Created by</dt><dd>{{ order.created_by.full_name or order.created_by.email }}</dd>
+          {% endif %}
+        </dl>
+      </section>
+
+      <section class="card order-detail__card">
+        <h2 class="order-detail__section-title">Services and packages</h2>
+        {% if main_items %}
+        <div class="table-wrap">
+          <table class="table order-detail__table">
+            <thead>
+              <tr>
+                <th scope="col">Item</th>
+                <th class="num" scope="col">Qty</th>
+                <th class="num" scope="col">Unit price</th>
+                <th class="num" scope="col">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for i in main_items %}
+              <tr>
+                <td>
+                  <strong>{{ i.name }}</strong>
+                  <span class="sub">{{ 'Package' if i.item_type == 'package' else 'Service' }}</span>
+                  {% if i.description %}<span class="sub">{{ i.description }}</span>{% endif %}
+                  {% if i.measurement %}<span class="sub">{{ i.measurement|qty }} {{ i.measurement_unit }}</span>{% endif %}
+                  {% if i.instructions %}<span class="sub">Note: {{ i.instructions }}</span>{% endif %}
+                </td>
+                <td class="num">{{ i.quantity|qty }} {{ i.unit }}</td>
+                <td class="num">{% if i.customer_supplied %}Customer-supplied{% else %}{{ i.unit_price|peso }}{% endif %}</td>
+                <td class="num">{{ i.line_total|peso }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="muted order-detail__empty">No services or packages on this order.</p>
+        {% endif %}
+      </section>
+
+      <section class="card order-detail__card">
+        <h2 class="order-detail__section-title">Extras and add-ons</h2>
+        {% if addon_items %}
+        <div class="table-wrap">
+          <table class="table order-detail__table">
+            <thead>
+              <tr>
+                <th scope="col">Extra</th>
+                <th class="num" scope="col">Qty</th>
+                <th class="num" scope="col">Unit price</th>
+                <th class="num" scope="col">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for i in addon_items %}
+              <tr>
+                <td>
+                  <strong>{{ i.name }}</strong>
+                  {% if i.description %}<span class="sub">{{ i.description }}</span>{% endif %}
+                  {% if i.instructions %}<span class="sub">Note: {{ i.instructions }}</span>{% endif %}
+                </td>
+                <td class="num">{{ i.quantity|qty }} {{ i.unit }}</td>
+                <td class="num">{% if i.customer_supplied %}Customer-supplied{% else %}{{ i.unit_price|peso }}{% endif %}</td>
+                <td class="num">{{ i.line_total|peso }}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p class="muted order-detail__empty">No extras on this order.</p>
+        {% endif %}
+
+        <div class="order-detail__totals">
+          <div class="order-detail__total-row"><span>Subtotal</span><strong>{{ order.subtotal|peso }}</strong></div>
+          {% if order.discount_total and order.discount_total > 0 %}
+          <div class="order-detail__total-row"><span>Discount</span><strong>-{{ order.discount_total|peso }}</strong></div>
+          {% endif %}
+          <div class="order-detail__total-row order-detail__total-row--grand"><span>Total</span><strong>{{ order.total|peso }}</strong></div>
+        </div>
+        <p class="hint">Prices shown are the prices charged when the order was created.</p>
+        {% if order.notes %}<p class="order-detail__notes"><strong>Notes:</strong> {{ order.notes }}</p>{% endif %}
+      </section>
+
+      <section class="card order-detail__card">
+        <h2 class="order-detail__section-title">Status history</h2>
+        {% if order.history %}
+        <ol class="timeline order-detail__timeline">
+          {% for h in order.history|reverse %}
+          <li>
+            <strong>{{ h.to_status|status_label }}</strong>
+            <div class="when">
+              {{ h.created_at|localdt }}
+              &middot; {{ (h.changed_by.full_name or h.changed_by.email) if h.changed_by else 'Unknown user' }}
+              {% if h.from_status and h.from_status != h.to_status %}&middot; from {{ h.from_status|status_label }}{% endif %}
+            </div>
+            {% if h.note %}<div class="small">{{ h.note }}</div>{% endif %}
+          </li>
+          {% endfor %}
+        </ol>
+        {% else %}
+        <p class="muted order-detail__empty">No status history recorded yet.</p>
+        {% endif %}
+      </section>
     </div>
 
-    <div class="card" id="sms">
-      <div class="card-head"><h2>SMS notification</h2>
-        {% if sms.notification %}<span class="status status-{{ sms.tone }}">{{ sms.label }}</span>
-        {% else %}<span class="pill pill-off">{{ 'Consented' if sms.consent else 'No consent' }}</span>{% endif %}</div>
-      <dl class="kv">
-        <dt>Customer consent</dt><dd>{% if sms.consent %}Yes{% if sms.consent_at %} <span class="inline-note">{{ sms.consent_at|localdt }}</span>{% endif %}{% else %}No{% endif %}</dd>
-        {% if sms.notification %}
+    <aside class="order-detail__side">
+      <section class="card order-detail__card" id="receipt">
+        <div class="card-head">
+          <h2 class="order-detail__section-title">Laundry receipt</h2>
+          <span class="pill {{ 'pill-on' if order.received_at else 'pill-warn' }}">
+            {{ 'Received' if order.received_at else 'Awaiting confirmation' }}
+          </span>
+        </div>
+        {% if order.received_at %}
+        <p class="muted">
+          Received {{ order.received_at|localdt }}
+          {% if order.received_by %} by {{ order.received_by.full_name or order.received_by.email }}{% endif %}.
+        </p>
+        {% else %}
+        <p class="muted">Confirm once the physical laundry is in the shop. Status changes unlock after this. It does not affect payment.</p>
+        <button class="btn btn-primary" type="button"
+                data-confirm-received
+                data-action="{{ url_for('orders.confirm_received', reference=order.reference) }}">
+          {{ icon('check', 16) }}<span>Laundry received</span>
+        </button>
+        {% endif %}
+      </section>
+
+      <section class="card order-detail__card" id="sms">
+        <div class="card-head">
+          <h2 class="order-detail__section-title">SMS notification</h2>
+          {% if sms.notification %}
+          <span class="status status-{{ sms.tone }}">{{ sms.label }}</span>
+          {% else %}
+          <span class="pill pill-off">{{ 'Consented' if sms.consent else 'No consent' }}</span>
+          {% endif %}
+        </div>
+        <dl class="kv order-detail__kv">
+          <dt>Customer consent</dt>
+          <dd>
+            {% if sms.consent %}
+            Yes{% if sms.consent_at %} <span class="inline-note">{{ sms.consent_at|localdt }}</span>{% endif %}
+            {% else %}No{% endif %}
+          </dd>
+          {% if sms.notification %}
           <dt>Recipient</dt><dd>{{ sms.masked }}</dd>
           <dt>Attempts</dt><dd>{{ sms.notification.attempt_count }}</dd>
-          <dt>Last attempt</dt><dd>{{ sms.notification.last_attempt_at|localdt if sms.notification.last_attempt_at else '—' }}</dd>
-          {% if sms.notification.provider_message_id %}<dt>Provider reference</dt><dd class="mono">{{ sms.notification.provider_message_id }}</dd>{% endif %}
-          {% if sms.notification.last_error %}<dt>Last error</dt><dd>{{ sms.notification.last_error }}</dd>{% endif %}
+          <dt>Last attempt</dt>
+          <dd>{{ sms.notification.last_attempt_at|localdt if sms.notification.last_attempt_at else '—' }}</dd>
+          {% if sms.notification.provider_message_id %}
+          <dt>Provider reference</dt><dd class="mono">{{ sms.notification.provider_message_id }}</dd>
+          {% endif %}
+          {% if sms.notification.last_error %}
+          <dt>Last error</dt><dd>{{ sms.notification.last_error }}</dd>
+          {% endif %}
+          {% endif %}
+        </dl>
+        {% if not sms.notification %}
+        <p class="muted">
+          {{ 'A text message will be prepared when this order is first marked Ready for Pickup.' if sms.consent else 'The customer did not ask for an SMS, so none will be sent.' }}
+        </p>
+        {% elif sms.help %}
+        <p class="muted">{{ sms.help }}</p>
         {% endif %}
-      </dl>
-      {% if not sms.notification %}
-        <p class="muted">{{ 'A text message will be prepared when this order is first marked Ready for Pickup.' if sms.consent else 'The customer did not ask for an SMS, so none will be sent.' }}</p>
-      {% elif sms.help %}<p class="muted">{{ sms.help }}</p>{% endif %}
-      {% if sms.can_retry or sms.can_refresh %}
-      <div class="btn-row">
-        {% if sms.can_retry %}
-        <form class="inline-form" method="post" action="{{ url_for('orders.sms_retry', reference=order.reference) }}"
-              data-confirm="Send the ready-for-pickup SMS to the number saved on this order?" data-confirm-title="{{ sms.retry_label }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="btn btn-primary btn-sm" type="submit">{{ sms.retry_label }}</button>
-        </form>{% endif %}
-        {% if sms.can_refresh %}
-        <form class="inline-form" method="post" action="{{ url_for('orders.sms_refresh', reference=order.reference) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="btn btn-outline btn-sm" type="submit">Refresh status</button>
-        </form>{% endif %}
-      </div>{% endif %}
-    </div>
-
-    <div class="card" id="payment">
-      <div class="card-head"><h2>Payment</h2><span class="status status-{{ order.payment_status|payment_status_tone }}">{{ order.payment_status|payment_status_label }}</span></div>
-      {% if order.is_payment_tracked %}
-      <dl class="kv">
-        <dt>Order total</dt><dd>{{ order.total|peso }}</dd>
-        <dt>Received</dt><dd>{{ order.amount_paid|peso }}</dd>
-        <dt>Balance due</dt><dd>{{ order.balance_due|peso }}</dd>
-        <dt>Arrangement</dt><dd>{{ order.payment_arrangement|arrangement_label }}</dd>
-      </dl>
-
-      <h3 class="subhead">Payment history</h3>
-      {% if order.payments %}
-      <div class="table-wrap"><table class="table">
-        <thead><tr><th>When / by</th><th>Method</th><th class="num">Amount</th><th></th></tr></thead>
-        <tbody>
-        {% for p in order.payments %}
-          <tr class="{% if p.kind == 'reversal' or p.reversal %}is-reversed{% endif %}">
-            <td>{{ p.paid_at|localdt }}<span class="sub">{{ (p.recorded_by.full_name or p.recorded_by.email) if p.recorded_by else 'Unknown user' }}</span></td>
-            <td>{{ p.method_label }}{% if p.reference %}<span class="sub">Ref: {{ p.reference }}</span>{% endif %}{% if p.notes %}<span class="sub">{{ p.notes }}</span>{% endif %}</td>
-            <td class="num">{% if p.kind == 'reversal' %}-{% endif %}{{ p.amount|peso }}</td>
-            <td class="num">
-              {% if p.kind == 'reversal' %}<span class="pill pill-off">Reversal</span>
-              {% elif p.reversal %}<span class="pill pill-off">Reversed</span>
-              {% elif is_admin %}
-                <details class="correct">
-                  <summary>Correct</summary>
-                  <form method="post" action="{{ url_for('payments.reverse', payment_id=p.id) }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <label class="sr-only" for="reason-{{ p.id }}">Reason</label>
-                    <input class="input" id="reason-{{ p.id }}" name="reason" maxlength="255" placeholder="Reason for reversal" required>
-                    <button class="btn btn-danger btn-sm" type="submit">Reverse payment</button>
-                  </form>
-                </details>
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody></table></div>
-      {% else %}
-        <p class="muted">No payments recorded yet.</p>
-      {% endif %}
-
-      {% if order.balance_due > 0 %}
-      <h3 class="subhead">Record a payment</h3>
-      <form method="post" action="{{ url_for('orders.record_payment', reference=order.reference) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
-        <div class="form-grid">
-          <div class="field"><label for="pm-1">Method</label>
-            <select class="input" id="pm-1" name="method">{% for m in methods %}<option value="{{ m.code }}">{{ m.label }}</option>{% endfor %}</select></div>
-          <div class="field"><label for="pa-1">Amount received (PHP)</label>
-            <input class="input" id="pa-1" name="amount" type="number" inputmode="decimal" step="0.01" min="0.01" max="{{ order.balance_due }}" required></div>
-          <div class="field span-2"><label for="pr-1">Reference no. (optional)</label>
-            <input class="input" id="pr-1" name="reference" maxlength="64" autocomplete="off"></div>
-        </div>
-        <details class="correct">
-          <summary>Split across a second method</summary>
-          <div class="form-grid">
-            <div class="field"><label for="pm-2">Second method</label>
-              <select class="input" id="pm-2" name="method"><option value="">None</option>{% for m in methods %}<option value="{{ m.code }}">{{ m.label }}</option>{% endfor %}</select></div>
-            <div class="field"><label for="pa-2">Amount (PHP)</label>
-              <input class="input" id="pa-2" name="amount" type="number" inputmode="decimal" step="0.01" min="0.01"></div>
-            <div class="field span-2"><label for="pr-2">Reference no. (optional)</label>
-              <input class="input" id="pr-2" name="reference" maxlength="64" autocomplete="off"></div>
-          </div>
-        </details>
-        <div class="field"><label for="pn">Note (optional)</label><input class="input" id="pn" name="notes" maxlength="255"></div>
-        <p class="hint">Balance due: {{ order.balance_due|peso }}. Amounts above the balance are rejected.</p>
-        <button class="btn btn-primary" type="submit">Record payment</button>
-      </form>
-      {% elif order.payment_status == 'paid' %}
-        <p class="muted">This order is fully paid.</p>
-      {% endif %}
-      {% else %}
-        <p class="muted">This order was created before payment recording was introduced, so its payments are not tracked.</p>
-      {% endif %}
-    </div>
-
-    <div class="card">
-      <h2>Update status</h2>
-      {% if not order.received_at %}
-        <p class="muted">Confirm that the laundry was received before changing the order status.</p>
-      {% elif transitions %}
-      <form class="status-form" method="post" action="{{ url_for('orders.update_status', reference=order.reference) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="field"><label for="note">Note {% if transitions|selectattr(1)|list %}<span class="muted">(required when moving an order back)</span>{% else %}<span class="muted">(optional)</span>{% endif %}</label>
-          <input class="input" id="note" name="note" maxlength="255"></div>
+        {% if sms.can_retry or sms.can_refresh %}
         <div class="btn-row">
-          {% for status, needs_note in transitions %}
-            <button class="btn {{ 'btn-outline' if needs_note else 'btn-primary' }}" type="submit" name="status" value="{{ status }}">
-              {% if needs_note %}{{ icon('arrow-left', 16) }}<span>Back to {{ status|status_label }}</span>{% else %}<span>Mark as {{ status|status_label }}</span>{{ icon('arrow-right', 16) }}{% endif %}
-            </button>
+          {% if sms.can_retry %}
+          <button class="btn btn-primary btn-sm" type="button"
+                  data-sms-retry
+                  data-action="{{ url_for('orders.sms_retry', reference=order.reference) }}"
+                  data-title="{{ sms.retry_label }}">
+            {{ sms.retry_label }}
+          </button>
+          {% endif %}
+          {% if sms.can_refresh %}
+          <form class="inline-form" method="post" action="{{ url_for('orders.sms_refresh', reference=order.reference) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-outline btn-sm" type="submit">Refresh status</button>
+          </form>
+          {% endif %}
+        </div>
+        {% endif %}
+      </section>
+
+      <section class="card order-detail__card" id="payment">
+        <div class="card-head">
+          <h2 class="order-detail__section-title">Payment</h2>
+          <span class="status status-{{ order.payment_status|payment_status_tone }}">{{ order.payment_status|payment_status_label }}</span>
+        </div>
+        {% if order.is_payment_tracked %}
+        <dl class="kv order-detail__kv order-detail__pay-summary">
+          <dt>Order total</dt><dd>{{ order.total|peso }}</dd>
+          <dt>Amount paid</dt><dd>{{ order.amount_paid|peso }}</dd>
+          <dt>Outstanding balance</dt><dd>{{ order.balance_due|peso }}</dd>
+          <dt>Arrangement</dt><dd>{{ order.payment_arrangement|arrangement_label }}</dd>
+        </dl>
+
+        <h3 class="subhead">Payment history</h3>
+        {% if order.payments %}
+        <ul class="pay-txns" aria-label="Payment transactions">
+          {% for p in order.payments %}
+          <li class="pay-txn{% if p.kind == 'reversal' or p.reversal %} is-reversed{% endif %}">
+            <div class="pay-txn__body">
+              <div class="pay-txn__meta">
+                <time datetime="{{ p.paid_at }}">{{ p.paid_at|localdt }}</time>
+                <span class="pay-txn__by">{{ (p.recorded_by.full_name or p.recorded_by.email) if p.recorded_by else 'Unknown user' }}</span>
+              </div>
+              <div class="pay-txn__method">
+                <strong>{{ p.method_label }}</strong>
+                {% if p.reference %}<span class="sub">Ref: {{ p.reference }}</span>{% endif %}
+                {% if p.notes %}<span class="sub">{{ p.notes }}</span>{% endif %}
+              </div>
+              <div class="pay-txn__amount num">{% if p.kind == 'reversal' %}-{% endif %}{{ p.amount|peso }}</div>
+            </div>
+            <div class="pay-txn__action">
+              {% if p.kind == 'reversal' %}
+              <span class="pill pill-off">Reversal</span>
+              {% elif p.reversal %}
+              <span class="pill pill-off">Reversed</span>
+              {% elif is_admin %}
+              <button class="btn btn-danger btn-sm" type="button"
+                      data-reverse-payment
+                      data-action="{{ url_for('payments.reverse', payment_id=p.id) }}"
+                      data-amount="{{ p.amount|peso }}"
+                      data-method="{{ p.method_label }}">
+                Reverse payment
+              </button>
+              {% endif %}
+            </div>
+          </li>
           {% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted order-detail__empty">No payments recorded yet.</p>
+        {% endif %}
+
+        {% if order.balance_due > 0 %}
+        <h3 class="subhead">Record a payment</h3>
+        <form method="post" action="{{ url_for('orders.record_payment', reference=order.reference) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
+          <div class="form-grid">
+            <div class="field">
+              <label for="pm-1">Method</label>
+              <select class="input" id="pm-1" name="method">
+                {% for m in methods %}<option value="{{ m.code }}">{{ m.label }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="field">
+              <label for="pa-1">Amount received (PHP)</label>
+              <input class="input" id="pa-1" name="amount" type="number" inputmode="decimal" step="0.01" min="0.01" max="{{ order.balance_due }}" required>
+            </div>
+            <div class="field span-2">
+              <label for="pr-1">Reference no. (optional)</label>
+              <input class="input" id="pr-1" name="reference" maxlength="64" autocomplete="off">
+            </div>
+          </div>
+          <details class="correct">
+            <summary>Split across a second method</summary>
+            <div class="form-grid">
+              <div class="field">
+                <label for="pm-2">Second method</label>
+                <select class="input" id="pm-2" name="method">
+                  <option value="">None</option>
+                  {% for m in methods %}<option value="{{ m.code }}">{{ m.label }}</option>{% endfor %}
+                </select>
+              </div>
+              <div class="field">
+                <label for="pa-2">Amount (PHP)</label>
+                <input class="input" id="pa-2" name="amount" type="number" inputmode="decimal" step="0.01" min="0.01">
+              </div>
+              <div class="field span-2">
+                <label for="pr-2">Reference no. (optional)</label>
+                <input class="input" id="pr-2" name="reference" maxlength="64" autocomplete="off">
+              </div>
+            </div>
+          </details>
+          <div class="field">
+            <label for="pn">Note (optional)</label>
+            <input class="input" id="pn" name="notes" maxlength="255">
+          </div>
+          <p class="hint">Balance due: {{ order.balance_due|peso }}. Amounts above the balance are rejected.</p>
+          <button class="btn btn-primary" type="submit">Record payment</button>
+        </form>
+        {% elif order.payment_status == 'paid' %}
+        <p class="muted">This order is fully paid.</p>
+        {% endif %}
+        {% else %}
+        <p class="muted">This order was created before payment recording was introduced, so its payments are not tracked.</p>
+        {% endif %}
+      </section>
+    </aside>
+  </div>
+</section>
+
+<div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content order-detail-modal">
+      <form id="statusUpdateForm" method="post" action="{{ url_for('orders.update_status', reference=order.reference) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="status" id="statusUpdateValue" value="">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="statusUpdateModalLabel">Update order status</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <dl class="order-detail-modal__meta">
+            <div><dt>Order</dt><dd class="mono">{{ order.reference }}</dd></div>
+            <div><dt>Current</dt><dd>{{ laundry_label }}</dd></div>
+            <div><dt>New</dt><dd data-status-new>—</dd></div>
+          </dl>
+          <p data-status-message>Are you sure you want to update this order?</p>
+          <div class="field" data-note-field>
+            <label for="statusUpdateNote">
+              Note
+              <span class="muted" data-note-optional>(optional)</span>
+              <span class="req" data-note-required hidden aria-hidden="true">*</span>
+            </label>
+            <input class="input" id="statusUpdateNote" name="note" maxlength="255" placeholder="Add a short note">
+            <p class="hint" data-note-hint>Optional note for this status change.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-submit-btn>
+            <span data-label>Confirm status update</span>
+            <span data-busy hidden>Updating…</span>
+          </button>
         </div>
       </form>
-      {% else %}<p class="muted">This order is completed and cannot move forward.</p>{% endif %}
-    </div>
-    <div class="card">
-      <h2>Status history</h2>
-      <ol class="timeline">
-        {% for h in order.history|reverse %}
-          <li><strong>{{ h.to_status|status_label }}</strong>
-            <div class="when">{{ h.created_at|localdt }} &middot; {{ (h.changed_by.full_name or h.changed_by.email) if h.changed_by else 'Unknown user' }}
-              {% if h.from_status %}&middot; from {{ h.from_status|status_label }}{% endif %}</div>
-            {% if h.note %}<div class="small">{{ h.note }}</div>{% endif %}</li>
-        {% endfor %}
-      </ol>
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="confirmReceivedModal" tabindex="-1" aria-labelledby="confirmReceivedModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content order-detail-modal">
+      <form id="confirmReceivedForm" method="post" action="#">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="confirmReceivedModalLabel">Confirm laundry received</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Confirm that the laundry for <strong class="mono">{{ order.reference }}</strong> has been received by the shop?</p>
+          <p class="muted">This records receipt on the order. It does not change payment.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-submit-btn>
+            <span data-label>Confirm received</span>
+            <span data-busy hidden>Confirming…</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% if sms.can_retry %}
+<div class="modal fade" id="smsRetryModal" tabindex="-1" aria-labelledby="smsRetryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content order-detail-modal">
+      <form id="smsRetryForm" method="post" action="#">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="smsRetryModalLabel">SMS notification</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Send the ready-for-pickup SMS for <strong class="mono">{{ order.reference }}</strong> to the number saved on this order?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-submit-btn>
+            <span data-label>Confirm</span>
+            <span data-busy hidden>Sending…</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if is_admin %}
+<div class="modal fade" id="reversePaymentModal" tabindex="-1" aria-labelledby="reversePaymentModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content order-detail-modal">
+      <form id="reversePaymentForm" method="post" action="#">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="reversePaymentModalLabel">Reverse payment</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            Reverse the <strong data-reverse-amount>—</strong>
+            <span data-reverse-method></span>
+            payment on order <strong class="mono">{{ order.reference }}</strong>?
+          </p>
+          <p class="muted">This cannot be undone from this screen. Provide a reason for the audit trail.</p>
+          <div class="field">
+            <label for="reverseReason">Reason <span class="req" aria-hidden="true">*</span></label>
+            <input class="input" id="reverseReason" name="reason" maxlength="255" required placeholder="Reason for reversal">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger" data-submit-btn>
+            <span data-label>Reverse payment</span>
+            <span data-busy hidden>Reversing…</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('orders.static', filename='js/orders_detail.js') }}" defer></script>
 {% endblock %}
