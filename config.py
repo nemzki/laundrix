@@ -56,6 +56,8 @@ class BaseConfig:
     GOOGLE_ALLOWED_DOMAIN = (os.getenv("GOOGLE_ALLOWED_DOMAIN") or "").strip().lower() or None
 
     # --- Administrator password sign-in ---
+    # --- Administrator password sign-in (Google OAuth remains available separately) ---
+    # Read by app/auth/credentials.py; default on so username/email + password works locally.
     ADMIN_PASSWORD_LOGIN_ENABLED = _bool("ADMIN_PASSWORD_LOGIN_ENABLED", True)
 
     # --- Staff portal (email + Staff ID + face check by Didit Biometric Authentication) ---

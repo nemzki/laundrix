@@ -13,6 +13,7 @@ CSP = {
     "default-src": "'self'",
     "script-src": "'self'",
     "style-src": "'self'",
+    "font-src": "'self'",
     "img-src": ["'self'", "data:", "https://lh3.googleusercontent.com"],  # Google avatars
     "object-src": "'none'",
     "base-uri": "'self'",

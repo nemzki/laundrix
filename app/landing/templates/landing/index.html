@@ -1,105 +1,271 @@
 {% extends "core/base.html" %}
-{% block title %}Laundrix · Laundry business management{% endblock %}
+{% from "core/_brand.html" import brand_logo %}
+{% from "core/_icons.html" import icon %}
+{% block title %}Laundrix · Laundry Management, Made Simple{% endblock %}
 {% block head %}
   <link rel="stylesheet" href="{{ url_for('landing.static', filename='css/landing.css') }}">
 {% endblock %}
+{% block body_class %}lx-landing{% endblock %}
 
 {% block body %}
-<header class="nav">
-  <div class="container nav-inner">
-    <a class="brand" href="#top"><span class="brand-mark">L</span>Laundrix</a>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
-    <nav class="nav-links" id="navLinks">
-      <a href="#features">Features</a>
-      <a href="#how">How it works</a>
-      <a href="#roles">Roles</a>
-      <a class="btn btn-primary btn-sm" href="{{ url_for('auth.login') }}">Sign in</a>
-    </nav>
+<header class="lp-header">
+  <div class="lp-container lp-header__inner">
+    {{ brand_logo('landing', href='#top') }}
+    <a class="btn btn-primary btn-sm lp-header__signin" href="{{ url_for('auth.login') }}">Sign In</a>
   </div>
 </header>
 
 <main id="top">
-  <section class="hero">
-    <div class="container hero-grid">
-      <div>
-        <span class="pill">Laundry business management</span>
-        <h1>Run your laundry business with clarity.</h1>
-        <p class="lead">Track every order from drop-off to pickup, keep customer records organized,
-          and give your team the right access — all in one secure place.</p>
-        <div class="hero-cta">
-          <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Get started</a>
-          <a class="btn btn-outline" href="#features">See features</a>
+  <section class="lp-hero" aria-labelledby="hero-title">
+    <div class="lp-container lp-hero__grid">
+      <div class="lp-hero__copy">
+        <p class="lp-eyebrow">Laundrix Management System</p>
+        <h1 id="hero-title">Laundry Management, Made Simple.</h1>
+        <p class="lp-lead">Manage laundry orders, customers, payments, and order tracking in one organized system.</p>
+        <div class="lp-hero__cta">
+          <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Sign In</a>
+          <a class="btn btn-outline" href="#tracking">Track Laundry Order</a>
         </div>
       </div>
 
-      <div class="preview" aria-hidden="true">
-        <div class="preview-head"><span></span><span></span><span></span></div>
-        <div class="preview-row"><b>Order #1042</b><span class="tag tag-blue">Received</span></div>
-        <div class="preview-row"><b>Order #1041</b><span class="tag tag-amber">Washing</span></div>
-        <div class="preview-row"><b>Order #1040</b><span class="tag tag-green">Ready for pickup</span></div>
-        <div class="preview-bar"><i></i></div>
+      <div class="lp-hero__stage">
+        <img
+          class="lp-hero__art"
+          src="{{ url_for('core.static', filename='images/hero-illustration.jpg') }}"
+          width="1152"
+          height="864"
+          alt="Laundrix washing machine mascot with orders overview"
+        >
       </div>
     </div>
   </section>
 
-  <section id="features" class="section">
-    <div class="container">
-      <h2 class="section-title">Everything the front desk needs</h2>
-      <p class="section-sub">Built for the daily rhythm of a laundry shop.</p>
-      <div class="cards">
-        <article class="card"><div class="icon">🧺</div><h3>Order tracking</h3>
-          <p>Follow each load through received, washing, ready, and picked up.</p></article>
-        <article class="card"><div class="icon">👥</div><h3>Customer records</h3>
-          <p>Keep contact details and order history one click away.</p></article>
-        <article class="card"><div class="icon">💳</div><h3>Pricing &amp; payments</h3>
-          <p>Set service rates and record payments without a calculator.</p></article>
-        <article class="card"><div class="icon">📊</div><h3>Reports</h3>
-          <p>See daily and monthly activity so you can plan with confidence.</p></article>
-        <article class="card"><div class="icon">🔐</div><h3>Secure sign-in</h3>
-          <p>Google handles authentication — no passwords stored in Laundrix.</p></article>
-        <article class="card"><div class="icon">🛡️</div><h3>Role-based access</h3>
-          <p>Admins manage the business; staff see only what they need.</p></article>
+  <section id="features" class="lp-section">
+    <div class="lp-container">
+      <h2 class="lp-section__title">What Laundrix helps your shop do</h2>
+      <p class="lp-section__sub">Everything your laundry shop needs to stay organized.</p>
+      <div class="lp-features">
+        <article class="lp-feature">
+          <span class="lp-feature__icon" aria-hidden="true">{{ icon('orders', 22) }}</span>
+          <h3>Laundry Order Management</h3>
+          <p>Create tickets, follow each load through the shop, and keep order history easy to find.</p>
+        </article>
+        <article class="lp-feature">
+          <span class="lp-feature__icon" aria-hidden="true">{{ icon('users', 22) }}</span>
+          <h3>Customer Management</h3>
+          <p>Look up returning customers and keep contact details with every order.</p>
+        </article>
+        <article class="lp-feature">
+          <span class="lp-feature__icon" aria-hidden="true">{{ icon('tag', 22) }}</span>
+          <h3>Services and Pricing</h3>
+          <p>Admins maintain services, packages, and add-ons used when quoting work.</p>
+        </article>
+        <article class="lp-feature">
+          <span class="lp-feature__icon" aria-hidden="true">{{ icon('wallet', 22) }}</span>
+          <h3>Payment Recording</h3>
+          <p>Record money collected in the shop — including partial payments and balances due.</p>
+        </article>
+        <article class="lp-feature">
+          <span class="lp-feature__icon" aria-hidden="true">{{ icon('search', 22) }}</span>
+          <h3>QR Order Tracking</h3>
+          <p>Each stub can include a secure QR link so customers check progress themselves.</p>
+        </article>
+        <article class="lp-feature">
+          <span class="lp-feature__icon" aria-hidden="true">{{ icon('chart', 22) }}</span>
+          <h3>Staff and Administrative Management</h3>
+          <p>Admins authorize staff, manage access, and keep the shop’s settings organized.</p>
+        </article>
       </div>
     </div>
   </section>
 
-  <section id="how" class="section section-alt">
-    <div class="container">
-      <h2 class="section-title">How it works</h2>
-      <ol class="steps">
-        <li><span>1</span><div><h3>Sign in with Google</h3><p>Use the Google account your admin authorized.</p></div></li>
-        <li><span>2</span><div><h3>Manage orders</h3><p>Create, update, and complete orders from your dashboard.</p></div></li>
-        <li><span>3</span><div><h3>Grow with insight</h3><p>Review reports and keep your team in sync.</p></div></li>
-      </ol>
+  <section id="workflow" class="lp-section lp-section--alt">
+    <div class="lp-container">
+      <h2 class="lp-section__title">From drop-off to pickup, all in one flow.</h2>
+      <p class="lp-section__sub">Select a stage to see what happens at that point in the laundry workflow.</p>
+
+      <div class="lp-workflow" data-workflow>
+        <div class="lp-workflow__rail" role="tablist" aria-label="Laundry order stages">
+          {% set stages = [
+            ('Order Received', 'The order ticket is created and waiting for laundry to be confirmed in the shop.'),
+            ('Pending Processing', 'Laundry has been received and is queued for wash and care work.'),
+            ('Processing', 'Items are being washed, dried, folded, or prepared for the customer.'),
+            ('Ready for Pickup', 'The order is finished and waiting. Optional SMS can notify the customer.'),
+            ('Picked Up / Released', 'The customer has claimed their laundry from the shop.'),
+            ('Completed', 'The order is closed in Laundrix.'),
+          ] %}
+          {% for title, blurb in stages %}
+          <button
+            class="lp-workflow__step {% if loop.first %}is-active{% endif %}"
+            type="button"
+            role="tab"
+            id="wf-tab-{{ loop.index }}"
+            aria-selected="{{ 'true' if loop.first else 'false' }}"
+            aria-controls="wf-panel"
+            data-step="{{ loop.index0 }}"
+            data-title="{{ title }}"
+            data-blurb="{{ blurb }}"
+          >
+            <span class="lp-workflow__num">{{ loop.index }}</span>
+            <span class="lp-workflow__label">{{ title }}</span>
+          </button>
+          {% endfor %}
+        </div>
+        <div class="lp-workflow__panel" id="wf-panel" role="tabpanel" aria-labelledby="wf-tab-1" tabindex="0">
+          <p class="lp-workflow__stage-title" data-wf-title>Order Received</p>
+          <p class="lp-workflow__stage-blurb" data-wf-blurb>The order ticket is created and waiting for laundry to be confirmed in the shop.</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section id="roles" class="section">
-    <div class="container roles">
-      <div class="role-card">
-        <h3>Admin</h3>
-        <p>Full control of the business: manage staff access, services, pricing, and reports.</p>
+  <section id="roles" class="lp-section">
+    <div class="lp-container lp-roles">
+      <div class="lp-roles__intro">
+        <h2 class="lp-section__title lp-section__title--left">Built for the people running your shop.</h2>
+        <p class="lp-section__sub lp-section__sub--left">Switch between Admin and Staff to see what each role can do. Customers do not use the internal dashboard.</p>
+        <div class="lx-segmented" role="tablist" aria-label="Role explanation">
+          <button class="lx-segmented__btn is-active" type="button" role="tab" id="role-admin-tab" aria-selected="true" aria-controls="role-admin-panel" data-role="admin">Admin</button>
+          <button class="lx-segmented__btn" type="button" role="tab" id="role-staff-tab" aria-selected="false" aria-controls="role-staff-panel" data-role="staff">Staff</button>
+        </div>
       </div>
-      <div class="role-card">
-        <h3>Staff</h3>
-        <p>Handle day-to-day work: create orders, update statuses, and serve customers.</p>
+
+      <div class="lp-roles__panels">
+        <div class="lp-roles__panel is-active" id="role-admin-panel" role="tabpanel" aria-labelledby="role-admin-tab" data-role-panel="admin">
+          <div class="lp-roles__panel-head">
+            <span class="lp-feature__icon" aria-hidden="true">{{ icon('chart', 20) }}</span>
+            <h3>Admin</h3>
+          </div>
+          <ul>
+            <li>Manage services, packages, add-ons, and pricing</li>
+            <li>Manage staff accounts</li>
+            <li>Configure supported payment settings</li>
+            <li>Review payment records</li>
+            <li>Monitor shop operations</li>
+          </ul>
+        </div>
+        <div class="lp-roles__panel" id="role-staff-panel" role="tabpanel" aria-labelledby="role-staff-tab" data-role-panel="staff" hidden>
+          <div class="lp-roles__panel-head">
+            <span class="lp-feature__icon" aria-hidden="true">{{ icon('orders', 20) }}</span>
+            <h3>Staff</h3>
+          </div>
+          <ul>
+            <li>Create laundry orders</li>
+            <li>Manage supported order actions</li>
+            <li>Record customer payments</li>
+            <li>Update laundry progress</li>
+            <li>Confirm laundry receipt</li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="cta">
-    <div class="container">
-      <h2>Ready to simplify your laundry operations?</h2>
-      <a class="btn btn-light" href="{{ url_for('auth.login') }}">Sign in to Laundrix</a>
+  <section id="tracking" class="lp-section lp-section--alt">
+    <div class="lp-container lp-tracking">
+      <div>
+        <h2 class="lp-section__title lp-section__title--left">Keep customers informed, effortlessly.</h2>
+        <p class="lp-section__sub lp-section__sub--left">
+          Customers track laundry with the secure QR code or tracking link on their order stub.
+          There is no public order-number search — only the unique token from the shop opens the page.
+        </p>
+        <ol class="lp-tracking__steps">
+          <li>Receive the order stub from the shop.</li>
+          <li>Scan the QR code or open the tracking link.</li>
+          <li>View status — and balance due when payments are tracked.</li>
+        </ol>
+        <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Sign In to manage orders</a>
+      </div>
+      <div class="lp-tracking__card" aria-hidden="true">
+        <div class="lp-tracking__card-top">
+          <p class="lp-tracking__eyebrow">Customer tracking</p>
+          <span class="lp-tracking__sample">Sample Data</span>
+        </div>
+        <p class="lp-tracking__ref">Order LX-1040</p>
+        <p class="status status-ready">Ready for Pickup</p>
+        <p class="lp-tracking__note">Opened only with the secure token from the stub.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="lp-section">
+    <div class="lp-container lp-faq">
+      <h2 class="lp-section__title">Frequently asked questions</h2>
+      <p class="lp-section__sub">Clear answers based on how Laundrix works today.</p>
+
+      <div class="accordion lp-accordion" id="landingFaq">
+        <div class="accordion-item">
+          <h3 class="accordion-header" id="faqHeading1">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="true" aria-controls="faq1">
+              Who can sign in to Laundrix?
+            </button>
+          </h3>
+          <div id="faq1" class="accordion-collapse collapse show" aria-labelledby="faqHeading1" data-bs-parent="#landingFaq">
+            <div class="accordion-body">
+              Only authorized Admin and Staff accounts. Sign in uses username/email and password, and Google when it is configured. Signing in does not create a new account by itself.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header" id="faqHeading2">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+              How can customers track their laundry?
+            </button>
+          </h3>
+          <div id="faq2" class="accordion-collapse collapse" aria-labelledby="faqHeading2" data-bs-parent="#landingFaq">
+            <div class="accordion-body">
+              Customers scan the QR code on their order stub (or open the tracking link the shop provides). That link uses a secure token. Laundrix does not offer a public search by order number alone.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header" id="faqHeading3">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+              Can customers pay partially?
+            </button>
+          </h3>
+          <div id="faq3" class="accordion-collapse collapse" aria-labelledby="faqHeading3" data-bs-parent="#landingFaq">
+            <div class="accordion-body">
+              Yes, when partial payments are enabled in payment settings. Staff can record full payment, a partial amount, or pay later. Remaining balances stay visible on the order.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header" id="faqHeading4">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" aria-expanded="false" aria-controls="faq4">
+              How are laundry statuses updated?
+            </button>
+          </h3>
+          <div id="faq4" class="accordion-collapse collapse" aria-labelledby="faqHeading4" data-bs-parent="#landingFaq">
+            <div class="accordion-body">
+              Staff or Admins update status from the order page, one stage at a time along the six-step flow. Laundry must be confirmed as received before status changes unlock. Notes are required when moving an order backward.
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h3 class="accordion-header" id="faqHeading5">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5" aria-expanded="false" aria-controls="faq5">
+              How are staff accounts authorized?
+            </button>
+          </h3>
+          <div id="faq5" class="accordion-collapse collapse" aria-labelledby="faqHeading5" data-bs-parent="#landingFaq">
+            <div class="accordion-body">
+              An Admin creates the staff account and issues a one-time enrollment link. Staff complete enrollment (including identity verification when Didit is configured). Admins approve accounts before normal sign-in is allowed.
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </main>
 
-<footer class="footer">
-  <div class="container">© {{ now_year }} Laundrix. All rights reserved.</div>
+<footer class="lp-footer">
+  <div class="lp-container">
+    <p>© 2026 Laundrix</p>
+  </div>
 </footer>
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('landing.static', filename='js/landing.js') }}"></script>
+  <script src="{{ url_for('landing.static', filename='js/landing.js') }}" defer></script>
 {% endblock %}
