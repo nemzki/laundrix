@@ -55,6 +55,9 @@ class BaseConfig:
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     GOOGLE_ALLOWED_DOMAIN = (os.getenv("GOOGLE_ALLOWED_DOMAIN") or "").strip().lower() or None
 
+    # --- Administrator password sign-in ---
+    ADMIN_PASSWORD_LOGIN_ENABLED = _bool("ADMIN_PASSWORD_LOGIN_ENABLED", True)
+
     # --- Staff portal (email + Staff ID + face check by Didit Biometric Authentication) ---
     STAFF_GOOGLE_LOGIN_ALLOWED = _bool("STAFF_GOOGLE_LOGIN_ALLOWED", False)
     STAFF_MAX_FAILED_ATTEMPTS = int(os.getenv("STAFF_MAX_FAILED_ATTEMPTS", "5"))
