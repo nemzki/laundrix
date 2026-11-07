@@ -86,7 +86,6 @@ def _register_blueprints(app):
     from app.staff_admin import bp as staff_admin_bp
     from app.staff_auth import bp as staff_bp
     from app.tracking import bp as tracking_bp
-    from app.analytics import bp as analytics_bp
 
     app.register_blueprint(core_bp)
     app.register_blueprint(landing_bp)
@@ -98,7 +97,6 @@ def _register_blueprints(app):
     app.register_blueprint(orders_bp, url_prefix="/orders")
     app.register_blueprint(payments_bp, url_prefix="/payments")
     app.register_blueprint(staff_admin_bp, url_prefix="/admin/staff")
-    app.register_blueprint(analytics_bp, url_prefix="/admin/analytics")
     app.register_blueprint(tracking_bp)
 
 def _register_cli(app):
