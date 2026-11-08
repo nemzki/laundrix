@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 
 from app.core.timeutil import local_date_code, local_today_bounds_utc
 from app.extensions import db
@@ -51,7 +52,7 @@ def _like_escape(text: str) -> str:
     return text.replace("\\", "\\\\").replace("%", r"\%").replace("_", r"\_")
 
 
-def validate_customer(raw):
+def validate_customer(raw, exclude_customer_id=None):
     """Return (customer_or_None, new_data_or_None, errors dict, duplicates list)."""
     errors, duplicates = {}, []
     if not isinstance(raw, dict):
@@ -81,15 +82,67 @@ def validate_customer(raw):
     if errors:
         return None, None, errors, duplicates
 
-    dupes = db.session.execute(
-        db.select(Customer).where(Customer.contact_normalized == normalized).limit(5)
-    ).scalars().all()
+    duplicate_query = db.select(Customer).where(Customer.contact_normalized == normalized)
+    # Minimal directory edit integration: an unchanged number is not a self-duplicate.
+    # Existing order-entry callers keep the original behavior (no excluded customer).
+    if exclude_customer_id is not None:
+        duplicate_query = duplicate_query.where(Customer.id != exclude_customer_id)
+    dupes = db.session.scalars(duplicate_query.limit(5)).all()
     if dupes and not raw.get("confirm_duplicate"):
         duplicates = [{"id": c.id, "full_name": c.full_name, "contact_number": c.contact_number} for c in dupes]
         return None, None, {"customer_duplicate": [
             "A customer with this contact number already exists. Use the existing record or confirm to create a new one."
         ]}, duplicates
     return None, {"full_name": name, "contact_number": display, "contact_normalized": normalized}, errors, duplicates
+
+
+def save_directory_customer(raw, user, customer=None):
+    """Approved minimal directory write: existing name/contact validation, no new fields."""
+    if not isinstance(raw, dict):
+        return None, {"customer": ["Enter the customer's name and contact number."]}, []
+    _, values, errors, duplicates = validate_customer(
+        {"new": {"full_name": raw.get("full_name"), "contact_number": raw.get("contact_number")},
+         "confirm_duplicate": raw.get("confirm_duplicate") is True},
+        exclude_customer_id=customer.id if customer else None,
+    )
+    if errors:
+        return None, errors, duplicates
+    if customer is None:
+        customer = Customer(created_by_id=user.id)
+        db.session.add(customer)
+    # Update this record only. Historical order name/contact snapshots are immutable here.
+    customer.full_name = values["full_name"]
+    customer.contact_number = values["contact_number"]
+    customer.contact_normalized = values["contact_normalized"]
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return None, {"customer": ["The customer could not be saved. Please try again."]}, []
+    return customer, {}, []
+
+
+def directory_profiles(customers):
+    """Read-only directory projection using ORIGINAL order payment properties/reversals."""
+    customers = list(customers)
+    if not customers:
+        return {}
+    grouped = {customer.id: [] for customer in customers}
+    orders = db.session.scalars(
+        db.select(Order).where(Order.customer_id.in_(grouped))
+        .options(selectinload(Order.payments)).order_by(Order.created_at.desc(), Order.id.desc())
+    ).all()
+    for order in orders:
+        grouped[order.customer_id].append(order)
+    return {customer.id: {
+        "customer": customer, "orders": grouped[customer.id],
+        "order_count": len(grouped[customer.id]),
+        "last_order": grouped[customer.id][0] if grouped[customer.id] else None,
+        "paid": sum((order.amount_paid for order in grouped[customer.id]), Decimal("0.00")),
+        # Same tracked/positive-balance eligibility as the original finance query.
+        "balance": sum((order.balance_due for order in grouped[customer.id]
+                        if order.is_payment_tracked and order.balance_due > 0), Decimal("0.00")),
+    } for customer in customers}
 
 
 # ----------------------------------------------------------------------------- creation
@@ -305,8 +358,11 @@ def confirm_received(order_id: int, user):
 PAGE_SIZE = 15
 
 
-def order_query(term=None, status=None):
-    q = db.select(Order)
+def order_query(term=None, status=None, payment=None):
+    # Reuse the original ledger-derived predicate before pagination. No client-side
+    # filtering and no change to recording/reversal or payment-status rules.
+    q = (payment_services.orders_by_payment_status(payment)
+         if payment in ("unpaid", "partial", "paid") else db.select(Order))
     term = (term or "").strip()
     if term:
         like = f"%{_like_escape(term)}%"
@@ -317,7 +373,7 @@ def order_query(term=None, status=None):
         q = q.where(or_(*cond))
     if status in OrderStatus.FLOW:
         q = q.where(Order.status == status)
-    return q.order_by(Order.created_at.desc(), Order.id.desc())
+    return q.order_by(None).order_by(Order.created_at.desc(), Order.id.desc())
 
 
 def status_counts():

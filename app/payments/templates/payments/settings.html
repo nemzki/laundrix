@@ -12,27 +12,27 @@
     <form class="card" method="post" action="{{ url_for('payments.update_settings') }}" novalidate>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="ui" value="1">
-      <h2>Policies and display text</h2>
+      <h2>Policies and Display Text</h2>
       {{ checkbox('Allow Partial Payment', 'partial_enabled', values, errors) }}
       {{ checkbox('Allow Pay Later', 'pay_later_enabled', values, errors) }}
-      {{ text('GCash account name', 'gcash_account_name', values, errors, maxlength=120, hint='Shown to staff when GCash is selected. Leave empty if not used.') }}
+      {{ text('GCash Account Name', 'gcash_account_name', values, errors, maxlength=120, hint='Shown to staff when GCash is selected. Leave empty if not used.') }}
       {{ text('GCash number or public identifier', 'gcash_account_number', values, errors, maxlength=40, inputmode='tel') }}
       <div class="field {% if errors.get('payment_instructions') %}has-error{% endif %}">
-        <label for="f-payment_instructions">Payment instructions</label>
+        <label for="f-payment_instructions">Payment Instructions</label>
         <textarea class="input" id="f-payment_instructions" name="payment_instructions" maxlength="1000">{{ values.get('payment_instructions') or '' }}</textarea>
         <p class="hint">Shown to staff in the order wizard, and on stubs that still have a balance.</p>
         {% if errors.get('payment_instructions') %}<p class="field-error">{{ errors['payment_instructions'] }}</p>{% endif %}
       </div>
-      {{ text('Payment notice', 'payment_notice', values, errors, maxlength=255, hint='Short policy line, e.g. balances are due on pickup.') }}
-      {{ text('Stub footer', 'stub_footer', values, errors, maxlength=255) }}
+      {{ text('Payment Notice', 'payment_notice', values, errors, maxlength=255, hint='Short policy line, e.g. balances are due on pickup.') }}
+      {{ text('Stub Footer', 'stub_footer', values, errors, maxlength=255) }}
       {{ checkbox('Print the payment QR on stubs that still have a balance', 'show_qr_on_stub', values, errors) }}
-      <button class="btn btn-primary" type="submit">Save settings</button>
+      <button class="btn btn-primary" type="submit">Save Settings</button>
     </form>
   </div>
 
   <div>
     <div class="card">
-      <h2>Payment QR image</h2>
+      <h2>Payment QR Image</h2>
       <div class="qr-panel">
         <img class="qr-preview" src="{{ url_for('payments.qr') }}" alt="Current payment QR" width="160" height="160">
         <div>
@@ -43,23 +43,23 @@
       <form method="post" action="{{ url_for('payments.upload_qr') }}" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="ui" value="1">
-        <div class="field"><label for="qr-file">Choose image</label>
+        <div class="field"><label for="qr-file">Choose Image</label>
           <input class="input" id="qr-file" type="file" name="image" accept="image/png,image/jpeg,image/webp" required></div>
         <button class="btn btn-primary" type="submit">{{ 'Replace QR' if settings.qr_filename else 'Upload QR' }}</button>
       </form>
       {% if settings.qr_filename %}
       <form class="remove-qr" method="post" action="{{ url_for('payments.remove_qr') }}"
-            data-confirm="Remove the payment QR image? A placeholder will be shown instead." data-confirm-title="Remove QR image">
+            data-confirm="Remove the payment QR image? A placeholder will be shown instead." data-confirm-title="Remove QR Image">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="ui" value="1">
-        <button class="btn btn-danger btn-sm" type="submit">Remove QR image</button>
+        <button class="btn btn-danger btn-sm" type="submit">Remove QR Image</button>
       </form>
       {% endif %}
     </div>
 
     <div class="card">
-      <h2>Payment methods</h2>
-      <table class="table"><thead><tr><th>Method</th><th>Reference</th><th>Status</th><th></th></tr></thead><tbody>
+      <h2>Payment Methods</h2>
+      <div class="table-wrap"><table class="table"><thead><tr><th>Method</th><th>Reference</th><th>Status</th><th></th></tr></thead><tbody>
       {% for m in methods %}
         <tr><td><strong>{{ m.label }}</strong><span class="sub mono">{{ m.code }}</span></td>
           <td>{{ 'Required' if m.requires_reference else 'Optional' }}</td>
@@ -70,13 +70,13 @@
       {% else %}
         <tr><td colspan="4"><div class="empty"><strong>No methods</strong>Run <span class="mono">flask --app run seed-payments</span>.</div></td></tr>
       {% endfor %}
-      </tbody></table>
+      </tbody></table></div>
       <form method="post" action="{{ url_for('payments.create_method') }}" class="add-method">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
         <div class="field"><label for="m-label">Add a method (e.g. Bank Transfer)</label>
           <input class="input" id="m-label" name="label" maxlength="60" required></div>
         <div class="field field-check"><label class="check"><input type="checkbox" name="requires_reference"><span>Require a reference number</span></label></div>
-        <button class="btn btn-outline" type="submit">Add method</button>
+        <button class="btn btn-outline" type="submit">Add Method</button>
       </form>
     </div>
   </div>

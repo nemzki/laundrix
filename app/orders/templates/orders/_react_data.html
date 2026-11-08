@@ -1,0 +1,30 @@
+{# Explicit view model: only fields already authorized and displayed on this page. #}
+{% set view = namespace(orders=[], filters=[]) %}
+{% set view.filters = [dict(value='', label='All orders', count=total_orders, url=url_for('orders.index', q=term or None))] %}
+{% for s in statuses.FLOW %}
+  {% set view.filters = view.filters + [dict(value=s, label=s|status_label, count=counts[s], url=url_for('orders.index', q=term or None, status=s))] %}
+{% endfor %}
+{% for o in orders %}
+  {% set view.orders = view.orders + [dict(
+    reference=o.reference, customer=o.customer_name, contact=o.customer_contact,
+    created=o.created_at|localdt, createdShort=o.created_at|localdt('%b %d, %Y'),
+    total=o.total|peso,
+    paid=(o.amount_paid|peso if o.is_payment_tracked else '—'),
+    balance=(o.balance_due|peso if o.is_payment_tracked else '—'),
+    balanceNote=(o.balance_due|peso if o.is_payment_tracked and o.balance_due > 0 else ''),
+    laundry=o.status|status_label, laundryTone=o.status|status_tone,
+    payment=o.payment_status|payment_status_label, paymentTone=o.payment_status|payment_status_tone,
+    awaiting=not o.received_at,
+    detailUrl=url_for('orders.detail', reference=o.reference),
+    stubUrl=url_for('orders.stub', reference=o.reference)
+  )] %}
+{% endfor %}
+<script type="application/json" id="laundrix-orders-data">{{ dict(
+  orders=view.orders, filters=view.filters, term=term, status=status,
+  indexUrl=url_for('orders.index'), newOrderUrl=url_for('orders.new_order'),
+  fallbackUrl=url_for('orders.index', q=term or None, status=status or None, page=pagination.page, ui='jinja'),
+  total=pagination.total, page=pagination.page, pages=pagination.pages,
+  previousUrl=(url_for('orders.index', page=pagination.prev_num, q=term or None, status=status or None) if pagination.has_prev else none),
+  nextUrl=(url_for('orders.index', page=pagination.next_num, q=term or None, status=status or None) if pagination.has_next else none)
+)|tojson }}</script>
+{% include 'orders/_initial_orders.html' %}

@@ -24,28 +24,45 @@
 {% endfor %}
 
 {% block title %}{{ order.reference }} · Laundrix{% endblock %}
-{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
-{% block page_title %}Order #{{ order.reference }}{% endblock %}
-{% block page_subtitle %}{{ order.customer_name }} · {{ order.created_at|localdt }}{% endblock %}
+{% block body_class %}{{ super() }} order-detail-page{% if not is_admin %} order-detail-staff{% endif %}{% endblock %}
+{% block page_head %}
+<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/payment_modal.css') }}"><link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}"><link rel="stylesheet" href="{{ url_for('orders.static', filename='css/order_detail_layout.css') }}">{% endblock %}
+{% block page_title %}<a class="order-detail__back" href="{{ url_for('orders.index') }}">{{ icon('arrow-left', 14) }} Back to Manage Orders</a><span class="order-detail__title-row"><span>{{ order.reference }}</span><span class="status status-{{ order.status|status_tone }}" data-laundry-status="{{ order.status }}" aria-label="Current laundry status">{{ laundry_label }}</span><span class="status status-{{ order.payment_status|payment_status_tone }}" data-payment-status="{{ order.payment_status }}" aria-label="Current payment status">{{ order.payment_status|payment_status_label }}</span></span>{% endblock %}
+{% block page_subtitle %}Created {{ order.created_at|localdt }} by {{ (order.created_by.full_name or order.created_by.email) if order.created_by else 'Unknown user' }}{% endblock %}
 {% block page_actions %}
 <div class="order-detail-head-actions">
-  <span class="status status-{{ order.status|status_tone }}" aria-label="Current laundry status">{{ laundry_label }}</span>
   <div class="order-detail-head-actions__btns">
-    <a class="btn btn-outline btn-sm" href="{{ url_for('orders.index') }}">{{ icon('arrow-left', 16) }}<span>Manage Orders</span></a>
-    <a class="btn btn-outline btn-sm" href="{{ url_for('orders.stub', reference=order.reference) }}" target="_blank" rel="noopener">{{ icon('printer', 16) }}<span>Printable stub</span></a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('orders.stub', reference=order.reference) }}" target="_blank" rel="noopener">{{ icon('printer', 16) }}<span>Print Stub</span></a>
+    {% if order.is_payment_tracked and order.balance_due > 0 %}<button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">Record Payment</button>{% endif %}
   </div>
 </div>
 {% endblock %}
 
 {% block content %}
-<section class="order-detail" aria-label="Order details"
-         data-ref="{{ order.reference }}"
-         data-current-status="{{ laundry_label }}">
+<script type="application/json" id="order-summary-data">{{ dict(
+  reference=order.reference, customer=order.customer_name, contact=order.customer_contact,
+  created=order.created_at|localdt, total=order.total|peso,
+  paid=(order.amount_paid|peso if order.is_payment_tracked else none),
+  balance=(order.balance_due|peso if order.is_payment_tracked else none),
+  owing=(order.is_payment_tracked and order.balance_due > 0),
+  laundry=order.status|status_label, laundryValue=order.status, laundryTone=order.status|status_tone,
+  payment=order.payment_status|payment_status_label, paymentValue=order.payment_status, paymentTone=order.payment_status|payment_status_tone,
+  awaiting=not order.received_at, detailUrl=url_for('orders.detail',reference=order.reference),
+  stubUrl=url_for('orders.stub',reference=order.reference),
+  receiptUrl=url_for('orders.confirm_received',reference=order.reference)
+)|tojson }}</script>
 
+<div class="order-detail__toast" data-detail-toast role="alert" hidden><strong data-toast-title></strong><p data-toast-message></p><button type="button" data-toast-close aria-label="Dismiss notification">&times;</button></div>
+<section class="order-detail" aria-label="Order Details"
+         data-ref="{{ order.reference }}"
+         data-current-status="{{ laundry_label }}" data-balance="{{ order.balance_due if order.is_payment_tracked else 0 }}" data-balance-label="{{ order.balance_due|peso if order.is_payment_tracked else '\u2014' }}" data-detail-url="{{ url_for('orders.detail', reference=order.reference) }}">
+
+  <div class="order-detail__layout">
+    <div class="order-detail__main">
   <div class="order-detail__tracker card" aria-label="Laundry status progress">
     <div class="order-detail__tracker-head">
-      <h2 class="order-detail__section-title">Laundry status</h2>
-      <span class="status status-{{ order.status|status_tone }}">{{ laundry_label }}</span>
+      <h2 class="order-detail__section-title">Laundry Status</h2>
+      <span class="status status-{{ order.status|status_tone }}" data-laundry-status="{{ order.status }}">{{ laundry_label }}</span>
     </div>
 
     {% if awaiting_receipt %}
@@ -54,6 +71,10 @@
     </div>
     {% endif %}
 
+    <div class="order-detail__receipt" id="receipt">
+      <span class="pill {{ 'pill-on' if order.received_at else 'pill-warn' }}">{{ 'Received' if order.received_at else 'Awaiting confirmation' }}</span>
+      {% if order.received_at %}<p class="muted">Received {{ order.received_at|localdt }}{% if order.received_by %} by {{ order.received_by.full_name or order.received_by.email }}{% endif %}.</p>{% endif %}
+    </div>
     <ol class="order-tracker" aria-label="Six-stage laundry workflow">
       {% for s in flow %}
       {% set i = loop.index0 %}
@@ -65,7 +86,7 @@
       {% elif current_idx >= 0 and i < current_idx %}
         {% set state = 'is-gap' %}
       {% endif %}
-      <li class="order-tracker__step {{ state }}">
+      <li class="order-tracker__step {{ state }}" data-workflow-status="{{ s }}"{% if state == 'is-current' %} aria-current="step"{% endif %}>
         <span class="order-tracker__marker" aria-hidden="true">
           {% if state == 'is-done' %}{{ icon('check', 14) }}{% else %}{{ loop.index }}{% endif %}
         </span>
@@ -82,7 +103,7 @@
       <button class="btn btn-primary" type="button"
               data-confirm-received
               data-action="{{ url_for('orders.confirm_received', reference=order.reference) }}">
-        {{ icon('check', 16) }}<span>Confirm laundry received</span>
+        {{ icon('check', 16) }}<span>Confirm Laundry Received</span>
       </button>
       <p class="hint order-detail__actions-hint">Status updates unlock after receipt is confirmed.</p>
       {% elif move.forward %}
@@ -119,21 +140,8 @@
     </div>
   </div>
 
-  <div class="order-detail__layout">
-    <div class="order-detail__main">
       <section class="card order-detail__card">
-        <h2 class="order-detail__section-title">Customer</h2>
-        <dl class="kv order-detail__kv">
-          <dt>Name</dt><dd>{{ order.customer_name }}</dd>
-          <dt>Contact</dt><dd><span class="order-detail__phone">{{ order.customer_contact }}</span></dd>
-          {% if order.created_by %}
-          <dt>Created by</dt><dd>{{ order.created_by.full_name or order.created_by.email }}</dd>
-          {% endif %}
-        </dl>
-      </section>
-
-      <section class="card order-detail__card">
-        <h2 class="order-detail__section-title">Services and packages</h2>
+        <h2 class="order-detail__section-title">Laundry Services</h2>
         {% if main_items %}
         <div class="table-wrap">
           <table class="table order-detail__table">
@@ -141,7 +149,7 @@
               <tr>
                 <th scope="col">Item</th>
                 <th class="num" scope="col">Qty</th>
-                <th class="num" scope="col">Unit price</th>
+                <th class="num" scope="col">Unit Price</th>
                 <th class="num" scope="col">Amount</th>
               </tr>
             </thead>
@@ -166,10 +174,8 @@
         {% else %}
         <p class="muted order-detail__empty">No services or packages on this order.</p>
         {% endif %}
-      </section>
 
-      <section class="card order-detail__card">
-        <h2 class="order-detail__section-title">Extras and add-ons</h2>
+        <h3 class="subhead">Extras and add-ons</h3>
         {% if addon_items %}
         <div class="table-wrap">
           <table class="table order-detail__table">
@@ -177,7 +183,7 @@
               <tr>
                 <th scope="col">Extra</th>
                 <th class="num" scope="col">Qty</th>
-                <th class="num" scope="col">Unit price</th>
+                <th class="num" scope="col">Unit Price</th>
                 <th class="num" scope="col">Amount</th>
               </tr>
             </thead>
@@ -209,11 +215,71 @@
           <div class="order-detail__total-row order-detail__total-row--grand"><span>Total</span><strong>{{ order.total|peso }}</strong></div>
         </div>
         <p class="hint">Prices shown are the prices charged when the order was created.</p>
-        {% if order.notes %}<p class="order-detail__notes"><strong>Notes:</strong> {{ order.notes }}</p>{% endif %}
       </section>
+      <section class="card order-detail__card" id="payment">
+        <div class="card-head">
+          <h2 class="order-detail__section-title">Payment Information</h2>
+          <span class="status status-{{ order.payment_status|payment_status_tone }}" data-payment-status="{{ order.payment_status }}">{{ order.payment_status|payment_status_label }}</span>
+        </div>
+        {% if order.is_payment_tracked %}
+        <dl class="order-detail__finance">
+          <div><dt>Total Amount</dt><dd>{{ order.total|peso }}</dd></div>
+          <div><dt>Amount Paid</dt><dd>{{ order.amount_paid|peso }}</dd></div>
+          <div><dt>Remaining</dt><dd{% if order.balance_due > 0 %} class="is-unpaid"{% endif %}>{{ order.balance_due|peso }}</dd></div>
+        </dl>
+        <dl class="kv order-detail__kv order-detail__pay-summary">
+          <dt>Arrangement</dt><dd>{{ order.payment_arrangement|arrangement_label }}</dd>
+        </dl>
 
+        <p class="hint">All payments recorded for this order.</p>
+        <h3 class="subhead">Payment history</h3>
+        {% if order.payments %}
+        <ul class="pay-txns" aria-label="Payment transactions">
+          {% for p in order.payments %}
+          <li class="pay-txn{% if p.kind == 'reversal' or p.reversal %} is-reversed{% endif %}">
+            <div class="pay-txn__body">
+              <div class="pay-txn__meta">
+                <span class="mono">Payment #{{ p.id }}</span> <time datetime="{{ p.paid_at }}">{{ p.paid_at|localdt }}</time>
+                <span class="pay-txn__by">{{ (p.recorded_by.full_name or p.recorded_by.email) if p.recorded_by else 'Unknown user' }}</span>
+              </div>
+              <div class="pay-txn__method">
+                <strong>{{ p.method_label }}</strong>
+                {% if p.reference %}<span class="sub">Ref: {{ p.reference }}</span>{% endif %}
+                {% if p.notes %}<span class="sub">{{ p.notes }}</span>{% endif %}
+              </div>
+              <div class="pay-txn__amount num">{% if p.kind == 'reversal' %}-{% endif %}{{ p.amount|peso }}</div>
+            </div>
+            <div class="pay-txn__action">
+              {% if p.kind == 'reversal' %}
+              <span class="pill pill-off">Reversal</span>
+              {% elif p.reversal %}
+              <span class="pill pill-off">Reversed</span>
+              {% elif is_admin %}
+              <button class="btn btn-danger btn-sm" type="button"
+                      data-reverse-payment
+                      data-action="{{ url_for('payments.reverse', payment_id=p.id) }}"
+                      data-amount="{{ p.amount|peso }}"
+                      data-method="{{ p.method_label }}">
+                Reverse payment
+              </button>
+              {% endif %}
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted order-detail__empty">No payments recorded yet.</p>
+        {% endif %}
+
+        {% if order.balance_due > 0 %}<p class="hint">Record a payment using the action at the top of this page.</p>        {% elif order.payment_status == 'paid' %}
+        <p class="muted">This order is fully paid.</p>
+        {% endif %}
+        {% else %}
+        <p class="muted">This order was created before payment recording was introduced, so its payments are not tracked.</p>
+        {% endif %}
+      </section>
       <section class="card order-detail__card">
-        <h2 class="order-detail__section-title">Status history</h2>
+        <h2 class="order-detail__section-title">Order Activity</h2>
         {% if order.history %}
         <ol class="timeline order-detail__timeline">
           {% for h in order.history|reverse %}
@@ -233,33 +299,28 @@
         {% endif %}
       </section>
     </div>
-
     <aside class="order-detail__side">
-      <section class="card order-detail__card" id="receipt">
-        <div class="card-head">
-          <h2 class="order-detail__section-title">Laundry receipt</h2>
-          <span class="pill {{ 'pill-on' if order.received_at else 'pill-warn' }}">
-            {{ 'Received' if order.received_at else 'Awaiting confirmation' }}
-          </span>
-        </div>
-        {% if order.received_at %}
-        <p class="muted">
-          Received {{ order.received_at|localdt }}
-          {% if order.received_by %} by {{ order.received_by.full_name or order.received_by.email }}{% endif %}.
-        </p>
-        {% else %}
-        <p class="muted">Confirm once the physical laundry is in the shop. Status changes unlock after this. It does not affect payment.</p>
-        <button class="btn btn-primary" type="button"
-                data-confirm-received
-                data-action="{{ url_for('orders.confirm_received', reference=order.reference) }}">
-          {{ icon('check', 16) }}<span>Laundry received</span>
-        </button>
-        {% endif %}
+      <section class="card order-detail__card" aria-labelledby="order-information-heading">
+        <h2 id="order-information-heading" class="order-detail__section-title">Order Information</h2>
+        <dl class="kv order-detail__kv">
+          <dt>Reference</dt><dd>{{ order.reference }}</dd>
+          <dt>Created</dt><dd>{{ order.created_at|localdt }}</dd>
+          <dt>Created By</dt><dd>{{ (order.created_by.full_name or order.created_by.email) if order.created_by else 'Unknown user' }}</dd>
+          <dt class="order-detail__divider">Laundry Status</dt><dd class="order-detail__divider"><span class="status status-{{ order.status|status_tone }}" data-laundry-status="{{ order.status }}">{{ laundry_label }}</span></dd>
+          <dt>Payment Status</dt><dd><span class="status status-{{ order.payment_status|payment_status_tone }}" data-payment-status="{{ order.payment_status }}">{{ order.payment_status|payment_status_label }}</span></dd>
+        </dl>
+        {% if order.notes %}<p class="order-detail__notes"><strong>Special instructions:</strong> {{ order.notes }}</p>{% endif %}
       </section>
-
+      <section class="card order-detail__card">
+        <h2 class="order-detail__section-title">Customer Information</h2>
+        <dl class="kv order-detail__kv">
+          <dt>Name</dt><dd>{{ order.customer_name }}</dd>
+          <dt>Contact</dt><dd><span class="order-detail__phone">{{ order.customer_contact }}</span></dd>
+        </dl>
+      </section>
       <section class="card order-detail__card" id="sms">
         <div class="card-head">
-          <h2 class="order-detail__section-title">SMS notification</h2>
+          <h2 class="order-detail__section-title">SMS Notification</h2>
           {% if sms.notification %}
           <span class="status status-{{ sms.tone }}">{{ sms.label }}</span>
           {% else %}
@@ -312,118 +373,23 @@
         </div>
         {% endif %}
       </section>
-
-      <section class="card order-detail__card" id="payment">
-        <div class="card-head">
-          <h2 class="order-detail__section-title">Payment</h2>
-          <span class="status status-{{ order.payment_status|payment_status_tone }}">{{ order.payment_status|payment_status_label }}</span>
+      <section class="card order-detail__card order-detail__qr" aria-labelledby="tracking-heading" data-order-tracking data-stub-url="{{ url_for('orders.stub', reference=order.reference) }}">
+        <h2 id="tracking-heading" class="order-detail__section-title">QR Tracking</h2>
+        <img data-tracking-image alt="QR code for tracking order {{ order.reference }}" width="160" height="160" hidden>
+        <p class="hint" data-qr-status role="status">Loading the existing order tracking QR...</p>
+        <label class="visually-hidden" for="order-tracking-link">Public tracking link</label>
+        <input class="input" id="order-tracking-link" type="text" readonly value="{{ config['APP_BASE_URL'] ~ url_for('tracking.view_order', token=order.tracking_token) }}">
+        <div class="order-detail__tracking-actions">
+          <button type="button" class="btn btn-outline btn-sm" data-copy-tracking>Copy Tracking Link</button>
+          <a class="btn btn-outline btn-sm" href="{{ config['APP_BASE_URL'] ~ url_for('tracking.view_order', token=order.tracking_token) }}" target="_blank" rel="noopener">Open tracking</a>
         </div>
-        {% if order.is_payment_tracked %}
-        <dl class="kv order-detail__kv order-detail__pay-summary">
-          <dt>Order total</dt><dd>{{ order.total|peso }}</dd>
-          <dt>Amount paid</dt><dd>{{ order.amount_paid|peso }}</dd>
-          <dt>Outstanding balance</dt><dd>{{ order.balance_due|peso }}</dd>
-          <dt>Arrangement</dt><dd>{{ order.payment_arrangement|arrangement_label }}</dd>
-        </dl>
-
-        <h3 class="subhead">Payment history</h3>
-        {% if order.payments %}
-        <ul class="pay-txns" aria-label="Payment transactions">
-          {% for p in order.payments %}
-          <li class="pay-txn{% if p.kind == 'reversal' or p.reversal %} is-reversed{% endif %}">
-            <div class="pay-txn__body">
-              <div class="pay-txn__meta">
-                <time datetime="{{ p.paid_at }}">{{ p.paid_at|localdt }}</time>
-                <span class="pay-txn__by">{{ (p.recorded_by.full_name or p.recorded_by.email) if p.recorded_by else 'Unknown user' }}</span>
-              </div>
-              <div class="pay-txn__method">
-                <strong>{{ p.method_label }}</strong>
-                {% if p.reference %}<span class="sub">Ref: {{ p.reference }}</span>{% endif %}
-                {% if p.notes %}<span class="sub">{{ p.notes }}</span>{% endif %}
-              </div>
-              <div class="pay-txn__amount num">{% if p.kind == 'reversal' %}-{% endif %}{{ p.amount|peso }}</div>
-            </div>
-            <div class="pay-txn__action">
-              {% if p.kind == 'reversal' %}
-              <span class="pill pill-off">Reversal</span>
-              {% elif p.reversal %}
-              <span class="pill pill-off">Reversed</span>
-              {% elif is_admin %}
-              <button class="btn btn-danger btn-sm" type="button"
-                      data-reverse-payment
-                      data-action="{{ url_for('payments.reverse', payment_id=p.id) }}"
-                      data-amount="{{ p.amount|peso }}"
-                      data-method="{{ p.method_label }}">
-                Reverse payment
-              </button>
-              {% endif %}
-            </div>
-          </li>
-          {% endfor %}
-        </ul>
-        {% else %}
-        <p class="muted order-detail__empty">No payments recorded yet.</p>
-        {% endif %}
-
-        {% if order.balance_due > 0 %}
-        <h3 class="subhead">Record a payment</h3>
-        <form method="post" action="{{ url_for('orders.record_payment', reference=order.reference) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
-          <div class="form-grid">
-            <div class="field">
-              <label for="pm-1">Method</label>
-              <select class="input" id="pm-1" name="method">
-                {% for m in methods %}<option value="{{ m.code }}">{{ m.label }}</option>{% endfor %}
-              </select>
-            </div>
-            <div class="field">
-              <label for="pa-1">Amount received (PHP)</label>
-              <input class="input" id="pa-1" name="amount" type="number" inputmode="decimal" step="0.01" min="0.01" max="{{ order.balance_due }}" required>
-            </div>
-            <div class="field span-2">
-              <label for="pr-1">Reference no. (optional)</label>
-              <input class="input" id="pr-1" name="reference" maxlength="64" autocomplete="off">
-            </div>
-          </div>
-          <details class="correct">
-            <summary>Split across a second method</summary>
-            <div class="form-grid">
-              <div class="field">
-                <label for="pm-2">Second method</label>
-                <select class="input" id="pm-2" name="method">
-                  <option value="">None</option>
-                  {% for m in methods %}<option value="{{ m.code }}">{{ m.label }}</option>{% endfor %}
-                </select>
-              </div>
-              <div class="field">
-                <label for="pa-2">Amount (PHP)</label>
-                <input class="input" id="pa-2" name="amount" type="number" inputmode="decimal" step="0.01" min="0.01">
-              </div>
-              <div class="field span-2">
-                <label for="pr-2">Reference no. (optional)</label>
-                <input class="input" id="pr-2" name="reference" maxlength="64" autocomplete="off">
-              </div>
-            </div>
-          </details>
-          <div class="field">
-            <label for="pn">Note (optional)</label>
-            <input class="input" id="pn" name="notes" maxlength="255">
-          </div>
-          <p class="hint">Balance due: {{ order.balance_due|peso }}. Amounts above the balance are rejected.</p>
-          <button class="btn btn-primary" type="submit">Record payment</button>
-        </form>
-        {% elif order.payment_status == 'paid' %}
-        <p class="muted">This order is fully paid.</p>
-        {% endif %}
-        {% else %}
-        <p class="muted">This order was created before payment recording was introduced, so its payments are not tracked.</p>
-        {% endif %}
+        <p class="hint" data-copy-status role="status"></p>
       </section>
     </aside>
   </div>
 </section>
 
+{% include 'payments/_record_payment_modal.html' %}
 <div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content order-detail-modal">
@@ -469,7 +435,7 @@
       <form id="confirmReceivedForm" method="post" action="#">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="modal-header">
-          <h2 class="modal-title h5" id="confirmReceivedModalLabel">Confirm laundry received</h2>
+          <h2 class="modal-title h5" id="confirmReceivedModalLabel">Confirm Laundry Received</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -495,7 +461,7 @@
       <form id="smsRetryForm" method="post" action="#">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="modal-header">
-          <h2 class="modal-title h5" id="smsRetryModalLabel">SMS notification</h2>
+          <h2 class="modal-title h5" id="smsRetryModalLabel">SMS Notification</h2>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -552,4 +518,6 @@
 
 {% block page_scripts %}
 <script src="{{ url_for('orders.static', filename='js/orders_detail.js') }}" defer></script>
+<script src="{{ url_for('orders.static', filename='js/payment_modal.js') }}" defer></script>
+<script src="{{ url_for('orders.static', filename='js/order_detail_layout.js') }}" defer></script>
 {% endblock %}

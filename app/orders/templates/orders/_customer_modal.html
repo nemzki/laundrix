@@ -1,0 +1,16 @@
+{% from 'core/_icons.html' import icon %}
+<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><div><h2 id="customerModalTitle" class="modal-title">Add Customer</h2><p data-customer-modal-description>Enter the customer's contact details.</p></div><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <form id="customerForm" method="post" action="{{ url_for('orders.create_customer') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="modal-body">
+        <div class="alert alert-error" role="alert" data-customer-errors hidden></div>
+        <div class="field"><label for="customer-name">Full Name</label><input class="input" id="customer-name" name="full_name" minlength="2" maxlength="150" required autocomplete="name"><p class="field-error" id="customer-name-error" data-customer-error="customer_name" hidden></p></div>
+        <div class="field"><label for="customer-mobile">Mobile Number</label><input class="input" id="customer-mobile" name="contact_number" type="tel" maxlength="25" required autocomplete="tel"><p class="field-error" id="customer-mobile-error" data-customer-error="customer_contact" hidden></p></div>
+        <div class="cm-duplicate" data-customer-duplicate hidden><p data-customer-duplicates></p><label><input type="checkbox" name="confirm_duplicate"> <span data-duplicate-confirm-label>Save a separate customer with this contact number.</span></label></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-outline" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" type="submit">Save customer</button></div>
+    </form>
+  </div></div>
+</div>

@@ -1,0 +1,6 @@
+{# Compact Lucide-compatible payment summary icons, using the existing inline-SVG system. #}
+{% macro payment_icon(name) -%}
+<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+{% if name == 'circle-dollar-sign' %}<circle cx="12" cy="12" r="10"/><path d="M12 6v12m3-10H10.5a2.5 2.5 0 0 0 0 5h3a2.5 2.5 0 0 1 0 5H9"/>{% else %}<circle cx="12" cy="12" r="10"/><path d="M12 6v6h4"/>{% endif %}
+</svg>
+{%- endmacro %}

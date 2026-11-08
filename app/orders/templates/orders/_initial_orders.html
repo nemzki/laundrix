@@ -1,0 +1,64 @@
+{# First paint uses the same data, geometry and stylesheet as the React listing.
+   These native links/forms also work before JavaScript or if its bundle is unavailable. #}
+{% macro status_badge(label, tone) -%}
+<span class="lx-status mo-server-badge" data-slot="badge" data-tone="{{ tone }}">{{ label }}</span>
+{%- endmacro %}
+{% macro date_cell(o) -%}
+<span class="mo-date" title="{{ o.created }}">{{ o.createdShort }}<span class="mo-secondary">{{ o.created|replace(o.createdShort, '')|trim }}</span></span>
+{%- endmacro %}
+{% macro view_link(o) -%}
+<a class="mo-server-button mo-server-view" data-slot="button" href="{{ o.detailUrl }}" aria-label="View order {{ o.reference }}">View</a>
+{%- endmacro %}
+<div id="laundrix-react-orders" class="lx-react" data-renderer="server">
+  <section class="manage-orders" aria-label="Manage orders">
+    <div data-slot="tabs"><div class="mo-status-tabs" data-slot="tabs-list" role="tablist" aria-label="Order status">
+      {% for f in view.filters %}
+      <a href="{{ f.url }}" role="tab" aria-selected="{{ 'true' if status == f.value else 'false' }}" data-state="{{ 'active' if status == f.value else 'inactive' }}"
+         class="mo-status-tab mo-server-tab border data-[state=active]:border-primary data-[state=active]:bg-accent data-[state=active]:text-primary">
+        <span class="mo-tab-label">{{ f.label }}</span><span class="mo-tab-count rounded-md bg-muted tabular-nums">{{ f.count }}</span>
+      </a>
+      {% endfor %}
+    </div></div>
+    <form method="get" action="{{ url_for('orders.index') }}" role="search" class="mo-filters" data-orders-filters>
+      <div data-slot="form-item" class="mo-search-field"><label for="initial-orders-search" data-slot="form-label">Search orders</label>
+        <input id="initial-orders-search" class="mo-search-input" data-slot="input" type="search" name="q" value="{{ term }}" placeholder="Reference, name or contact" autocomplete="off">
+      </div>
+      <input type="hidden" name="status" value="{{ status }}">
+      <div class="mo-server-actions"><button class="mo-server-button mo-server-primary" data-slot="button" type="submit">{{ icon('search', 16) }}Search</button>
+        <a class="mo-server-button" data-slot="button" href="{{ url_for('orders.index') }}">Clear</a>
+      </div>
+    </form>
+    <div class="mo-table-panel mo-server-panel" data-slot="card">
+      <div class="mo-table-heading" data-slot="card-header"><div class="mo-table-title">
+        <div data-slot="card-title"><h2>Orders</h2></div><div data-slot="card-description">{{ pagination.total }} {{ 'matching ' if has_filters else '' }}{{ 'order' if pagination.total == 1 else 'orders' }}</div>
+      </div>{% if has_filters %}<span class="mo-server-filtered bg-secondary text-secondary-foreground" data-slot="badge">Filtered results</span>{% endif %}</div>
+      <div class="mo-table-content" data-slot="card-content">
+        {% if view.orders %}
+        <div class="mo-desktop-table"><div class="mo-table-overflow"><table class="mo-data-table" data-slot="table">
+          <caption class="sr-only">Order reference, customer, contact, date, laundry status, payment status and order actions.</caption>
+          <colgroup><col class="mo-col-order"><col><col class="mo-col-contact"><col class="mo-col-date"><col class="mo-col-laundry"><col class="mo-col-payment"><col class="mo-col-action"></colgroup>
+          <thead><tr class="border-b"><th scope="col">Order Reference</th><th scope="col">Customer</th><th scope="col">Contact Number</th><th scope="col">Date Created</th><th scope="col">Laundry Status</th><th scope="col">Payment Status</th><th scope="col" class="mo-action">Action</th></tr></thead>
+          <tbody>{% for o in view.orders %}<tr class="border-b">
+            <td><strong class="mo-reference">{{ o.reference }}</strong></td><td><span class="mo-customer">{{ o.customer }}</span></td><td><span class="mo-contact">{{ o.contact }}</span></td><td>{{ date_cell(o) }}</td>
+            <td>{{ status_badge(o.laundry, o.laundryTone) }}{% if o.awaiting %}<span class="mo-secondary">Awaiting receipt</span>{% endif %}</td>
+            <td>{{ status_badge(o.payment, o.paymentTone) }}{% if o.balanceNote %}<span class="mo-secondary mo-money">Balance {{ o.balanceNote }}</span>{% endif %}</td><td class="mo-action">{{ view_link(o) }}</td>
+          </tr>{% endfor %}</tbody>
+        </table></div></div>
+        <div class="mo-mobile-orders divide-y">{% for o in view.orders %}<article class="mo-mobile-order">
+          <div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="mo-reference">{{ o.reference }}</h3><p class="mo-customer">{{ o.customer }}</p><p class="mo-contact">{{ o.contact }}</p></div>{{ view_link(o) }}</div>
+          {{ date_cell(o) }}
+          <div class="mo-mobile-statuses"><div><span class="sr-only">Laundry: </span>{{ status_badge(o.laundry, o.laundryTone) }}{% if o.awaiting %}<span class="mo-secondary">Awaiting receipt</span>{% endif %}</div>
+            <div><span class="sr-only">Payment: </span>{{ status_badge(o.payment, o.paymentTone) }}{% if o.balanceNote %}<span class="mo-secondary mo-money">Balance {{ o.balanceNote }}</span>{% endif %}</div></div>
+        </article>{% endfor %}</div>
+        {% else %}<div class="mo-empty">{% if not has_filters %}{{ icon('orders', 24) }}{% endif %}<h3 class="font-semibold">{{ 'No matching orders' if has_filters else 'No orders yet' }}</h3><p class="text-sm text-muted-foreground">{{ 'Try a different reference, customer or status.' if has_filters else 'Create your first order to get started.' }}</p>
+          {% if not has_filters %}<a class="mo-server-button" data-slot="button" href="{{ url_for('orders.new_order') }}">New Order</a>{% endif %}
+        </div>{% endif %}
+      </div>
+    </div>
+    {% if pagination.pages > 1 %}<nav class="mo-server-pagination" aria-label="Pagination">
+      {% if pagination.has_prev %}<a class="mo-server-button" data-slot="button" href="{{ url_for('orders.index', page=pagination.prev_num, q=term or None, status=status or None) }}">{{ icon('arrow-left', 16) }}Previous</a>{% else %}<button class="mo-server-button" data-slot="button" disabled>{{ icon('arrow-left', 16) }}Previous</button>{% endif %}
+      <span aria-current="page">Page {{ pagination.page }} of {{ pagination.pages }}</span>
+      {% if pagination.has_next %}<a class="mo-server-button" data-slot="button" href="{{ url_for('orders.index', page=pagination.next_num, q=term or None, status=status or None) }}">Next{{ icon('arrow-right', 16) }}</a>{% else %}<button class="mo-server-button" data-slot="button" disabled>Next{{ icon('arrow-right', 16) }}</button>{% endif %}
+    </nav>{% endif %}
+  </section>
+</div>

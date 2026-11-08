@@ -1,22 +1,32 @@
 {% extends "core/base.html" %}
 {% from "core/_icons.html" import icon %}
 {% from "core/_brand.html" import brand_logo %}
+{% set polish_ui = request.blueprint in ['orders','catalog','payments','staff_admin'] and request.endpoint not in ['staff_admin.new','staff_admin.enroll_link'] %}
 {% block head %}
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/app.css') }}">
   {% block page_head %}{% endblock %}
+  {% if polish_ui %}<link rel="stylesheet" href="{{ url_for('core.static',filename='css/internal-polish.css') }}">{% endif %}
+  {% if request.blueprint in ['orders', 'dashboard', 'payments'] %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/order-status.css') }}">{% endif %}
+  {% if current_user.role == 'admin' and request.blueprint not in ['identity', 'staff_auth'] and request.endpoint != 'staff_admin.enroll_link' %}
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/admin-consistency.css') }}">
+  {% endif %}
 {% endblock %}
-{% block body_class %}app{% endblock %}
+{% block body_class %}app{% if polish_ui %} internal-ui{% if request.endpoint in ['payments.records','payments.summary','payments.settings'] %} finance-report{% endif %}{% endif %}{% endblock %}
 
 {% block body %}
 {% set bp = request.blueprint %}
 {% set ep = request.endpoint or '' %}
 {% set is_admin = current_user.role == 'admin' %}
+{% set admin_chrome = is_admin and bp not in ['identity', 'staff_auth'] and ep != 'staff_admin.enroll_link' %}
 
 <div class="shell">
   {% include "core/_nav_sidebar.html" %}
 
   <div class="main">
-    {# Mobile-only chrome. Account controls live in the sidebar (desktop) and offcanvas (mobile). #}
+    {% if admin_chrome %}
+      {% set topbar_title = self.page_title()|striptags|trim %}
+      {% include 'core/_admin_topbar.html' %}
+    {% else %}
     <header class="app-topbar app-topbar--mobile" aria-label="Mobile navigation">
       <button
         class="icon-btn lx-topbar__menu"
@@ -28,6 +38,7 @@
       >{{ icon('menu', 22) }}</button>
       <span class="topbar-brand topbar-brand-mobile">{{ brand_logo('mobile', href=url_for('dashboard.index')) }}</span>
     </header>
+    {% endif %}
 
     <main class="content">
       <div class="page-header">
@@ -47,5 +58,8 @@
 
 {% block scripts %}
   <script src="{{ url_for('core.static', filename='js/app.js') }}" defer></script>
+  {% if current_user.role == 'admin' and request.blueprint not in ['identity', 'staff_auth'] and request.endpoint != 'staff_admin.enroll_link' %}
+  <script src="{{ url_for('core.static', filename='js/admin-topbar.js') }}" defer></script>
+  {% endif %}
   {% block page_scripts %}{% endblock %}
 {% endblock %}

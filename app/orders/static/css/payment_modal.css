@@ -1,0 +1,39 @@
+/* Shared original payment modal: one visual and interaction contract for entry points. */
+body.app .payment-modal .modal-dialog { max-width:480px; }
+body.app .payment-modal .modal-content { border:1px solid var(--border); border-radius:14px; background:#fff; overflow:hidden; display:flex; flex-direction:column; max-height:calc(100dvh - 32px); }
+body.app .payment-modal form { display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+body.app .payment-modal .modal-header, body.app .payment-modal .modal-body, body.app .payment-modal .modal-footer { padding:16px; }
+body.app .payment-modal .modal-header, body.app .payment-modal .modal-footer { flex:0 0 auto; }
+body.app .payment-modal .modal-body { overflow-y:auto; min-height:0; font-size:13px; }
+body.app #recordPaymentModal.payment-modal .modal-title { font-size:16px; font-weight:600; line-height:24px; letter-spacing:normal; }
+body.app .payment-modal .modal-header .hint { margin:4px 0 0; font-size:13px; color:#475569; }
+body.app .payment-modal .modal-footer { background:#f8fafc; gap:8px; }
+body.app .payment-modal .btn { min-height:34px; padding:6px 10px; font-size:13px; border-radius:8px; }
+body.app .payment-modal .field { margin-bottom:12px; min-width:0; }
+body.app .payment-modal .input { min-height:36px; font-size:13px; width:100%; }
+body.app .payment-modal .payment-amount { position:relative; }
+body.app .payment-modal .payment-amount > span { position:absolute; inset:8px auto auto 10px; color:#475569; pointer-events:none; }
+body.app .payment-modal .payment-amount .input { padding-left:28px; }
+body.app .payment-modal [hidden] { display:none !important; }
+body.app .payment-modal .form-grid { display:grid; grid-template-columns:minmax(0,1fr); gap:0; }
+body.app .payment-modal .form-grid .span-2 { grid-column:1; }
+body.app .payment-modal .order-detail__finance { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; padding:10px; margin:0 0 16px; border:1px solid var(--border); background:#f8fafc; border-radius:10px; }
+body.app .payment-modal .order-detail__finance > div { text-align:center; min-width:0; padding:0; border:0; background:none; }
+body.app .payment-modal .order-detail__finance dt { font-size:12px; color:#475569; font-weight:400; }
+body.app .payment-modal .order-detail__finance dd { margin:3px 0 0; font-size:14px; line-height:20px; font-weight:600; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
+body.app .payment-modal .is-unpaid { color:#b91c1c; }
+body.app .payment-modal .order-detail__method-buttons { display:flex; gap:8px; flex-wrap:wrap; margin:4px 0; }
+body.app .payment-modal .order-detail__method-buttons .btn { display:inline-flex; justify-content:center; align-items:center; gap:6px; flex:1; }
+body.app .payment-modal .order-detail__method-buttons [aria-pressed=true] { border-color:#2563eb; background:#eff6ff; color:#1d4ed8; }
+body.app .payment-modal .correct { margin:0 0 12px; }
+body.app .payment-modal .correct summary { cursor:pointer; font-size:13px; margin-bottom:10px; }
+body.app .payment-modal .order-detail__gcash { display:grid; grid-template-columns:140px minmax(0,1fr); gap:8px 12px; padding:12px; border:1px solid #bfdbfe; border-radius:10px; background:#eff6ff; margin:12px 0; font-size:12px; }
+body.app .payment-modal .order-detail__gcash > h3, body.app .payment-modal .order-detail__gcash > p { grid-column:1 / -1; margin:0; font-size:12px; }
+body.app .payment-modal .order-detail__gcash > h3 { font-size:13px; }
+body.app .payment-modal .order-detail__gcash > a { grid-column:1; }
+body.app .payment-modal .order-detail__gcash img { object-fit:contain; width:140px; height:140px; max-width:100%; display:block; margin:0; }
+body.app .payment-modal .order-detail__kv { display:grid; grid-template-columns:minmax(0,1fr); gap:4px; align-content:start; min-width:0; }
+body.app .payment-modal .order-detail__kv dt { color:#475569; font-weight:400; }
+body.app .payment-modal .order-detail__kv dd { text-align:left; margin:0 0 8px; overflow-wrap:anywhere; }
+body.app .payment-modal [data-payment-preview] { font-size:12px; margin:10px 0; color:#475569; }
+@media(max-width:479px) { body.app .payment-modal .order-detail__gcash { grid-template-columns:minmax(0,1fr); } body.app .payment-modal .order-detail__gcash > a { justify-self:center; } }

@@ -1,0 +1,311 @@
+{
+  "reference": "laundrix_reference_vercel_code_only_read_this_do_not_modify",
+  "files": [
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/alert-dialog.tsx",
+      "target": "frontend/src/prototype/components/ui/alert-dialog.tsx",
+      "sourceSha256": "ae7f68159dd818a5c0bba8dacf5cb075da2cd33eabf31e274a75df08c0f8dbe2",
+      "workingSha256": "7446795d7667f7c61cab6d71f55a6c5de49f8b5b0e24c7e30a28e6667c77fea8",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/alert.tsx",
+      "target": "frontend/src/prototype/components/ui/alert.tsx",
+      "sourceSha256": "798218fddd9446e86b9e9e53a80a86c0026c3e0f9f68ffdcd1c2d902fa115043",
+      "workingSha256": "fc72aca575fc5aa587c73b6a0b144ab1f3fa04d226666458eaf6fe3fed92020d",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/avatar.tsx",
+      "target": "frontend/src/prototype/components/ui/avatar.tsx",
+      "sourceSha256": "7e64a74b7a3b5409e3f4b467ff0cb6b4317900cd504620ffa4d88ced53fcc037",
+      "workingSha256": "6a67b1baa6931f6fcee034cb0f3b7d0086d1e41e85e18d5779734d27e3adb587",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/badge.tsx",
+      "target": "frontend/src/prototype/components/ui/badge.tsx",
+      "sourceSha256": "e8d252d936ce74d84f4bf1f4858c9f621f3c8274ab91e501a675d824e1ca4f05",
+      "workingSha256": "0eca563f637dfa431afdb9de0eae8cf5e80116b4428182eae020875571f01c06",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/button.tsx",
+      "target": "frontend/src/prototype/components/ui/button.tsx",
+      "sourceSha256": "3042fe03197e2afbc1e5f53f1018439add52a66363bd85f2f439b7b2cfa9039a",
+      "workingSha256": "27d52a6efaeff9d535a94ea1c9aae0a27d2fd67ac5c49d59b61e29607dc53580",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/card.tsx",
+      "target": "frontend/src/prototype/components/ui/card.tsx",
+      "sourceSha256": "931718ce4a38bd879c39823b5c18606754c68982566d6450a3da3d91bab077c0",
+      "workingSha256": "9eee442dc237ed0779d76fb6520b7f3c067c8d2e809e5d7189bf5d84b7ff9f24",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/checkbox.tsx",
+      "target": "frontend/src/prototype/components/ui/checkbox.tsx",
+      "sourceSha256": "130f05cc4f62e362354024ce0d1d3d427a5299e9a401464c52ca299a6d045ca9",
+      "workingSha256": "3b33d36e23868ae2cfd491f5de17a35bc32c49a35ccab09caa80c60c605bfedb",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/dialog.tsx",
+      "target": "frontend/src/prototype/components/ui/dialog.tsx",
+      "sourceSha256": "843f6431340b4730da3c81d3a8b7d686769ab6ce463199e1f76373fb25d6db25",
+      "workingSha256": "45faeaa26d14be8b9baa60c9fe36e67e85f8ef7b8417cd82489d7612899321f2",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/dropdown-menu.tsx",
+      "target": "frontend/src/prototype/components/ui/dropdown-menu.tsx",
+      "sourceSha256": "fe316829e43e1410bbc80b722c60a4fb5af71ecdfc351715571e47a48e55c20b",
+      "workingSha256": "b80ed2758bc3d0975ead05448927213ddcec651dd48116ac3a5c3a4250d520fa",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/empty.tsx",
+      "target": "frontend/src/prototype/components/ui/empty.tsx",
+      "sourceSha256": "40da189e8b626f6480c77b78be86b781070b270e724c611d31e099ad7f652fae",
+      "workingSha256": "3c8a23e0219a3c9ece8118b041e2b7c094d1f0977cb9abd89ddb89adaea5c162",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/field.tsx",
+      "target": "frontend/src/prototype/components/ui/field.tsx",
+      "sourceSha256": "48c093a17462877a88ab905a5f19451a307a9229942db3058f6d8f38240e781c",
+      "workingSha256": "bfb3cdc74e461f7e80c293c2e9bc6aaf0736ed28a78afb8d7efb7c40a5aeebe9",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/input-group.tsx",
+      "target": "frontend/src/prototype/components/ui/input-group.tsx",
+      "sourceSha256": "7aa6f4acf51f3c47b64f9515b69fff47286512d28efcebcfe4b1f0bc2a4d4dc2",
+      "workingSha256": "09a3f79430a295db74df6493010a9c3d0fde75e2f123405d12e1a0f8a5af06b6",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/input.tsx",
+      "target": "frontend/src/prototype/components/ui/input.tsx",
+      "sourceSha256": "65848da76834211a6c0c24c226b9444421f42e8c96c8cada642137ebcdbc16c9",
+      "workingSha256": "b33c1f5107980f34ca061b598737e7ab7dfe39c250d04cb89cf835eeab57db3b",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/label.tsx",
+      "target": "frontend/src/prototype/components/ui/label.tsx",
+      "sourceSha256": "64d4eea0fd5979b5d0ae940521131a621d2e6d43f2b6f4b000d4ba935f73cc17",
+      "workingSha256": "5079c9164c311250cb4d78ce9dfa1db9861c5f30a9a8a03b7efacdc1101d9dc8",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/pagination.tsx",
+      "target": "frontend/src/prototype/components/ui/pagination.tsx",
+      "sourceSha256": "a7fb4d9b77b6b6f80d575df3f3ab914133d01fbc97858c1545cb943b29d52fe5",
+      "workingSha256": "f8ecf69e8af8b76a9f0367c23211c2d481ab0bd55e2eb929b45b1509fbf18668",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/popover.tsx",
+      "target": "frontend/src/prototype/components/ui/popover.tsx",
+      "sourceSha256": "5e1dddd627a256162a47b382dd027d190b41cc6ad33a3367519f9a27a79ff1d2",
+      "workingSha256": "c29f06fef75a07d7ef98b235855214f144864582ca8c8614b24e051bd4b6ecf1",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/progress.tsx",
+      "target": "frontend/src/prototype/components/ui/progress.tsx",
+      "sourceSha256": "0872260f30510b47174ea4ba6e7c38013c72de30905acf7f1b19edaef9eacbfd",
+      "workingSha256": "d910d9a3ca3707f75eca956b3c3ea088c5b9fbf3826d88cddaa24668dacb0d45",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/radio-group.tsx",
+      "target": "frontend/src/prototype/components/ui/radio-group.tsx",
+      "sourceSha256": "f202cbdd634cffd32e173c9dd3df9d48e08028ae405dae5e0b3fdb03b9517f8c",
+      "workingSha256": "d9c2c1d3d2d55b3c0536bd29dee8ebc88b75293bcb50d65f3645c9f7e0c3da1c",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/select.tsx",
+      "target": "frontend/src/prototype/components/ui/select.tsx",
+      "sourceSha256": "d1d7c79162a3c98511b8cfb2c57e786ae0912996f322633b8c6695f3ae78b250",
+      "workingSha256": "756558d1ebf86e6eaafbc644a6fca54d074e28044bed4e55cfb99ea8948ae3d1",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/separator.tsx",
+      "target": "frontend/src/prototype/components/ui/separator.tsx",
+      "sourceSha256": "70b278bbbfd1f0de60dd36f3d2ac5fc257856958f999ab37c4c0c3d77fd63974",
+      "workingSha256": "a5ead19ce82a07962e0529486ac33d9b8176f61fecd38031a86ad7d621c6cb0a",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/sheet.tsx",
+      "target": "frontend/src/prototype/components/ui/sheet.tsx",
+      "sourceSha256": "6e4daecf0ff11f6aba436e7ea71d87cb2d6afd749b49d834cba8293966173638",
+      "workingSha256": "b3561645f65575f355b27066125614cec512303247d8d9f05cfc6ce52d8512c7",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/sidebar.tsx",
+      "target": "frontend/src/prototype/components/ui/sidebar.tsx",
+      "sourceSha256": "c61388189632d229c2f3a7f67b4424a26570509995f419dfb110ab65bbeea303",
+      "workingSha256": "1d37827710e47185d42dfec985dbbb9e42ec4148d4f2873ee779970b817926a8",
+      "adapted": true,
+      "adaptedBeyondNamespace": true
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/skeleton.tsx",
+      "target": "frontend/src/prototype/components/ui/skeleton.tsx",
+      "sourceSha256": "8110bba70d0cb9fe968c0b7bd092ad12258caef40b028b4a87f402bdab907faf",
+      "workingSha256": "c53c23ffb402a56169d71e805100a8c15451a8a6c113a17b1656b197ca4979bc",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/sonner.tsx",
+      "target": "frontend/src/prototype/components/ui/sonner.tsx",
+      "sourceSha256": "2dd975ad2170ba2570b00e58713dcbda90f26a7fffdaceb1ef7255f450c2d2a6",
+      "workingSha256": "66bcd15e4997cfdd79b156488b7561bd299d9b8432f36d30e35b44dfb6bfbe97",
+      "adapted": true,
+      "adaptedBeyondNamespace": true
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/spinner.tsx",
+      "target": "frontend/src/prototype/components/ui/spinner.tsx",
+      "sourceSha256": "900f722c961fa6e1c28104809d56831c9056dc69599e49d364cc13a6f33966a3",
+      "workingSha256": "d9068c9d0205d903b349f70f8ff8666cb57661916584affe32132d4bf6e56ae0",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/switch.tsx",
+      "target": "frontend/src/prototype/components/ui/switch.tsx",
+      "sourceSha256": "f1e91a30f88ab2f5ff5ca5ff1127a893cc8ec3b35e4c6d758dddda915f1cc430",
+      "workingSha256": "e9cd94de63ce18f97457f29f9af23b9e1e749836d516be7c9e6270f29dfd3a35",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/table.tsx",
+      "target": "frontend/src/prototype/components/ui/table.tsx",
+      "sourceSha256": "af2c73194ef5e018a595fee5d8422e70f944949dceaa9bd817ba0292e1139777",
+      "workingSha256": "f2cba581f4a1789d2d226e675b49b5f37163012735982516daf9432e41ca8652",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/tabs.tsx",
+      "target": "frontend/src/prototype/components/ui/tabs.tsx",
+      "sourceSha256": "af5cfa41cbb87e44aa922b766e8bdb902deb7369a5aae04d5cb4ca5a6deb6c6c",
+      "workingSha256": "c167079a24eec59be2f001145cbbb88e69eebf645c956582999246d3df82b12d",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/textarea.tsx",
+      "target": "frontend/src/prototype/components/ui/textarea.tsx",
+      "sourceSha256": "fa0ce5e86f2d8315e120edcddf036f9c7d1c764fb3252576e42450786932c662",
+      "workingSha256": "056ba3bbd2c4aa04c0fe52ef241d9e7a8008c386a0af6d6a5a560f36c90f7a52",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/toggle-group.tsx",
+      "target": "frontend/src/prototype/components/ui/toggle-group.tsx",
+      "sourceSha256": "3f5c3103a68b14a8539121315db585970e8471fd214a5fe5c3c720cbd9fa7f80",
+      "workingSha256": "52b8117e7ba035d5b1926d7598a377b49f3451ea956de601c4afcfb0920f7dbe",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/toggle.tsx",
+      "target": "frontend/src/prototype/components/ui/toggle.tsx",
+      "sourceSha256": "464e27aa915153b423a7349a947726bcc5bb3055c17f0fe3accefd1f3083326b",
+      "workingSha256": "4ba6ebd09659913e2e3685149a3080919d7c4cac5a5d89b8c89eb9f749c3fc3a",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/ui/tooltip.tsx",
+      "target": "frontend/src/prototype/components/ui/tooltip.tsx",
+      "sourceSha256": "148a49f38381d6ff9d844478d950e5fb68f37a27aa7e9c2606d5077b4b3e959e",
+      "workingSha256": "f4fb4879861c6b3d9928b08749441ddc19c82f56dc45c754fb50d6c57391f917",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/lib/utils.ts",
+      "target": "frontend/src/prototype/lib/utils.ts",
+      "sourceSha256": "e46429536f43f5910f5b2b0c50bb2769b510a4558bb4b5d20a3b0a9091dbf7c3",
+      "workingSha256": "76db4720b8835194b5bb3c6e4f1049914e39a24121dee582eca62039c8c16dfb",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/hooks/use-mobile.ts",
+      "target": "frontend/src/prototype/hooks/use-mobile.ts",
+      "sourceSha256": "ad0936f84f1df79d3697bfbff9c18f8ad58431c1cbaf2359c6a853b0fcc9f28b",
+      "workingSha256": "8437e9436e052367dfe03af3e044cfe572bb379319707620e6f4d8141852509b",
+      "adapted": true,
+      "adaptedBeyondNamespace": true
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/laundrix/logo.tsx",
+      "target": "frontend/src/prototype/components/laundrix/logo.tsx",
+      "sourceSha256": "a177983ebf9ad77adf4b55d1b0742e5cda61ab44fca95081d21ead0138fa84e0",
+      "workingSha256": "5f0fea8fe05d71c909190d322b0bf45685daa55d7af1e0c2741058501bf99a3d",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/laundrix/page-header.tsx",
+      "target": "frontend/src/prototype/components/laundrix/page-header.tsx",
+      "sourceSha256": "becce83e2af260d22c709fc65df190f9f76e6428b06e03db13a9954b925f9357",
+      "workingSha256": "6b250ef123447e76577966b920b5f67b73291eebb14cd27d7c550be7af85dd67",
+      "adapted": false,
+      "adaptedBeyondNamespace": false
+    },
+    {
+      "source": "laundrix_reference_vercel_code_only_read_this_do_not_modify/components/laundrix/table-helpers.tsx",
+      "target": "frontend/src/prototype/components/laundrix/table-helpers.tsx",
+      "sourceSha256": "689d78478e89d69c002e4febc2b2b76b7c6be6ec48d52510d9f912c5b18f5e1d",
+      "workingSha256": "b673d1773a6a900385c7c2095549bb4a2aaef4fd039f2b60c3c613ba24db5f21",
+      "adapted": true,
+      "adaptedBeyondNamespace": true
+    }
+  ],
+  "adaptations": [
+    "Vite instead of Next.js runtime; components.json rsc=false and stylesheet path",
+    "styles.css preserves reference theme/base rules; excludes business print rules",
+    "table-helpers removes simulated loading hook",
+    "sidebar preference persists only in component state; no cookies",
+    "Sonner uses fixed light reference theme, no next-themes dependency",
+    "mobile hook uses useSyncExternalStore at original 768px breakpoint",
+    "Working copies use @prototype alias to coexist with existing Radix components; original aliases/reference unchanged",
+    "Mobile shell omits visually hidden tooltips so Escape dismisses the drawer"
+  ]
+}

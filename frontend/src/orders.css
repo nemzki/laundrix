@@ -1,0 +1,80 @@
+/* Manage Orders density only; shared components and dialogs retain their styles. */
+.manage-orders { display: grid; min-width: 0; align-content: start; gap: 12px; }
+.manage-orders .mo-status-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: 6px; padding: 0; background: transparent; }
+.manage-orders .mo-status-tab { justify-content: space-between; gap: 6px; min-width: 0; min-height: 44px; padding: 6px 8px; border-radius: var(--lx-radius-sm); font-size: var(--lx-text-xs); line-height: 16px; }
+.manage-orders .mo-tab-label { white-space: normal; text-align: left; }
+.manage-orders .mo-tab-count { flex: 0 0 auto; padding: 1px 5px; font-size: var(--lx-text-xs); }
+.manage-orders .mo-filters { display: grid; gap: 10px; align-items: end; }
+.manage-orders .mo-search-field { display: grid; gap: 8px; min-width: 0; }
+.manage-orders .mo-table-panel { min-width: 0; padding: 0; gap: 0; flex: none; }
+.manage-orders .mo-table-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px; padding: 12px 14px; border-bottom: 1px solid var(--lx-border); }
+.manage-orders .mo-table-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.manage-orders .mo-table-title h2 { margin: 0; font: inherit; }
+.manage-orders .mo-table-title [data-slot="card-description"] { font-size: var(--lx-text-xs); }
+.manage-orders .mo-table-content { padding: 0; min-width: 0; }
+.manage-orders .mo-desktop-table { display: none; }
+.manage-orders .mo-table-overflow { position: relative; width: 100%; min-width: 0; }
+.manage-orders .mo-data-table { width: 100%; min-width: 45rem; table-layout: fixed; border-collapse: collapse; font-family: var(--lx-font); font-size: var(--lx-text-sm); line-height: 1.428571429; }
+.manage-orders .mo-col-order { width: 18.5%; }
+.manage-orders .mo-col-contact { width: 14%; }
+.manage-orders .mo-col-date { width: 12%; }
+.manage-orders .mo-col-laundry { width: 21.5%; }
+.manage-orders .mo-col-payment { width: 14%; }
+.manage-orders .mo-col-action { width: 4.25rem; }
+.manage-orders .mo-data-table th, .manage-orders .mo-data-table td { padding: 8px; vertical-align: middle; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.manage-orders .mo-data-table th { height: 38px; font-size: var(--lx-text-xs); font-weight: 500; line-height: 16px; }
+.manage-orders .mo-data-table tbody tr { height: 72px; }
+.manage-orders .mo-data-table tbody tr:last-child { border-bottom: 0; }
+.manage-orders .mo-data-table .mo-action { text-align: right; }
+.manage-orders .mo-reference { display: block; margin: 0; font-family: var(--lx-font-mono); font-size: var(--lx-text-compact); font-weight: 600; line-height: 18px; overflow-wrap: anywhere; }
+.manage-orders .mo-customer { display: block; margin: 0; font-size: var(--lx-text-compact); line-height: 18px; overflow-wrap: anywhere; }
+.manage-orders .mo-contact, .manage-orders .mo-secondary { display: block; margin: 0; color: var(--lx-muted); font-size: var(--lx-text-xs); line-height: 16px; overflow-wrap: anywhere; }
+.manage-orders .mo-date { font-size: var(--lx-text-xs); line-height: 18px; }
+.manage-orders .mo-money { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.manage-orders .mo-data-table .mo-money { font-size: var(--lx-text-xs); }
+.manage-orders .mo-data-table .lx-status { font-size: var(--lx-text-xs); line-height: 15px; padding: 2px 6px; }
+.manage-orders .mo-mobile-order { display: grid; gap: 8px; padding: 12px 14px; }
+.manage-orders .mo-mobile-statuses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.manage-orders .mo-empty { display: grid; justify-items: center; gap: 6px; padding: 20px 16px; text-align: center; }
+.manage-orders .mo-empty h3, .manage-orders .mo-empty p { margin: 0; }
+.manage-orders .mo-filter-error { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--lx-danger); }
+.manage-orders .mo-filter-error p { margin: 0; }
+/* Native first-paint controls use the same geometry as their mounted counterparts. */
+.manage-orders .mo-filters label { display: flex; font-size: var(--lx-text-sm); font-weight: 500; line-height: 1; }
+.manage-orders .mo-search-input { width: 100%; height: 44px; min-height: 44px; padding: 4px 10px; border: 1px solid var(--lx-border); border-radius: var(--lx-radius-sm); background: transparent; font-size: var(--lx-text-base); }
+.manage-orders .mo-server-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.manage-orders .mo-server-button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; gap: 6px; min-height: 44px; padding: 0 10px; border: 1px solid var(--lx-border); border-radius: var(--lx-radius-sm); background: var(--lx-surface); color: var(--lx-text); font-size: var(--lx-text-sm); font-weight: 500; line-height: 20px; white-space: nowrap; text-decoration: none; }
+.manage-orders .mo-server-button svg { width: 16px; height: 16px; }
+.manage-orders .mo-server-view { font-size: .8rem; line-height: 1.5; }
+.manage-orders .mo-server-primary { border-color: transparent; background: var(--lx-primary); color: var(--lx-surface); }
+.manage-orders .mo-server-button:disabled { opacity: .5; }
+.manage-orders .mo-server-tab { display: inline-flex; align-items: center; color: color-mix(in oklab, var(--lx-text) 60%, transparent); font-weight: 500; text-decoration: none; }
+.manage-orders .mo-server-panel { overflow: hidden; border-radius: var(--lx-radius-lg); background: var(--lx-surface); color: var(--lx-text); font-size: var(--lx-text-sm); box-shadow: 0 0 0 1px color-mix(in oklab, var(--lx-text) 10%, transparent); }
+.manage-orders .mo-server-panel [data-slot="card-title"] { font-size: var(--lx-text-base); font-weight: 500; line-height: 1.375; }
+.manage-orders .mo-server-panel [data-slot="card-description"] { color: var(--lx-muted); }
+.manage-orders .mo-server-badge { display: inline-flex; align-items: center; max-width: 100%; min-height: 20px; padding: 2px 8px; border: 1px solid var(--lx-border); border-radius: 999px; font-size: var(--lx-text-xs); font-weight: 500; line-height: 16px; }
+.manage-orders .mo-server-filtered { display: inline-flex; align-items: center; height: 20px; padding: 2px 8px; border: 1px solid transparent; border-radius: 999px; font-size: var(--lx-text-xs); font-weight: 500; line-height: 16px; }
+.manage-orders .mo-server-pagination { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; font-size: var(--lx-text-sm); color: var(--lx-muted); }
+@media (min-width: 640px) {
+  .manage-orders .mo-status-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .manage-orders .mo-filters { grid-template-columns: minmax(0, 1fr) auto; }
+}
+@media (min-width: 768px) and (max-width: 1279px) {
+  /* A natural-height horizontal scroller only where seven readable columns need it. */
+  .manage-orders .mo-table-overflow { overflow-x: auto; }
+}
+@media (min-width: 768px) {
+  .manage-orders .mo-search-input { font-size: var(--lx-text-sm); }
+  .manage-orders .mo-desktop-table { display: block; }
+  .manage-orders .mo-mobile-orders { display: none; }
+  .manage-orders .mo-data-table [data-slot="button"] { min-height: 32px; height: 32px; padding: 0 10px; }
+}
+@media (min-width: 1280px) {
+  .manage-orders .mo-status-tabs { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .manage-orders .mo-col-order { width: 17%; }
+  .manage-orders .mo-col-contact { width: 13%; }
+  .manage-orders .mo-col-laundry { width: 18%; }
+}
+@media (min-width: 961px) {
+  .manage-orders .mo-data-table td:nth-child(5) .lx-status { white-space: nowrap; }
+}

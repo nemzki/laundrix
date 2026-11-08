@@ -1,0 +1,108 @@
+.lx-react.lx-catalog {
+ --catalog-ready:1;
+ --lx-text-xs:12px; --lx-text-sm:13px; --lx-text-base:14px; --lx-text-lg:18px; --lx-text-xl:20px; --lx-text-2xl:24px;
+ --input:var(--lx-border); --ring:var(--lx-primary); --accent-foreground:var(--lx-text); --secondary-foreground:var(--lx-text);
+ --destructive:#b91c1c;
+}
+.lx-react.lx-catalog [data-slot=button], .lx-react.lx-catalog [data-slot=input], .lx-react.lx-catalog [data-slot=select-trigger] { min-height:36px; font-size:13px; }
+.lx-react.lx-catalog [data-slot=button]:focus-visible, .lx-react.lx-catalog [data-slot=input]:not(.catalog-search-input):focus-visible, .lx-react.lx-catalog [data-slot=select-trigger]:focus-visible { outline:2px solid var(--lx-primary); outline-offset:1px; box-shadow:none; }
+.lx-react.lx-catalog [data-slot=table-head] { padding:10px 16px; background:#f8fafc; font-size:13px; font-weight:500; color:#0f274a; }
+.lx-react.lx-catalog [data-slot=table-cell] { padding:12px 16px; font-size:13px; vertical-align:middle; }
+.lx-react.lx-catalog [data-slot=table-row] { border-color:var(--lx-border); }
+.lx-react.lx-catalog .catalog-icon { display:grid; place-items:center; width:34px; height:34px; flex:0 0 34px; border-radius:9px; color:#2563eb; background:#eff6ff; }
+.lx-react.lx-catalog .catalog-icon img { width:22px; height:22px; object-fit:contain; }
+/* Match Manage Orders' compact filter strip while retaining Radix tab behavior. */
+.lx-react.lx-catalog .catalog-module-tabs { display:flex; justify-content:flex-start; align-items:center; flex-wrap:nowrap; gap:4px; width:100%; min-width:0; height:auto; padding:12px 16px 6px; overflow-x:auto; overflow-y:hidden; scrollbar-width:thin; background:transparent; border-radius:0; }
+.lx-react.lx-catalog .catalog-module-tabs [data-slot=tabs-trigger] { flex:0 0 auto; height:32px; min-height:32px; gap:6px; padding:6px 8px; border:1px solid transparent; border-radius:7px; background:transparent; color:#475569; font-size:12px; line-height:18px; font-weight:500; box-shadow:none; }
+.lx-react.lx-catalog .catalog-module-tabs [data-slot=tabs-trigger]:hover { background:#f8fafc; }
+.lx-react.lx-catalog .catalog-module-tabs [data-slot=tabs-trigger][data-state=active] { background:#f1f5f9; color:#1e3a8a; border-color:#e2e8f0; box-shadow:none; }
+.lx-react.lx-catalog .catalog-module-tabs [data-slot=tabs-trigger][data-state]:focus-visible { outline:none; border-color:#3b82f6; box-shadow:inset 0 0 0 1px #3b82f6; }
+.lx-react.lx-catalog .catalog-module-tabs span { margin:0; padding:0 4px; border-radius:5px; background:#f1f5f9; color:#475569; font-size:11px; line-height:16px; font-variant-numeric:tabular-nums; }
+.lx-react.lx-catalog .catalog-controls { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:16px; }
+/* Only the input owns the border/focus treatment; the icon wrapper is structural. */
+.lx-react.lx-catalog .catalog-search { position:relative; width:320px; max-width:100%; }
+.lx-react.lx-catalog .catalog-search > svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); }
+.lx-react.lx-catalog input.catalog-search-input { width:100%; height:38px; min-height:38px; padding:6px 12px 6px 36px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; outline:none; box-shadow:none; }
+.lx-react.lx-catalog input.catalog-search-input:hover:not(:disabled) { border-color:#94a3b8; }
+.lx-react.lx-catalog input.catalog-search-input:focus { border-color:#3b82f6; outline:none; box-shadow:0 0 0 2px rgb(59 130 246 / 15%); }
+.lx-react.lx-catalog .catalog-dialog { display:flex; flex-direction:column; gap:0; padding:0; width:calc(100vw - 32px); max-width:520px; max-height:calc(100dvh - 32px); overflow:hidden; background:#fff; border:1px solid var(--lx-border); border-radius:14px; }
+.lx-react.lx-catalog .catalog-dialog-header { padding:16px; border-bottom:1px solid var(--lx-border); gap:4px; flex:0 0 auto; }
+.lx-react.lx-catalog#laundrix-react-portals [data-slot=dialog-title] { font-size:16px; line-height:24px; font-weight:500; letter-spacing:normal; }
+.lx-react.lx-catalog .catalog-editor-form { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+.lx-react.lx-catalog .catalog-editor-body { padding:16px; flex:1; min-height:0; overflow-y:auto; }
+.lx-react.lx-catalog .catalog-field { display:flex; flex-direction:column; gap:7px; margin-bottom:16px; }
+.lx-react.lx-catalog .catalog-field [data-slot=label] { font-size:13px; line-height:20px; font-weight:500; }
+.lx-react.lx-catalog .catalog-textarea { width:100%; min-height:76px; resize:vertical; padding:8px 10px; border:1px solid var(--lx-border); border-radius:8px; background:#fff; font-family:inherit; font-size:13px; outline:none; }
+.lx-react.lx-catalog .catalog-textarea:focus-visible { outline:2px solid var(--lx-primary); outline-offset:1px; }
+.lx-react.lx-catalog .catalog-editor-footer { display:flex; flex:0 0 auto; justify-content:flex-end; gap:8px; padding:16px; border-top:1px solid var(--lx-border); background:#f8fafc; }
+.lx-react.lx-catalog .catalog-price { position:relative; }
+.lx-react.lx-catalog .catalog-peso { position:absolute; top:8px; left:10px; color:#475569; pointer-events:none; }
+.lx-react.lx-catalog .catalog-unit-suffix { position:absolute; top:8px; right:10px; color:#64748b; font-size:12px; pointer-events:none; }
+.lx-react.lx-catalog .catalog-appearance { margin:0 0 16px; }
+.lx-react.lx-catalog .catalog-appearance summary { cursor:pointer; font-size:13px; color:#475569; margin-bottom:12px; }
+.lx-react.lx-catalog .catalog-error { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px 16px; font-size:13px; background:#fef2f2; color:#991b1b; }
+.lx-react.lx-catalog .catalog-toast { position:fixed; top:76px; right:20px; z-index:1100; display:flex; align-items:center; gap:12px; width:360px; max-width:calc(100vw - 32px); padding:12px 14px; border:1px solid #a7f3d0; border-radius:12px; color:#065f46; background:#ecfdf5; font-size:13px; pointer-events:none; }
+.lx-react.lx-catalog .catalog-toast button { pointer-events:auto; margin-left:auto; }
+@media(max-width:639px) { .lx-react.lx-catalog .catalog-controls { padding:12px; } .lx-react.lx-catalog .catalog-search { width:100%; } .lx-react.lx-catalog .catalog-module-tabs { padding-inline:12px; } }
+
+/* Add dialogs share the original fields, with one border and one scrolling body only when needed. */
+.lx-react.lx-catalog .catalog-dialog-add { max-width:540px; box-shadow:none; }
+.lx-react.lx-catalog .catalog-dialog-add .catalog-dialog-header { padding:20px 48px 16px 20px; }
+.lx-react.lx-catalog .catalog-dialog-add .catalog-editor-body { padding:20px; }
+.lx-react.lx-catalog .catalog-dialog-add .catalog-editor-footer { padding:16px 20px; }
+
+/* Service creation follows the reference; package/add-on and Edit layouts are unchanged. */
+/* Keep shared Dialog utility padding from adding a second inset around the form. */
+.lx-react.lx-catalog#laundrix-react-portals .catalog-dialog-add-service { max-width:512px; padding:0; gap:0; box-shadow:0 12px 32px rgb(15 23 42 / 12%); }
+.lx-react.lx-catalog .catalog-dialog-add-service .catalog-dialog-header { padding:20px 48px 16px 20px; text-align:left; }
+.lx-react.lx-catalog .catalog-dialog-add-service .catalog-editor-footer { padding:14px 20px; }
+.lx-react.lx-catalog .catalog-dialog-add-service .catalog-price [data-slot=input] { padding-left:30px; padding-right:72px; }
+.lx-react.lx-catalog .catalog-dialog-add-service :is(.catalog-peso,.catalog-unit-suffix) { top:50%; transform:translateY(-50%); }
+
+.lx-react.lx-catalog .catalog-dialog-add-service .catalog-service-options { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
+.lx-react.lx-catalog .catalog-dialog-add-service .catalog-field { min-width:0; margin-bottom:14px; }
+.lx-react.lx-catalog .catalog-dialog-add-service .catalog-field [data-slot=label] { font-size:14px; }
+.lx-react.lx-catalog .catalog-dialog-add-service :is([data-slot=input],[data-slot=select-trigger]) { height:38px; min-height:38px; }
+
+@media(max-width:479px) { .lx-react.lx-catalog .catalog-dialog-add-service .catalog-service-options { grid-template-columns:minmax(0,1fr); gap:0; } }
+
+@media(max-width:479px) {
+ .lx-react.lx-catalog .catalog-dialog-add-service .catalog-dialog-header { padding:16px 44px 14px 16px; }
+ .lx-react.lx-catalog .catalog-dialog-add-service .catalog-editor-body { padding:16px; }
+ .lx-react.lx-catalog .catalog-dialog-add-service .catalog-editor-footer { padding:12px 16px; flex-wrap:wrap; }
+}
+
+/* Initial server-rendered skeleton prevents the legacy catalog from flashing before React mounts. */
+.lx-react.lx-catalog .catalog-boot-action,.lx-react.lx-catalog .catalog-boot-summary,
+.lx-react.lx-catalog .catalog-boot-tabs i,.lx-react.lx-catalog .catalog-boot-controls i,
+.lx-react.lx-catalog .catalog-boot-head i,.lx-react.lx-catalog .catalog-boot-row i {
+ display:block; border-radius:6px; background:#e2e8f0; animation:catalog-boot-pulse 1.6s ease-in-out infinite;
+}
+.lx-react.lx-catalog .catalog-boot-action { width:120px; height:36px; border-radius:8px; background:#dbeafe; }
+.lx-react.lx-catalog .catalog-boot-summary { width:300px; max-width:min(78vw,300px); height:14px; }
+.lx-react.lx-catalog .catalog-boot-skeleton { min-width:0; }
+.lx-react.lx-catalog .catalog-panel { overflow:hidden; border:1px solid var(--lx-border); border-radius:12px; background:#fff; }
+.lx-react.lx-catalog .catalog-boot-tabs { display:flex; align-items:center; gap:5px; overflow:hidden; padding:12px 16px; border-bottom:1px solid var(--lx-border); }
+.lx-react.lx-catalog .catalog-boot-tabs i { flex:0 0 auto; width:68px; height:30px; }
+.lx-react.lx-catalog .catalog-boot-tabs i:nth-child(2) { width:82px; }
+.lx-react.lx-catalog .catalog-boot-tabs i:nth-child(3) { width:84px; }
+.lx-react.lx-catalog .catalog-boot-tabs i:nth-child(4) { width:76px; }
+.lx-react.lx-catalog .catalog-boot-controls { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:14px 16px; }
+.lx-react.lx-catalog .catalog-boot-controls i:first-child { width:320px; max-width:100%; height:38px; background:#f8fafc; border:1px solid #e2e8f0; }
+.lx-react.lx-catalog .catalog-boot-controls i:last-child { width:70px; height:30px; }
+.lx-react.lx-catalog .catalog-boot-head,.lx-react.lx-catalog .catalog-boot-row { display:grid; grid-template-columns:minmax(120px,2fr) minmax(65px,1fr) minmax(60px,.8fr) minmax(62px,.8fr) minmax(65px,1fr) minmax(52px,.6fr); align-items:center; gap:12px; min-height:52px; padding:8px 16px; border-bottom:1px solid #e2e8f0; }
+.lx-react.lx-catalog .catalog-boot-head { min-height:40px; background:#f8fafc; }
+.lx-react.lx-catalog .catalog-boot-head i { height:10px; }
+.lx-react.lx-catalog .catalog-boot-row i { height:13px; }
+.lx-react.lx-catalog .catalog-boot-row i:first-child { height:17px; }
+.lx-react.lx-catalog .catalog-startup-error { margin:16px; padding:20px; border:1px solid #fecaca; border-radius:10px; background:#fef2f2; color:#7f1d1d; font-size:13px; }
+.lx-react.lx-catalog .catalog-startup-error p { margin:6px 0 14px; }
+.lx-react.lx-catalog .catalog-startup-error button { min-height:36px; padding:7px 12px; border:0; border-radius:7px; background:#1d4ed8; color:white; font:inherit; cursor:pointer; }
+.catalog-js-required { padding:12px 16px; border:1px solid #fecaca; border-radius:8px; background:#fef2f2; color:#7f1d1d; font-size:13px; }
+@keyframes catalog-boot-pulse { 50% { opacity:.55; } }
+@media(max-width:639px) {
+ .lx-react.lx-catalog .catalog-boot-controls { flex-wrap:wrap; }
+ .lx-react.lx-catalog .catalog-boot-controls i:first-child { width:100%; }
+ .lx-react.lx-catalog .catalog-boot-head,.lx-react.lx-catalog .catalog-boot-row { grid-template-columns:minmax(120px,2fr) minmax(60px,.8fr) minmax(52px,.6fr); gap:8px; padding-inline:10px; }
+ .lx-react.lx-catalog .catalog-boot-head i:nth-child(2),.lx-react.lx-catalog .catalog-boot-head i:nth-child(4),.lx-react.lx-catalog .catalog-boot-head i:nth-child(5),.lx-react.lx-catalog .catalog-boot-row i:nth-child(2),.lx-react.lx-catalog .catalog-boot-row i:nth-child(4),.lx-react.lx-catalog .catalog-boot-row i:nth-child(5) { display:none; }
+}

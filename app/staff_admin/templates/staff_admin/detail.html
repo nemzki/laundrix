@@ -4,27 +4,27 @@
 {% block page_head %}<link rel="stylesheet" href="{{ url_for('staff_admin.static', filename='css/staff_admin.css') }}">{% endblock %}
 {% block page_title %}{{ staff.full_name or 'Unnamed staff member' }}{% endblock %}
 {% block page_subtitle %}{{ staff.email }}{% endblock %}
-{% block page_actions %}<a class="btn btn-outline" href="{{ url_for('staff_admin.index') }}">{{ icon('arrow-left', 16) }}<span>All staff</span></a>{% endblock %}
+{% block page_actions %}<a class="btn btn-outline" href="{{ url_for('staff_admin.index') }}">{{ icon('arrow-left', 16) }}<span>All Staff</span></a>{% endblock %}
 
 {% block content %}
 <div class="grid grid-2">
   <div>
     <div class="card">
-      <div class="card-head"><h2>Account</h2><span class="status status-{{ statuses.TONES[staff.account_status] }}">{{ statuses.LABELS[staff.account_status] }}</span></div>
+      <div class="card-head"><h2>Account</h2><span class="status status-{{ statuses.TONES[staff.account_status] }}" data-account-status="{{ staff.account_status }}">{{ statuses.LABELS[staff.account_status] }}</span></div>
       <dl class="kv">
         <dt>Role</dt><dd>Staff</dd>
-        <dt>Identity verification</dt><dd><span class="pill {{ 'pill-on' if idv_tone == 'success' else ('pill-warn' if idv_tone == 'warn' else 'pill-off') }}">{{ idv_label }}</span>{% if verification and verification.decided_at %} <span class="inline-note">decided {{ verification.decided_at|localdt('%b %d, %Y') }}</span>{% endif %}</dd>
+        <dt>Identity Verification</dt><dd><span class="pill {{ 'pill-on' if idv_tone == 'success' else ('pill-warn' if idv_tone == 'warn' else 'pill-off') }}">{{ idv_label }}</span>{% if verification and verification.decided_at %} <span class="inline-note">decided {{ verification.decided_at|localdt('%b %d, %Y') }}</span>{% endif %}</dd>
         <dt>Created</dt><dd>{{ staff.created_at|localdt }}</dd>
-        <dt>Last sign-in</dt><dd>{{ staff.last_login_at|localdt if staff.last_login_at else 'Never' }}</dd>
+        <dt>Last Sign-in</dt><dd>{{ staff.last_login_at|localdt if staff.last_login_at else 'Never' }}</dd>
         <dt>Approved</dt><dd>{% if staff.approved_at %}{{ staff.approved_at|localdt }}{% if approver %} by {{ approver.full_name or approver.email }}{% endif %}{% else %}Not yet{% endif %}</dd>
-        <dt>Last status change</dt><dd>{% if staff.status_changed_at %}{{ staff.status_changed_at|localdt }}{% if changed_by %} by {{ changed_by.full_name or changed_by.email }}{% endif %}{% else %}&mdash;{% endif %}</dd>
+        <dt>Last Status Change</dt><dd>{% if staff.status_changed_at %}{{ staff.status_changed_at|localdt }}{% if changed_by %} by {{ changed_by.full_name or changed_by.email }}{% endif %}{% else %}&mdash;{% endif %}</dd>
         {% if staff.status_reason %}<dt>Reason</dt><dd>{{ staff.status_reason }}</dd>{% endif %}
-        <dt>Enrollment link</dt><dd>{% if link_live %}Active until {{ link_expires|localdt }}{% else %}None active{% endif %}</dd>
+        <dt>Enrollment Link</dt><dd>{% if link_live %}Active until {{ link_expires|localdt }}{% else %}None active{% endif %}</dd>
       </dl>
     </div>
 
     <div class="card">
-      <h2>Recent activity</h2>
+      <h2>Recent Activity</h2>
       {% if activity %}
       <ol class="timeline">
         {% for event, actor_email in activity %}
@@ -46,9 +46,9 @@
         {% if verification and verification.status == 'verified' %}
           <p class="muted">Identity is verified. Approving lets this person sign in and use operational features.</p>
           <form method="post" action="{{ url_for('staff_admin.approve', user_id=staff.id) }}"
-                data-confirm="Approve {{ staff.full_name or staff.email }}? They will be able to sign in and use the system." data-confirm-title="Approve account">
+                data-confirm="Approve {{ staff.full_name or staff.email }}? They will be able to sign in and use the system." data-confirm-title="Approve Account">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="btn btn-primary" type="submit">{{ icon('check', 16) }}<span>Approve account</span></button>
+            <button class="btn btn-primary" type="submit">{{ icon('check', 16) }}<span>Approve Account</span></button>
           </form>
         {% else %}<p class="muted">Identity verification is not complete, so this account cannot be approved.</p>{% endif %}
       </div>
@@ -56,12 +56,12 @@
 
       {% if staff.account_status in (statuses.PENDING_VERIFICATION, statuses.ACTIVE) %}
       <div class="action-box">
-        <h3>Enrollment link</h3>
+        <h3>Enrollment Link</h3>
         <p class="muted">{{ 'Issue a new one-time link for ID verification.' if staff.account_status == statuses.PENDING_VERIFICATION else 'Issue a one-time link so this person can re-verify their ID.' }} Any older link stops working.</p>
         <form method="post" action="{{ url_for('staff_admin.enroll_link', user_id=staff.id) }}"
               data-confirm="Generate a replacement enrollment link? The previous link will stop working." data-confirm-title="New enrollment link">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="btn btn-outline" type="submit">Generate new link</button>
+          <button class="btn btn-outline" type="submit">Generate New Link</button>
         </form>
       </div>
       {% endif %}
@@ -71,9 +71,9 @@
         <h3>Reactivate</h3>
         <p class="muted">Restores access if the account is still identity-verified.</p>
         <form method="post" action="{{ url_for('staff_admin.reactivate', user_id=staff.id) }}"
-              data-confirm="Reactivate {{ staff.full_name or staff.email }}?" data-confirm-title="Reactivate account">
+              data-confirm="Reactivate {{ staff.full_name or staff.email }}?" data-confirm-title="Reactivate Account">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="btn btn-primary" type="submit">Reactivate account</button>
+          <button class="btn btn-primary" type="submit">Reactivate Account</button>
         </form>
       </div>
       {% endif %}
@@ -83,11 +83,11 @@
         <h3>Reject</h3>
         <p class="muted">Declines this registration. The enrollment link stops working.</p>
         <form method="post" action="{{ url_for('staff_admin.reject', user_id=staff.id) }}"
-              data-confirm="Reject this account? The staff member will not be able to sign in." data-confirm-title="Reject account">
+              data-confirm="Reject this account? The staff member will not be able to sign in." data-confirm-title="Reject Account">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <div class="field"><label for="reject-reason">Reason (required)</label>
+          <div class="field"><label for="reject-reason">Reason (Required)</label>
             <input class="input" id="reject-reason" name="reason" required minlength="3" maxlength="255"></div>
-          <button class="btn btn-danger" type="submit">Reject account</button>
+          <button class="btn btn-danger" type="submit">Reject Account</button>
         </form>
       </div>
       {% endif %}
@@ -97,11 +97,11 @@
         <h3>Suspend</h3>
         <p class="muted">Temporarily blocks sign-in and ends their session on their next request.</p>
         <form method="post" action="{{ url_for('staff_admin.suspend', user_id=staff.id) }}"
-              data-confirm="Suspend {{ staff.full_name or staff.email }}? They are signed out immediately." data-confirm-title="Suspend account">
+              data-confirm="Suspend {{ staff.full_name or staff.email }}? They are signed out immediately." data-confirm-title="Suspend Account">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <div class="field"><label for="suspend-reason">Reason (required)</label>
+          <div class="field"><label for="suspend-reason">Reason (Required)</label>
             <input class="input" id="suspend-reason" name="reason" required minlength="3" maxlength="255"></div>
-          <button class="btn btn-danger" type="submit">Suspend account</button>
+          <button class="btn btn-danger" type="submit">Suspend Account</button>
         </form>
       </div>
       {% endif %}
@@ -111,11 +111,11 @@
         <h3>Deactivate</h3>
         <p class="muted">Offboarding. The record is kept so past orders and payments still show who handled them.</p>
         <form method="post" action="{{ url_for('staff_admin.deactivate', user_id=staff.id) }}"
-              data-confirm="Deactivate {{ staff.full_name or staff.email }}? They lose access permanently unless an administrator creates a new account." data-confirm-title="Deactivate account">
+              data-confirm="Deactivate {{ staff.full_name or staff.email }}? They lose access permanently unless an administrator creates a new account." data-confirm-title="Deactivate Account">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <div class="field"><label for="deactivate-reason">Reason (required)</label>
+          <div class="field"><label for="deactivate-reason">Reason (Required)</label>
             <input class="input" id="deactivate-reason" name="reason" required minlength="3" maxlength="255"></div>
-          <button class="btn btn-danger" type="submit">Deactivate account</button>
+          <button class="btn btn-danger" type="submit">Deactivate Account</button>
         </form>
       </div>
       {% endif %}
@@ -126,4 +126,5 @@
     </div>
   </div>
 </div>
+{% include 'staff_admin/_detail_data.html' %}
 {% endblock %}

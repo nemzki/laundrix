@@ -1,0 +1,13 @@
+/* Balances, ledger, summaries, payment methods and payment settings. */
+.ui-page .grid > div { min-width: 0; }
+.ui-page .stat-value { overflow-wrap: anywhere; }
+.ui-page .card > h2 { margin-bottom: 1rem; }
+.ui-page .ui-table .inline-form { display: block; }
+.ui-page .qr-panel { align-items: start; }
+.ui-page .qr-panel > div { flex: 1 1 12rem; min-width: 0; }
+.ui-page .qr-preview { height: auto; aspect-ratio: 1; object-fit: contain; }
+.ui-page .add-method { padding-top: 1rem; border-top: 1px solid var(--lx-border); }
+@media (max-width: 700px) {
+ .ui-page .ui-table .num { text-align: left; }
+ .ui-page form > .btn { max-width: 100%; white-space: normal; }
+}

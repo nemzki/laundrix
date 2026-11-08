@@ -1,0 +1,57 @@
+{% extends 'core/base.html' %}
+{% from 'core/_icons.html' import icon %}
+{% from 'core/_nav_shared.html' import user_initials %}
+{% block title %}{{ dashboard_title }} · Laundrix{% endblock %}
+{% block head %}
+  <link rel="preload" href="{{ url_for('core.static', filename='react-dashboard/fonts/GeistSans-Variable.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link id="laundrix-dashboard-css" rel="stylesheet" href="{{ url_for('core.static', filename='react-dashboard/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/order-status.css') }}">
+  {% if config.IDV_ENABLED %}<link rel="stylesheet" href="{{ url_for('identity.static', filename='css/identity.css') }}">{% endif %}
+  {% if admin_area %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/admin-consistency.css') }}">{% endif %}
+{% endblock %}
+{% block body %}
+{% from 'dashboard/_data.html' import dashboard_data with context %}
+{% set d = dashboard_data %}
+{% macro navigation() -%}
+<nav aria-label="Main navigation" class="dashboard-navigation">
+  {% for group in d.navigation %}<section aria-label="{{ group.label }}"><p class="dashboard-nav-label">{{ group.label }}</p>
+    {% for item in group['items'] %}<a class="dashboard-nav-link" href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>{{ icon(item.icon if item.icon not in ('services','staff') else 'users', 18) }}<span>{{ item.label }}</span></a>{% endfor %}
+  </section>{% endfor %}
+</nav>
+{%- endmacro %}
+{% macro account() -%}
+<div class="dashboard-account"><div class="dashboard-user">
+  {% if d.user.picture %}<img src="{{ d.user.picture }}" alt="" width="36" height="36" referrerpolicy="no-referrer">{% else %}<span class="dashboard-avatar" aria-hidden="true">{{ user_initials(current_user) }}</span>{% endif %}
+  <div><strong>{{ d.user.name }}</strong><span>{{ d.user.label }}</span></div>
+</div><form method="post" action="{{ d.urls.logout }}"><input type="hidden" name="csrf_token" value="{{ d.csrf }}"><button class="dashboard-native-button" type="submit">{{ icon('logout',16) }}Logout</button></form></div>
+{%- endmacro %}
+<script type="application/json" id="laundrix-dashboard-data">{{ dashboard_data|tojson }}</script>
+<div id="laundrix-dashboard" class="lx-react lx-dashboard" data-renderer="server">
+  <div class="dashboard-static-shell">
+    <aside class="dashboard-static-sidebar" aria-label="{{ d.user.label }} sidebar"><a class="dashboard-brand" href="{{ d.urls.home }}"><img src="{{ d.urls.brand }}" alt="Laundrix" width="34" height="40"><strong>Laundrix</strong></a>{{ navigation() }}{{ account() }}</aside>
+    <div class="dashboard-static-main">
+      <header class="dashboard-static-header"><details class="dashboard-native-menu"><summary aria-label="Open navigation">{{ icon('menu',18) }}</summary><div>{{ navigation() }}{{ account() }}</div></details><span>Overview / <strong>{{ d.title }}</strong></span></header>
+      <main id="dashboard-main" tabindex="-1" class="dashboard-content">
+        {% if config.IDV_ENABLED %}<div id="dashboard-preserved-identity">{% include 'identity/_status_card.html' %}</div>{% endif %}
+        <div class="dashboard-heading"><div><h1>{{ d.title }}</h1><p>{{ d.description }}</p></div><a class="dashboard-native-button dashboard-primary" href="{{ d.urls.newOrder }}">{{ icon('plus',16) }}New order</a></div>
+        {% set groups = ['Order Overview','Operational Status','Financial Overview'] if admin_area else ['Daily operations'] %}
+        {% for group in groups %}<section class="dashboard-group" aria-label="{{ group }}"><h2>{{ group }}</h2><div class="dashboard-metrics{% if group == 'Order Overview' %} dashboard-metrics-two{% endif %}">
+          {% for m in d.metrics if m.group == group %}<div data-slot="card" class="dashboard-card dashboard-metric" data-metric="{{ m.key }}"><div><p class="dashboard-metric-label">{{ m.label }}</p><p class="dashboard-metric-value">{{ m.value }}</p></div><span class="dashboard-metric-icon" aria-hidden="true">{{ icon(m.icon,18) }}</span></div>{% endfor %}
+        </div></section>{% endfor %}
+        <div class="dashboard-panels{% if not admin_area %} dashboard-panels-single{% endif %}">
+          <section data-slot="card" class="dashboard-card dashboard-panel"><div class="dashboard-panel-heading"><h2>Recent Orders</h2><a href="{{ d.urls.orders }}">View All</a></div>
+            {% if d.recent %}
+            <div class="dashboard-recent-desktop"><table class="dashboard-table"><caption class="sr-only">Recent Orders</caption><thead><tr><th>Reference</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead><tbody>{% for row in d.recent %}<tr><td><a class="dashboard-reference" href="{{ row.url }}">{{ row.reference }}</a></td><td>{{ row.customer }}</td><td>{{ row.total }}</td><td><span class="dashboard-status" data-tone="{{ row.tone }}" data-laundry-status="{{ row.value }}">{{ row.status }}</span></td></tr>{% endfor %}</tbody></table></div>
+            <div class="dashboard-recent-mobile">{% for row in d.recent %}<article><a class="dashboard-reference" href="{{ row.url }}">{{ row.reference }}</a><p>{{ row.customer }}</p><p>Total <strong>{{ row.total }}</strong></p><span class="dashboard-status" data-tone="{{ row.tone }}" data-laundry-status="{{ row.value }}">{{ row.status }}</span></article>{% endfor %}</div>
+            {% else %}<div class="dashboard-empty"><strong>No orders yet</strong><p>Create the first order to see activity here.</p></div>{% endif %}
+          </section>
+          {% if admin_area %}<section data-slot="card" class="dashboard-card dashboard-panel"><div class="dashboard-panel-heading"><h2>Popular Services</h2></div>{% if d.popular %}<ul class="dashboard-popular">{% for row in d.popular %}<li><span>{{ row.name }}</span><span>{{ row.count }} line{{ '' if row.count == 1 else 's' }}</span></li>{% endfor %}</ul>{% else %}<div class="dashboard-empty"><strong>No data yet</strong><p>Popular services appear once orders exist.</p></div>{% endif %}</section>{% endif %}
+        </div>
+        <a class="dashboard-fallback" href="{{ d.urls.fallback }}">Use Original Interface</a>
+      </main>
+    </div>
+  </div>
+</div>
+<div id="laundrix-dashboard-portals" class="lx-react lx-dashboard"></div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('core.static', filename='js/app.js') }}" defer></script><script type="module" src="{{ url_for('core.static', filename='react-dashboard/dashboard.js') }}"></script>{% endblock %}

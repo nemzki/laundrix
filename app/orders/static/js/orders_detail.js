@@ -82,7 +82,7 @@
       if (newLabel) newLabel.textContent = label;
       if (message) {
         message.textContent = needsNote
-          ? "Move this order back to " + label + "? A note is required."
+          ? "Move this order back to " + label + "? A note is required. Previously sent SMS messages and recorded payments will not be undone."
           : "Are you sure you want to update this order to " + label + "?";
       }
       if (noteInput) noteInput.value = "";

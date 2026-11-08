@@ -1,24 +1,45 @@
 {% extends "core/app_shell.html" %}
 {% from "core/_forms.html" import render_pagination %}
 {% from "core/_icons.html" import icon %}
-{% block title %}Customers · Laundrix{% endblock %}
+{% from "orders/_customer_components.html" import avatar, add_icon %}
+{% block title %}Customers &middot; Laundrix{% endblock %}
+{% block body_class %}{{ super() }} customers-page{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static',filename='css/customers.css') }}">{% endblock %}
 {% block page_title %}Customers{% endblock %}
-{% block page_subtitle %}Customer records created through order entry.{% endblock %}
+{% block page_subtitle %}<span data-directory-count>{{ directory_count }}</span> customers in the directory.{% endblock %}
+{% block page_actions %}<a class="btn btn-primary" href="{{ url_for('orders.new_order') }}" data-add-customer>{{ add_icon() }} Add Customer</a>{% endblock %}
 {% block content %}
-<form class="search-bar" method="get">
-  <input class="input" type="search" name="q" value="{{ term }}" placeholder="Search name or number" aria-label="Search customers">
-  <button class="btn btn-primary" type="submit">{{ icon('search', 16) }}<span>Search</span></button>
-</form>
-<div class="card">
-  {% if customers %}
-  <div class="table-wrap"><table class="table">
-    <thead><tr><th>Name</th><th>Contact</th><th class="num">Orders</th><th>Registered</th></tr></thead>
-    <tbody>{% for c in customers %}
-      <tr><td><strong>{{ c.full_name }}</strong></td><td>{{ c.contact_number }}</td><td class="num">{{ c.orders.count() }}</td><td>{{ c.created_at|localdt('%b %d, %Y') }}</td></tr>
-    {% endfor %}</tbody></table></div>
-  {{ render_pagination(pagination, 'orders.customers', q=term) }}
-  {% else %}
-    <div class="empty"><strong>No customers yet</strong>Customers are added when staff create an order.</div>
-  {% endif %}
+<section class="cm" data-customer-directory data-index-url="{{ url_for('orders.customers') }}" data-create-url="{{ url_for('orders.create_customer') }}">
+  <div class="card cm-panel">
+    <form class="cm-filters" method="get" action="{{ url_for('orders.customers') }}" role="search">
+      <div class="cm-search">{{ icon('search',16) }}<label class="visually-hidden" for="customer-search">Search name or mobile number</label><input class="input" id="customer-search" type="search" name="q" value="{{ term }}" placeholder="Search name or mobile number" autocomplete="off"></div>
+      <label class="visually-hidden" for="customer-filter">Customer filter</label><select class="input cm-filter" id="customer-filter" name="filter">{% for value,label in [('all','All customers'),('owing','With outstanding balance'),('settled','No outstanding balance')] %}<option value="{{ value }}"{% if customer_filter == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      <button class="btn btn-outline cm-native-submit" type="submit">Search</button>
+      <a class="cm-clear" href="{{ url_for('orders.customers') }}" data-customer-page{% if not term and customer_filter == 'all' %} hidden{% endif %}>Clear Filters</a>
+    </form>
+    <div data-customer-results data-page="{{ pagination.page }}" data-pages="{{ pagination.pages }}" data-total="{{ pagination.total }}">
+      <div class="cm-table-wrap"><table class="cm-table"><caption class="visually-hidden">Customer directory</caption>
+        <thead><tr>{% for label in ['Customer','Contact Number','Orders','Last Order','Balance','Action'] %}<th scope="col">{{ label }}</th>{% endfor %}</tr></thead>
+        <tbody>{% for customer in customers %}{% set profile = profiles[customer.id] %}
+        <tr data-customer-id="{{ customer.id }}" data-customer-url="{{ url_for('orders.directory_customer',customer_id=customer.id) }}">
+          <td><span class="cm-customer">{{ avatar(customer.full_name) }}<strong>{{ customer.full_name }}</strong></span></td>
+          <td class="cm-contact">{{ customer.contact_number }}</td><td class="num">{{ profile.order_count }}</td>
+          <td class="cm-date">{{ profile.last_order.created_at|localdt('%b %d, %Y') if profile.last_order else 'No orders yet' }}</td>
+          <td class="num{% if profile.balance > 0 %} cm-balance{% endif %}">{{ profile.balance|peso }}</td>
+          <td><div class="cm-actions"><button class="btn btn-outline cm-edit cm-enhanced-only" type="button" data-edit-customer aria-label="Edit {{ customer.full_name }}">{{ icon('edit',16) }}</button><button class="btn btn-outline cm-enhanced-only" type="button" data-view-customer>View</button></div></td>
+        </tr>{% else %}<tr><td colspan="6" class="cm-empty"><strong>{{ 'No customers match your filters.' if term or customer_filter != 'all' else 'No customers yet' }}</strong><p>{{ 'Try another search or clear your filters.' if term or customer_filter != 'all' else 'Add a customer or use the existing New Order workflow.' }}</p></td></tr>{% endfor %}</tbody>
+      </table></div>
+      <footer class="cm-pagination"><span>Showing {{ (pagination.page-1)*pagination.per_page+1 if customers else 0 }}&ndash;{{ (pagination.page-1)*pagination.per_page+customers|length if customers else 0 }} of {{ pagination.total }} customers</span>{{ render_pagination(pagination,'orders.customers',q=term or none,filter=customer_filter) }}</footer>
+    </div>
+    <div class="cm-load-error" data-customer-load-error role="alert" hidden>Customers could not be loaded. <button class="btn btn-outline" type="button" data-customer-retry>Retry</button></div>
+  </div>
+  <p class="visually-hidden" data-customer-announcement role="status"></p>
+</section>
+<div class="offcanvas offcanvas-end" id="customerSheet" tabindex="-1" aria-labelledby="customerSheetTitle">
+  <div class="cm-sheet-content" data-customer-sheet-content></div>
+  <footer class="cm-sheet-footer"><button class="btn btn-outline" type="button" data-sheet-edit>{{ icon('edit',16) }} Edit details</button><a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus',16) }} New order</a></footer>
 </div>
+{% include 'orders/_customer_modal.html' %}
+<div class="cm-toast" data-customer-toast role="status" hidden><button type="button" data-customer-toast-close aria-label="Dismiss notification">&times;</button><strong data-customer-toast-title></strong><p data-customer-toast-message></p></div>
 {% endblock %}
+{% block page_scripts %}<script src="{{ url_for('orders.static',filename='js/customers.js') }}" defer></script>{% endblock %}

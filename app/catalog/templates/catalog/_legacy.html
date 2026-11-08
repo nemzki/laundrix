@@ -1,0 +1,95 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon, visual %}
+{% block title %}Services &amp; Pricing · Laundrix{% endblock %}
+{% block page_title %}Services &amp; Pricing{% endblock %}
+{% block page_subtitle %}Manage the official catalog. Staff can only use active entries; price changes never alter existing orders.{% endblock %}
+{% block page_actions %}
+  {% if tab == 'services' %}<a class="btn btn-primary" href="{{ url_for('catalog.service_new') }}">{{ icon('plus', 16) }}<span>Add service</span></a>{% endif %}
+  {% if tab == 'packages' %}<a class="btn btn-primary" href="{{ url_for('catalog.package_new') }}">{{ icon('plus', 16) }}<span>Add package</span></a>{% endif %}
+  {% if tab == 'addons' %}<a class="btn btn-primary" href="{{ url_for('catalog.addon_new') }}">{{ icon('plus', 16) }}<span>Add extra</span></a>{% endif %}
+{% endblock %}
+
+{% macro toggle_form(endpoint, pk, active, name) %}
+  <form class="inline-form" method="post" action="{{ url_for(endpoint, pk=pk) }}"
+        {% if active %}data-confirm="Staff will no longer be able to select {{ name }} for new orders. Existing orders are not affected." data-confirm-title="Deactivate {{ name }}?"{% endif %}>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-sm {{ 'btn-danger' if active else 'btn-outline' }}" type="submit">{{ 'Deactivate' if active else 'Activate' }}</button>
+  </form>
+{% endmacro %}
+
+{% block content %}
+<div class="tabs" role="tablist">
+  <a class="tab {% if tab == 'services' %}active{% endif %}" href="{{ url_for('catalog.index', tab='services') }}">Individual Services</a>
+  <a class="tab {% if tab == 'packages' %}active{% endif %}" href="{{ url_for('catalog.index', tab='packages') }}">Packages</a>
+  <a class="tab {% if tab == 'addons' %}active{% endif %}" href="{{ url_for('catalog.index', tab='addons') }}">Add-ons / Extras</a>
+</div>
+
+<div class="card">
+{% if tab == 'services' %}
+  {% if services|selectattr('pricing_unit', 'none')|list %}
+    <div class="alert alert-warn">{{ icon('alert', 16) }} Some services have no pricing unit yet. They cannot be ordered until you set one (per load, per kg or per piece).</div>
+  {% endif %}
+  {% if services %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Service</th><th>Category</th><th class="num">Price</th><th>Unit</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+    <tbody>
+    {% for s in services %}
+      <tr>
+        <td><div class="cell-title"><span class="thumb">{{ visual(s, 22) }}</span><div><strong>{{ s.name }}</strong><small>{{ s.description or s.code }}</small></div></div></td>
+        <td>{{ s.category }}</td>
+        <td class="num">{{ s.price|peso }}</td>
+        <td>{% if s.pricing_unit %}{{ s.unit_label }}{% else %}<span class="pill pill-warn">Not set</span>{% endif %}</td>
+        <td><span class="pill {{ 'pill-on' if s.is_active else 'pill-off' }}">{{ 'Active' if s.is_active else 'Inactive' }}</span></td>
+        <td>{{ s.updated_at|localdt('%b %d, %Y') }}</td>
+        <td><div class="row-actions"><a class="btn btn-outline btn-sm" href="{{ url_for('catalog.service_edit', pk=s.id) }}">Edit</a>{{ toggle_form('catalog.service_toggle', s.id, s.is_active, s.name) }}</div></td>
+      </tr>
+    {% endfor %}
+    </tbody></table></div>
+  {% else %}
+    <div class="empty"><strong>No services yet</strong>Add a service, or run <span class="mono">flask --app run seed-catalog</span> to load the confirmed catalog.</div>
+  {% endif %}
+
+{% elif tab == 'packages' %}
+  {% if packages %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Package</th><th>Range</th><th class="num">Price</th><th>Includes</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+    <tbody>
+    {% for p in packages %}
+      <tr>
+        <td><div class="cell-title"><span class="thumb">{{ visual(p, 22) }}</span><div><strong>{{ p.name }}</strong><small>{{ p.display_name }}</small></div></div></td>
+        <td>{{ p.range_label }}</td>
+        <td class="num">{{ p.price|peso }}</td>
+        <td>{{ p.covers_codes.replace(',', ', ')|title if p.covers_codes else 'Nothing' }}</td>
+        <td><span class="pill {{ 'pill-on' if p.is_active else 'pill-off' }}">{{ 'Active' if p.is_active else 'Inactive' }}</span></td>
+        <td>{{ p.updated_at|localdt('%b %d, %Y') }}</td>
+        <td><div class="row-actions"><a class="btn btn-outline btn-sm" href="{{ url_for('catalog.package_edit', pk=p.id) }}">Edit</a>{{ toggle_form('catalog.package_toggle', p.id, p.is_active, p.display_name) }}</div></td>
+      </tr>
+    {% endfor %}
+    </tbody></table></div>
+  {% else %}
+    <div class="empty"><strong>No packages yet</strong>Create a Wash, Dry &amp; Fold package to get started.</div>
+  {% endif %}
+
+{% else %}
+  {% if addons %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Extra</th><th class="num">Price</th><th>Chargeable</th><th>Customer-supplied</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+    <tbody>
+    {% for a in addons %}
+      <tr>
+        <td><div class="cell-title"><span class="thumb">{{ visual(a, 22) }}</span><div><strong>{{ a.name }}</strong><small>{{ a.description or a.code }}</small></div></div></td>
+        <td class="num">{{ a.price|peso }}</td>
+        <td>{{ 'Yes' if a.is_chargeable else 'No' }}</td>
+        <td>{{ 'Allowed' if a.allow_customer_supplied else 'Not allowed' }}</td>
+        <td><span class="pill {{ 'pill-on' if a.is_active else 'pill-off' }}">{{ 'Active' if a.is_active else 'Inactive' }}</span></td>
+        <td>{{ a.updated_at|localdt('%b %d, %Y') }}</td>
+        <td><div class="row-actions"><a class="btn btn-outline btn-sm" href="{{ url_for('catalog.addon_edit', pk=a.id) }}">Edit</a>{{ toggle_form('catalog.addon_toggle', a.id, a.is_active, a.name) }}</div></td>
+      </tr>
+    {% endfor %}
+    </tbody></table></div>
+  {% else %}
+    <div class="empty"><strong>No extras yet</strong>Add products such as Fabcon or Liquid Soap.</div>
+  {% endif %}
+{% endif %}
+</div>
+{% endblock %}

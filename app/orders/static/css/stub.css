@@ -1,0 +1,99 @@
+/* Standalone receipt layout. Select the paper size in the browser print dialog. */
+.stub-page { --lx-font: "Courier New", Courier, monospace; min-height: 100vh; padding: 16px 10px 24px; background: #fff; color: #000; font-family: "Courier New", Courier, monospace; }
+.stub-page button { font-family: inherit; }
+.stub-toolbar { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 560px; margin: 0 auto 24px; }
+.stub-toolbar p { flex-basis: 100%; margin: 0; color: #475569; text-align: center; font-size: .8125rem; line-height: 1.5; }
+.stub { width: min(380px, 100%); margin: 0 auto; padding: 12px; background: #fff; color: #000; border: 1px dashed #000; border-radius: 0; box-shadow: none; font-family: "Courier New", Courier, monospace; font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+.stub * { color: #000; }
+.stub p { margin: 0 0 8px; }
+.stub-head, .stub .center { text-align: center; }
+.stub-brand { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 4px; text-align: left; }
+.stub-business { min-width: 0; }
+.stub-logo { flex: 0 0 auto; display: block; width: 28px; max-width: 28px; height: auto; object-fit: contain; }
+.stub-logo[hidden] { display: none !important; }
+.stub .stub-brand .stub-address { margin: 4px 0 0; }
+.stub h1 { min-width: 0; margin: 0; color: inherit; font-family: inherit; font-size: 16px; font-weight: 700; line-height: 1.25; }
+.stub .stub-address { margin: 4px 0; font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; }
+.stub .stub-kicker { margin: 0 0 4px; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.stub .stub-reference { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: .025em; }
+.stub hr { margin: 8px 0; border: 0; border-top: 1px dashed #000; opacity: 1; }
+.stub-meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 16px; margin: 0; }
+.stub-meta dt { font-weight: 400; color: #000; }
+.stub-meta dd { min-width: 0; margin: 0; text-align: right; font-weight: 600; }
+.stub table { width: 100%; table-layout: fixed; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.stub th, .stub td { padding: 4px 0; vertical-align: top; white-space: normal; overflow-wrap: anywhere; }
+.stub th:first-child, .stub td:first-child { padding-right: 12px; }
+.stub td.r { text-align: right; white-space: normal; }
+.stub td:first-child { width: 65%; }
+.stub td.r { width: 35%; }
+.stub .r { text-align: right; }
+.stub-items th.r { width: 35%; }
+.stub-totals td.r { width: 55%; }
+.stub-items th { padding: 0 0 8px; border-bottom: 1px solid #cbd5e1; color: #475569; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.stub-items tbody td { padding-top: 8px; }
+.stub-item__name { font-weight: 700; }
+.stub-item__desc, .stub-item__meta, .stub-item__note { font-size: 11px; color: #475569; }
+.stub-item__note { font-style: italic; white-space: pre-line; }
+.stub-grand-total td { padding: 4px 0; font-size: 19px; }
+.stub-section-title { margin: 0 0 6px; color: inherit; font-size: 13px; font-weight: 800; line-height: 1.4; }
+.stub-payment table { table-layout: fixed; }
+.stub-payment td:first-child { width: 52%; }
+.stub-payment td.r { font-weight: 600; }
+.stub-balance td { padding-top: 8px; padding-bottom: 8px; font-weight: 800; }
+.stub-payment-status td { padding-top: 8px; border-top: 1px solid #cbd5e1; }
+.stub .small, .stub-empty { font-size: 11px; line-height: 1.5; }
+.stub-payment .small { margin-top: 10px; white-space: pre-line; }
+.stub-note { white-space: pre-line; }
+.stub-status { display: block; margin-bottom: 8px; }
+.stub-footer-block p { margin: 0; font-size: 11px; }
+.stub-qr { margin-top: 12px; text-align: center; }
+.stub-qr img { display: block; width: 150px; height: 150px; max-width: 100%; object-fit: contain; margin: 6px auto; background: #fff; image-rendering: pixelated; }
+.stub-head + .stub-qr { margin-top: 0; }
+.stub-head + .stub-qr img { margin-top: 4px; }
+.stub-qr p { margin: 6px 0; }
+#trackingQrPreviewModal .modal-body { min-width: 0; text-align: center; overflow-wrap: anywhere; }
+#trackingQrPreviewModal .tracking-qr-preview { display: block; width: 280px; max-width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; margin: 16px auto; background: #fff; image-rendering: pixelated; }
+#trackingQrPreviewModal .qr-preview-reference { margin: 0; }
+#trackingQrPreviewModal .modal-footer .btn { min-height: 44px; }
+@media (max-width: 360px) {
+  .stub-page { padding: 16px 10px 24px; }
+  .stub { padding: 12px; }
+  .stub-meta { column-gap: 10px; }
+}
+@media print {
+  @page { size: auto; margin: 3mm; }
+  html, body.stub-page { width: auto; min-height: 0; margin: 0; padding: 0; background: #fff; }
+  body.stub-page.modal-open { overflow: visible !important; padding: 0 !important; }
+  /* Print only the receipt; exclude navigation, actions and screen guidance. */
+  .stub-page > :not(.stub) { display: none !important; }
+  body.stub-page { font-family: "Courier New", Courier, monospace; }
+  .stub { width: 74mm; max-width: 100%; margin: 0 auto; padding: 0; border: 0; border-radius: 0; box-shadow: none; color: #000; font-family: "Courier New", Courier, monospace; font-size: 9pt; line-height: 1.35; }
+  .stub h1 { font-size: 12pt; }
+  .stub-brand { gap: 2mm; margin-bottom: 2mm; break-inside: avoid; page-break-inside: avoid; }
+  .stub-logo { width: 28px; max-width: 28px; height: auto; break-inside: avoid; page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .stub .stub-address { margin: 1mm 0; }
+  .stub-meta { row-gap: 1mm; }
+  .stub-qr p { margin: 1mm 0; }
+  .stub-section-title { margin-bottom: 1.5mm; }
+  .stub .stub-reference { font-size: 12pt; }
+  .stub .stub-address { font-size: 10px; }
+  .stub .stub-kicker, .stub-items th, .stub-item__desc, .stub-item__meta, .stub-item__note, .stub .small, .stub-footer-block p { font-size: 8pt; color: #000; }
+  .stub-meta dt { color: #000; }
+  .stub hr { margin: 2mm 0; border-color: #000; }
+  .stub th, .stub td { padding-top: 1mm; padding-bottom: 1mm; }
+  .stub-items th, .stub-payment-status td { border-color: #000; }
+  .stub-items tbody td { padding-top: 1.5mm; }
+  .stub-grand-total td { font-size: 12pt; }
+  .stub { height: auto; max-height: none; overflow: visible; }
+  .stub-section, .stub-items, .stub-items tbody, .stub-note { break-inside: auto; page-break-inside: auto; }
+  .stub-items thead { display: table-header-group; }
+  .stub p, .stub dd { orphans: 2; widows: 2; }
+  .stub-head, .stub-item, .stub-totals, .stub-footer-block { break-inside: avoid; page-break-inside: avoid; }
+  .stub-qr img { break-inside: avoid; page-break-inside: avoid; }
+  .stub tr { break-inside: avoid; page-break-inside: avoid; }
+  .stub-section-title { break-after: avoid; font-size: 9pt; }
+  .stub-qr { margin-top: 3mm; }
+  .stub-qr img { width: 32mm; height: 32mm; margin: 2mm auto; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .stub-head + .stub-qr { margin-top: 0; }
+  .stub-head + .stub-qr img { margin-top: 1mm; }
+}

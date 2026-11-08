@@ -1,47 +1,44 @@
 {% extends "core/app_shell.html" %}
 {% from "core/_icons.html" import icon %}
-{% block title %}Order saved · Laundrix{% endblock %}
-{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
-{% block page_title %}Order saved{% endblock %}
-{% block page_subtitle %}Prices and payment were recorded. Print the stub, then confirm the laundry was received.{% endblock %}
+{% block title %}Order created · Laundrix{% endblock %}
+{% block body_class %}{{ super() }} order-created-page{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}"><link rel="stylesheet" href="{{ url_for('orders.static', filename='css/order_created.css') }}">{% endblock %}
+{% block page_title %}Order created{% endblock %}
+{% block page_subtitle %}The order has been saved.{% endblock %}
 {% block content %}
-<div class="card confirm-hero">
-  <span class="confirm-icon">{{ icon('check', 30) }}</span>
-  <div class="muted">Order reference</div>
-  <div class="confirm-ref mono">{{ order.reference }}</div>
-  <p>{{ order.customer_name }} &middot; <strong>{{ order.total|peso }}</strong></p>
-  {% if order.is_payment_tracked %}
-  <p>
-    <span class="status status-{{ order.payment_status|payment_status_tone }}">{{ order.payment_status|payment_status_label }}</span>
-    &nbsp;Received {{ order.amount_paid|peso }} &middot; Balance {{ order.balance_due|peso }}
-  </p>
-  {% endif %}
-</div>
-
-<div class="grid grid-2">
-  <div class="card">
-    <h2>1. Print the order stub</h2>
-    <p class="muted">Give the printed stub to the customer. It shows the order, payment and tracking QR code.</p>
-    <div class="btn-row">
-      <a class="btn btn-primary" href="{{ url_for('orders.stub', reference=order.reference) }}" target="_blank" rel="noopener">{{ icon('printer', 16) }}<span>Open printable stub</span></a>
-    </div>
-  </div>
-  <div class="card">
-    <h2>2. Confirm laundry received</h2>
+<section class="order-created-card" id="order-created" data-order-reference="{{ order.reference }}" aria-labelledby="order-created-heading">
+ <div class="order-created-body">
+  <span class="order-created-icon" aria-hidden="true"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg></span>
+  <h1 id="order-created-heading">Order Created</h1>
+  <p class="order-created-reference"><strong>{{ order.reference }}</strong> for {{ order.customer_name }}</p>
+  <dl class="order-created-metrics">
+   <div><dt>Total</dt><dd data-saved-total>{{ order.total|peso }}</dd></div>
+   <div><dt>Paid</dt><dd data-saved-paid>{{ order.amount_paid|peso }}</dd></div>
+   <div><dt>Balance</dt><dd data-saved-balance>{{ order.balance_due|peso }}</dd></div>
+  </dl>
+ </div>
+ <footer class="order-created-actions">
+  <a class="btn btn-outline" href="{{ url_for('orders.stub', reference=order.reference) }}" target="_blank" rel="noopener">{{ icon('printer', 16) }}<span>Print Stub</span></a>
+  <a class="btn btn-outline" href="{{ url_for('orders.new_order') }}" data-create-another>{{ icon('plus', 16) }}<span>Create Another</span></a>
+  <a class="btn btn-primary" href="{{ url_for('orders.detail', reference=order.reference) }}"><span>Open Full Order</span>{{ icon('arrow-right', 16) }}</a>
+ </footer>
+</section>
+<section class="order-receive-panel" aria-labelledby="order-receive-heading">
+    <h2 id="order-receive-heading">Confirm Laundry Received</h2>
     {% if order.received_at %}
       <div class="alert alert-success">Received {{ order.received_at|localdt }}{% if order.received_by %} by {{ order.received_by.full_name or order.received_by.email }}{% endif %}.</div>
     {% else %}
       <p class="muted">Confirm only after the physical laundry is in the shop. This is separate from payment: the order can be received while a balance is still due.</p>
       <form method="post" action="{{ url_for('orders.confirm_received', reference=order.reference) }}"
-            data-confirm="Confirm that the laundry for {{ order.reference }} has been received by the shop?" data-confirm-title="Confirm laundry received">
+            data-confirm="Confirm that the laundry for {{ order.reference }} has been received by the shop?" data-confirm-title="Confirm Laundry Received">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button class="btn btn-primary" type="submit">{{ icon('check', 16) }}<span>Laundry received</span></button>
+        <button class="btn btn-primary" type="submit">{{ icon('check', 16) }}<span>Laundry Received</span></button>
       </form>
     {% endif %}
-  </div>
-</div>
-<div class="btn-row confirm-actions">
-  <a class="btn btn-outline" href="{{ url_for('orders.detail', reference=order.reference) }}">View order details</a>
-  <a class="btn btn-outline" href="{{ url_for('orders.new_order') }}">New order</a>
+</section>
+<div class="order-created-toast" id="order-created-toast" role="status" aria-live="polite" hidden>
+ <span aria-hidden="true">{{ icon('check', 18) }}</span><div><strong>Order {{ order.reference }} created</strong><p>Order saved successfully.</p></div>
+ <button type="button" aria-label="Dismiss success notification" data-dismiss-created-toast>{{ icon('x', 16) }}</button>
 </div>
 {% endblock %}
+{% block page_scripts %}<script src="{{ url_for('orders.static', filename='js/order_created.js') }}" defer></script>{% endblock %}

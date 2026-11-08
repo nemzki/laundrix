@@ -1,0 +1,24 @@
+{% from 'core/_icons.html' import visual %}
+{# Frontend projection only. Values/actions remain from the original Admin catalog. #}
+{% set view = namespace(rows=[]) %}
+{% for s in services %}{% set view.rows = view.rows + [dict(
+  kind='services', id=s.id, name=s.name, category=s.category, description=s.description or '', code=s.code,
+  price=s.price|peso, unit=s.unit_label, active=s.is_active, orderable=s.is_orderable, icon=s.icon_key,
+  image=s.image_url or '', visual=visual(s,18)|string, updated=s.updated_at|localdt, details='',
+  edit=url_for('catalog.service_edit',pk=s.id), toggle=url_for('catalog.service_toggle',pk=s.id))] %}{% endfor %}
+{% for p in packages %}{% set view.rows = view.rows + [dict(
+  kind='packages', id=p.id, name=p.name, category=p.category, description=p.description, code='',
+  price=p.price|peso, unit=p.range_label, active=p.is_active, orderable=p.is_active, icon=p.icon_key,
+  image=p.image_url or '', visual=visual(p,18)|string, updated=p.updated_at|localdt,
+  details='Includes: ' ~ (p.covers_codes.replace(',', ', ') if p.covers_codes else 'Nothing') ~ (('; Size: ' ~ p.size_label) if p.size_label else ''),
+  edit=url_for('catalog.package_edit',pk=p.id), toggle=url_for('catalog.package_toggle',pk=p.id))] %}{% endfor %}
+{% for a in addons %}{% set view.rows = view.rows + [dict(
+  kind='addons', id=a.id, name=a.name, category='', description=a.description or '', code=a.code,
+  price=a.price|peso, unit='', active=a.is_active, orderable=a.is_active, icon=a.icon_key,
+  image=a.image_url or '', visual=visual(a,18)|string, updated=a.updated_at|localdt, details='',
+  chargeable=a.is_chargeable, customerSupplied=a.allow_customer_supplied,
+  edit=url_for('catalog.addon_edit',pk=a.id), toggle=url_for('catalog.addon_toggle',pk=a.id))] %}{% endfor %}
+<script type="application/json" id="laundrix-catalog-data">{{ dict(
+  rows=view.rows, tab=request.args.get('tab') if request.args.get('tab') in ['all','services','packages','addons'] else 'all', csrf=csrf_token(), index=url_for('catalog.index'),
+  create=dict(services=url_for('catalog.service_new'),packages=url_for('catalog.package_new'),addons=url_for('catalog.addon_new'))
+)|tojson }}</script>

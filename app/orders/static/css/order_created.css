@@ -1,0 +1,33 @@
+@font-face { font-family: "Inter"; src: url("../../../core/static/fonts/inter/InterVariable.woff2") format("woff2"); font-style: normal; font-weight: 100 900; font-display: swap; }
+.order-created-page { --lx-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-family: var(--lx-font); }
+.order-created-page .content > .page-header { display: none; }
+.order-created-page .order-created-card { width: 100%; max-width: 560px; margin: 0 auto 12px; border: 1px solid var(--border); border-radius: 14px; background: #fff; overflow: hidden; }
+.order-created-page .order-created-body { padding: 20px; text-align: center; }
+.order-created-page .order-created-icon { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 12px; border-radius: 50%; background: #e8f8ef; color: #16934a; }
+.order-created-page .order-created-icon svg { width: 28px; height: 28px; }
+.order-created-page .order-created-body h1 { margin: 0 0 4px; font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -.025em; }
+.order-created-page .order-created-reference { margin: 0 0 16px; font-size: 14px; line-height: 22px; color: var(--muted); overflow-wrap: anywhere; }
+.order-created-page .order-created-reference strong { font-weight: 500; color: var(--text); }
+.order-created-page .order-created-metrics { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; margin: 0; text-align: center; }
+.order-created-page .order-created-metrics > div { min-width: 0; min-height: 62px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: #fafbfd; }
+.order-created-page .order-created-metrics dt { font-size: 11px; line-height: 16px; font-weight: 400; text-transform: none; letter-spacing: normal; color: var(--muted); }
+.order-created-page .order-created-metrics dd { margin: 4px 0 0; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--lx-navy); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.order-created-page .order-created-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 16px; background: #f7f9fc; border-top: 1px solid var(--border); }
+.order-created-page .order-created-actions .btn { min-height: 36px; padding: 6px 10px; border-radius: 8px; font-size: 13px; line-height: 20px; font-weight: 500; }
+.order-created-page .order-receive-panel { width: 100%; max-width: 560px; margin: 0 auto; padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: #fff; }
+.order-created-page .order-receive-panel h2 { margin: 0 0 8px; font-size: 15px; line-height: 22px; font-weight: 600; }
+.order-created-page .order-receive-panel p { margin: 0 0 12px; font-size: 13px; line-height: 20px; }
+.order-created-page .order-receive-panel form, .order-created-page .order-receive-panel .alert { margin: 0; }
+.order-created-page .order-receive-panel .btn { min-height: 40px; font-size: 13px; padding: 8px 12px; border-radius: 8px; }
+.order-created-page .order-created-toast { position: fixed; z-index: 1040; top: 72px; right: 24px; display: flex; align-items: start; gap: 10px; max-width: min(380px,calc(100vw - 32px)); padding: 14px; background: #effbf3; color: #176b39; border: 1px solid #b9e4c8; border-radius: 10px; box-shadow: 0 4px 14px #16332414; font-size: 13px; }
+.order-created-page .order-created-toast[hidden] { display: none; }
+.order-created-page .order-created-toast > div { min-width: 0; overflow-wrap: anywhere; }
+.order-created-page .order-created-toast strong { font-weight: 600; }
+.order-created-page .order-created-toast p { margin: 3px 0 0; font-size: 12px; }
+.order-created-page .order-created-toast button { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; flex-shrink: 0; border: 0; background: transparent; color: inherit; border-radius: 6px; }
+@media (max-width: 767px) {
+ .order-created-page .order-created-body { padding: 20px 16px; }
+ .order-created-page .order-created-metrics { gap: 8px; }
+ .order-created-page .order-created-actions .btn { flex: 1 1 100%; min-height: 40px; }
+ .order-created-page .order-created-toast { right: 16px; }
+}

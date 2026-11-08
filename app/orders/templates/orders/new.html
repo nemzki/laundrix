@@ -2,13 +2,19 @@
 {% from "core/_icons.html" import icon, visual %}
 {% set is_admin = current_user.role == 'admin' %}
 {% block title %}New Order · Laundrix{% endblock %}
-{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% block body_class %}{{ super() }} new-order-page{% endblock %}
+{% block page_head %}
+<link rel="preload" href="{{ url_for('core.static', filename='fonts/geist/GeistSans-Variable.woff2') }}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">
+<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/new_order.css') }}">
+{% endblock %}
 {% block page_title %}New Order{% endblock %}
 {% block page_subtitle %}Prices come from the official catalog and are calculated by the server.{% endblock %}
 
 {% block content %}
 {% set has_catalog = services or package_groups %}
-{% set step_names = ['Services', 'Details', 'Extras', 'Customer', 'Payment', 'Review'] %}
+{% set step_names = ['Customer', 'Services', 'Details', 'Payment', 'Review'] %}
+{% set step_descriptions = ['Select or add', 'Choose services', 'Quantities & notes', 'Payment Arrangement', 'Confirm Order'] %}
 <div id="wizard" class="wizard"
      data-quote-url="{{ url_for('orders.quote') }}" data-confirm-url="{{ url_for('orders.confirm') }}"
      data-search-url="{{ url_for('orders.customer_search') }}" data-csrf="{{ csrf_token() }}"
@@ -19,14 +25,14 @@
       {% for name in step_names %}
       <li class="wiz-step{% if loop.first %} is-current{% endif %}" data-pill="{{ loop.index }}">
         <span class="wiz-step__num" aria-hidden="true">{{ loop.index }}</span>
-        <span class="wiz-step__name">{{ name }}</span>
+        <span class="wiz-step__text"><span class="wiz-step__name">{{ name }}</span><span class="wiz-step__description">{{ step_descriptions[loop.index0] }}</span></span>
       </li>
       {% endfor %}
     </ol>
     <div class="wiz-progress-mobile" aria-live="polite">
       <div class="wiz-progress-mobile__meta">
-        <span class="wiz-progress-mobile__count">Step <strong id="wiz-step-num">1</strong> of 6</span>
-        <strong class="wiz-progress-mobile__title" id="wiz-step-title">Services</strong>
+        <span class="wiz-progress-mobile__count">Step <strong id="wiz-step-num">1</strong> of 5</span>
+        <strong class="wiz-progress-mobile__title" id="wiz-step-title">Customer</strong>
       </div>
       <div class="wiz-progress-mobile__track" aria-hidden="true">
         <span class="wiz-progress-mobile__fill" id="wiz-step-fill"></span>
@@ -38,22 +44,71 @@
     <div class="wizard-main card">
       <div id="step-alert" class="alert alert-error" role="alert" hidden></div>
 
-      {# ---------------- STEP 1 ---------------- #}
-      <section class="wstep" data-step="1" data-step-title="Services">
-        <h2 class="wiz-heading">Select services</h2>
+      <section class="wstep" data-step="1" data-step-title="Customer">
+        <h2 class="wiz-heading">Customer Information</h2>
+        <p class="muted wiz-lead">Search an existing customer or enter a new one. New customers are saved when you confirm the order.</p>
+        <div class="seg" role="group" aria-label="Customer mode">
+          <button type="button" class="seg-btn is-on" data-cust-mode="existing" aria-pressed="true">Existing Customer</button>
+          <button type="button" class="seg-btn" data-cust-mode="new" aria-pressed="false">New Customer</button>
+        </div>
+
+        <div id="cust-existing" class="wiz-panel">
+          <div class="field">
+            <label for="cust-search">Search by Name or Contact Number</label>
+            <input class="input" id="cust-search" type="search" autocomplete="off" placeholder="Type at least 2 characters">
+          </div>
+          <ul class="results" id="cust-results"></ul>
+          <div class="alert alert-info" id="cust-picked" hidden></div>
+        </div>
+
+        <div id="cust-new" class="wiz-panel" hidden>
+          <div class="form-grid">
+            <div class="field">
+              <label for="new-name">Full Name <span class="req">*</span></label>
+              <input class="input" id="new-name" maxlength="150" autocomplete="off">
+              <p class="field-error" data-error-for="customer_name" hidden></p>
+            </div>
+            <div class="field">
+              <label for="new-contact">Contact Number <span class="req">*</span></label>
+              <input class="input" id="new-contact" inputmode="tel" maxlength="25" autocomplete="off" placeholder="09XXXXXXXXX">
+              <p class="hint">Used to contact the customer about this order.</p>
+              <p class="field-error" data-error-for="customer_contact" hidden></p>
+            </div>
+          </div>
+        </div>
+        <p class="field-error" data-error-for="customer" hidden></p>
+        <div class="field consent-box">
+          <label class="check" for="sms-consent">
+            <input type="checkbox" id="sms-consent" name="sms_consent" autocomplete="off" aria-describedby="sms-consent-help">
+            <span>I agree to receive an SMS notification when this laundry order is ready for pickup.</span>
+          </label>
+          <p class="hint" id="sms-consent-help">Optional and recorded for this order only. A notification may be sent to the contact number saved on the order when the laundry is ready for pickup.</p>
+          <p class="hint">SMS eligibility is checked by the system using the order's saved contact number and SMS configuration.</p>
+          <p class="field-error" data-error-for="sms_consent" hidden></p>
+        </div>
+        <div class="alert alert-warn" id="dupe-box" hidden>
+          <strong>Possible duplicate customer</strong>
+          <p id="dupe-text"></p>
+          <ul class="results" id="dupe-list"></ul>
+          <button type="button" class="btn btn-outline btn-sm" id="dupe-create">Create a New Customer Anyway</button>
+        </div>
+      </section>
+
+      <section class="wstep" data-step="2" data-step-title="Services" hidden>
+        <h2 class="wiz-heading">Select Services</h2>
         <p class="muted wiz-lead">Choose one or more. A Wash, Dry &amp; Fold package already includes the services listed on its card.</p>
         {% if not has_catalog %}
           <div class="empty"><strong>The catalog is empty</strong>Ask an Admin to add services (Services &amp; Pricing).</div>
         {% endif %}
 
         {% if services %}
-        <h3 class="group-title">Individual services</h3>
+        <h3 class="group-title">Individual Services</h3>
         <div class="choice-grid">
           {% for s in services %}
           <div class="choice-wrap">
             <label class="choice {% if not s.pricing_unit %}is-disabled{% endif %}">
               <input class="sr-only" type="checkbox" data-kind="service" data-id="{{ s.id }}" data-code="{{ s.code }}"
-                     data-name="{{ s.name }}" data-unit="{{ s.pricing_unit or '' }}" data-unit-label="{{ s.unit_label }}"
+                     data-name="{{ s.name }}" data-unit="{{ s.pricing_unit or '' }}" data-unit-label="{{ s.unit_label }}" data-unit-price="{{ s.price }}"
                      {% if not s.pricing_unit %}disabled{% endif %}>
               <span class="choice-body">
                 <span class="choice-top">
@@ -98,18 +153,7 @@
           {% endfor %}
           </div>
         {% endfor %}
-      </section>
-
-      {# ---------------- STEP 2 ---------------- #}
-      <section class="wstep" data-step="2" data-step-title="Details" hidden>
-        <h2 class="wiz-heading">Service details</h2>
-        <p class="muted wiz-lead">Enter the measurement for each selected service. Required fields are marked.</p>
-        <div id="details-list"></div>
-      </section>
-
-      {# ---------------- STEP 3 ---------------- #}
-      <section class="wstep" data-step="3" data-step-title="Extras" hidden>
-        <h2 class="wiz-heading">Extras</h2>
+        <h3 class="group-title">Add-ons</h3>
         <p class="muted wiz-lead">Optional products. Customer-supplied products are never charged.</p>
         {% for a in addons %}
         <div class="extra" data-extra data-id="{{ a.id }}" data-name="{{ a.name }}"
@@ -134,62 +178,23 @@
         {% endfor %}
       </section>
 
-      {# ---------------- STEP 4 ---------------- #}
-      <section class="wstep" data-step="4" data-step-title="Customer" hidden>
-        <h2 class="wiz-heading">Customer information</h2>
-        <p class="muted wiz-lead">Search an existing customer or enter a new one. New customers are saved when you confirm the order.</p>
-        <div class="seg" role="tablist" aria-label="Customer mode">
-          <button type="button" class="seg-btn is-on" data-cust-mode="existing">Existing customer</button>
-          <button type="button" class="seg-btn" data-cust-mode="new">New customer</button>
-        </div>
-
-        <div id="cust-existing" class="wiz-panel">
-          <div class="field">
-            <label for="cust-search">Search by name or contact number</label>
-            <input class="input" id="cust-search" type="search" autocomplete="off" placeholder="Type at least 2 characters">
-          </div>
-          <ul class="results" id="cust-results"></ul>
-          <div class="alert alert-info" id="cust-picked" hidden></div>
-        </div>
-
-        <div id="cust-new" class="wiz-panel" hidden>
-          <div class="form-grid">
-            <div class="field">
-              <label for="new-name">Full name <span class="req">*</span></label>
-              <input class="input" id="new-name" maxlength="150" autocomplete="off">
-              <p class="field-error" data-error-for="customer_name" hidden></p>
-            </div>
-            <div class="field">
-              <label for="new-contact">Contact number <span class="req">*</span></label>
-              <input class="input" id="new-contact" inputmode="tel" maxlength="25" autocomplete="off" placeholder="09XXXXXXXXX">
-              <p class="hint">Used for order contact{% if config.SMS_ENABLED %} and optional SMS{% endif %}.</p>
-              <p class="field-error" data-error-for="customer_contact" hidden></p>
-            </div>
-          </div>
-        </div>
-        <p class="field-error" data-error-for="customer" hidden></p>
-        <div class="field field-check consent-box">
-          <label class="check">
-            <input type="checkbox" id="sms-consent" name="sms_consent">
-            <span>I agree to receive an SMS notification when this laundry order is ready for pickup.</span>
-          </label>
-          <p class="hint">Optional and recorded for this order only. One text is sent to the contact number saved on the order.</p>
-          <p class="field-error" data-error-for="sms_consent" hidden></p>
-        </div>
-        <div class="alert alert-warn" id="dupe-box" hidden>
-          <strong>Possible duplicate customer</strong>
-          <p id="dupe-text"></p>
-          <ul class="results" id="dupe-list"></ul>
-          <button type="button" class="btn btn-outline btn-sm" id="dupe-create">Create a new customer anyway</button>
+      <section class="wstep" data-step="3" data-step-title="Details" hidden>
+        <h2 class="wiz-heading">Service Details</h2>
+        <p class="muted wiz-lead">Enter how many loads, kilos, or pieces for each service.</p>
+        <div id="details-list"></div>
+        <div class="field order-instructions">
+          <label for="order-notes">Special Instructions (Optional)</label>
+          <textarea class="input" id="order-notes" maxlength="500" rows="3" aria-describedby="order-notes-count" placeholder="e.g. Separate white clothes, use unscented detergent, handle delicate fabrics carefully."></textarea>
+          <span class="hint" id="order-notes-count">0/500</span>
+          <p class="field-error" data-error-for="notes" hidden></p>
         </div>
       </section>
 
-      {# ---------------- STEP 5: PAYMENT ---------------- #}
-      <section class="wstep" data-step="5" data-step-title="Payment" hidden>
+      <section class="wstep" data-step="4" data-step-title="Payment" hidden>
         <h2 class="wiz-heading">Payment</h2>
         <p class="muted wiz-lead">Record what the customer is paying now. Enter only amounts you have actually received; nothing is marked as paid automatically.</p>
         {% if not methods %}
-          <div class="alert alert-warn">No payment methods are configured. An Admin must run <span class="mono">flask --app run seed-payments</span> or add methods under Payments.</div>
+          <div class="alert alert-warn">No payment methods are available. Ask an Admin to configure them in Payment Settings.</div>
         {% endif %}
         <div class="due-box"><span class="muted">Amount due</span><strong id="pay-due">&mdash;</strong></div>
 
@@ -228,69 +233,83 @@
         <div id="pay-later-note" class="alert alert-info" hidden>No payment will be recorded. The balance equals the order total and the order shows as Unpaid.</div>
 
         <div id="pay-methods-block" hidden>
-          <h3 class="group-title">Payment method</h3>
+          <h3 class="group-title">Payment Method</h3>
           <div class="chip-row">
             {% for m in methods %}
             <label class="chip"><input class="sr-only" type="checkbox" data-pay-method value="{{ m.code }}"><span>{{ m.label }}</span></label>
             {% endfor %}
           </div>
-          <p class="hint">Choose one method, or two to split the payment (for example Cash + GCash).</p>
+          <p class="hint">Choose enabled, distinct methods to split a payment (for example Cash + GCash).</p>
           {% for m in methods %}
           <div class="pay-entry" data-entry="{{ m.code }}" hidden>
             <h3>{{ m.label }}</h3>
             <div class="form-grid">
               <div class="field">
-                <label for="pay-amt-{{ m.code }}">Amount received (PHP)</label>
+                <label for="pay-amt-{{ m.code }}">Amount Received (PHP)</label>
                 <input class="input" id="pay-amt-{{ m.code }}" data-pay-amount="{{ m.code }}" type="number" inputmode="decimal" min="0.01" step="0.01" autocomplete="off">
                 <p class="field-error" data-error-for="payment:{{ m.code }}" hidden></p>
               </div>
-              {% if m.code != 'cash' %}
+              {% if m.code != 'cash' or m.requires_reference %}
               <div class="field">
                 <label for="pay-ref-{{ m.code }}">Reference no.{% if m.requires_reference %} <span class="req">*</span>{% else %} (optional){% endif %}</label>
                 <input class="input" id="pay-ref-{{ m.code }}" data-pay-ref="{{ m.code }}" maxlength="64" autocomplete="off">
               </div>
               {% endif %}
+              <div class="field span-2">
+                <label for="pay-notes-{{ m.code }}">Payment Notes (Optional)</label>
+                <input class="input" id="pay-notes-{{ m.code }}" data-pay-notes="{{ m.code }}" maxlength="255" autocomplete="off">
+              </div>
             </div>
           </div>
           {% endfor %}
+
           {% if methods|selectattr('code', 'equalto', 'gcash')|list %}
-          <div class="gcash-box" id="gcash-box" hidden>
-            <img class="qr-small" src="{{ url_for('payments.qr') }}" alt="Payment QR code" width="140" height="140">
-            <div>
-              <strong>GCash payment details</strong>
-              {% if pay_settings.gcash_account_name %}<div>{{ pay_settings.gcash_account_name }}</div>{% endif %}
-              {% if pay_settings.gcash_account_number %}<div class="mono">{{ pay_settings.gcash_account_number }}</div>{% endif %}
-              {% if pay_settings.payment_instructions %}<p class="small">{{ pay_settings.payment_instructions }}</p>{% endif %}
-              {% if not (pay_settings.gcash_account_name or pay_settings.gcash_account_number or pay_settings.qr_filename) %}<p class="small muted">No GCash details have been configured yet (Admin: Payments → Settings).</p>{% endif %}
+          <section class="gcash-box" id="gcash-box" aria-labelledby="gcash-heading"{% if pay_settings.qr_filename %} data-qr-url="{{ url_for('payments.qr') }}"{% endif %} hidden>
+            <div class="gcash-qr-area">
+              {% if pay_settings.qr_filename %}
+              <a id="gcash-qr-link" href="{{ url_for('payments.qr') }}" target="_blank" rel="noopener" aria-label="View full-size configured GCash QR" hidden><img id="gcash-qr-image" width="160" height="160" alt="Configured GCash payment QR"></a>
+              <p class="hint" id="gcash-qr-status" role="status">Loading configured QR…</p>
+              {% else %}
+              <p class="hint">No GCash QR image is configured. Ask an Admin to upload it in Payment Settings.</p>
+              {% endif %}
             </div>
-          </div>
+            <div class="gcash-info">
+              <h3 id="gcash-heading">GCash Payment Details</h3>
+              <dl>
+                {% if pay_settings.gcash_account_name %}<dt>Account Holder</dt><dd>{{ pay_settings.gcash_account_name }}</dd>{% endif %}
+                {% if pay_settings.gcash_account_number %}<dt>Mobile number / identifier</dt><dd>{{ pay_settings.gcash_account_number }}</dd>{% endif %}
+              </dl>
+              {% if not (pay_settings.gcash_account_name or pay_settings.gcash_account_number) %}<p class="hint">GCash account details have not been configured.</p>{% endif %}
+              {% if pay_settings.payment_instructions %}<p class="gcash-instructions">{{ pay_settings.payment_instructions }}</p>{% endif %}
+              <p class="hint">Verify the recipient before paying. Displaying or scanning this QR does not confirm payment; record only funds actually received.</p>
+            </div>
+          </section>
           {% endif %}
         </div>
 
         <p class="field-error" data-error-for="payment" hidden></p>
         <div class="pay-summary" id="pay-summary" hidden>
           <div><span class="muted">Received</span><strong id="pay-received">&mdash;</strong></div>
-          <div><span class="muted">Remaining balance</span><strong id="pay-balance">&mdash;</strong></div>
+          <div><span class="muted">Remaining Balance</span><strong id="pay-balance">&mdash;</strong></div>
           <p class="hint">Shown for your convenience. The server checks every amount when you continue.</p>
         </div>
         {% if pay_settings.payment_notice %}<p class="hint">{{ pay_settings.payment_notice }}</p>{% endif %}
       </section>
 
-      {# ---------------- STEP 6: REVIEW ---------------- #}
-      <section class="wstep" data-step="6" data-step-title="Review" hidden>
-        <h2 class="wiz-heading">Review order</h2>
-        <p class="muted wiz-lead">Confirm everything below. You can edit a section before generating the stub.</p>
+      <section class="wstep" data-step="5" data-step-title="Review" hidden>
+        <h2 class="wiz-heading">Review Order</h2>
+        <p class="muted wiz-lead">Check everything with the customer before confirming.</p>
 
         <div class="review-block">
-          <div class="card-head"><h3>Customer information</h3><button type="button" class="link-btn" data-goto="4">Edit</button></div>
+          <div class="review-section-head"><h3>Customer</h3><button class="review-edit" type="button" data-review-step="1" aria-label="Change customer">Change</button></div>
           <p id="rev-customer"></p>
+          <dl class="review-sms"><dt>SMS notification</dt><dd id="rev-sms">Not enabled</dd></dl>
         </div>
         <div class="review-block">
-          <div class="card-head"><h3>Selected services &amp; details</h3><button type="button" class="link-btn" data-goto="1">Edit services</button></div>
-          <p class="muted">Order reference is assigned when you confirm.</p>
+          <div class="review-section-head"><h3>Services</h3><button class="review-edit" type="button" data-review-step="2" aria-label="Edit services">Edit</button></div>
           <div class="table-wrap">
             <table class="table">
-              <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
+              <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit Price</th><th class="num">Amount</th></tr></thead>
               <tbody id="rev-lines"></tbody>
               <tfoot>
                 <tr><td colspan="3" class="num muted">Subtotal</td><td class="num" id="rev-subtotal"></td></tr>
@@ -301,32 +320,39 @@
           <p class="hint">The total is calculated by the server when you confirm.</p>
         </div>
         <div class="review-block">
-          <div class="card-head"><h3>Payment information</h3><button type="button" class="link-btn" data-goto="5">Edit</button></div>
+          <div class="review-section-head"><h3>Details</h3><button class="review-edit" type="button" data-review-step="3" aria-label="Edit Details">Edit</button></div>
+          <dl class="kv" id="rev-details"></dl>
+          <h4 class="review-instructions-heading">Special Instructions</h4><p id="rev-notes"></p>
+        </div>
+        <div class="review-block">
+          <div class="review-section-head"><h3>Payment Summary</h3><button class="review-edit" type="button" data-review-step="4" aria-label="Edit payment">Edit</button></div>
           <dl class="kv" id="rev-payment"></dl>
         </div>
-        <div class="field">
-          <label for="order-notes">Order notes (optional)</label>
-          <textarea class="input" id="order-notes" maxlength="500" rows="3" placeholder="Special handling notes for the shop"></textarea>
-        </div>
+        <div class="review-final"><h3>Final confirmation</h3><p class="hint">Confirm the customer, services and payment above. An order reference is assigned after the order is saved.</p></div>
       </section>
 
       <div class="wizard-nav">
         <button type="button" class="btn btn-outline" id="btn-back" hidden>{{ icon('arrow-left', 16) }}<span>Back</span></button>
         <span class="spacer"></span>
         <button type="button" class="btn btn-primary" id="btn-next"><span data-next-label>Next</span>{{ icon('arrow-right', 16) }}</button>
-        <button type="button" class="btn btn-primary" id="btn-confirm" hidden>{{ icon('check', 16) }}<span>Confirm and generate stub</span></button>
+        <button type="button" class="btn btn-primary" id="btn-confirm" hidden>{{ icon('check', 16) }}<span data-confirm-label>Confirm Order</span></button>
       </div>
     </div>
 
-    <aside class="wizard-side" aria-label="Order summary">
+    <aside class="wizard-side" aria-label="Order Summary">
       <details class="wiz-summary card" open>
         <summary class="wiz-summary__toggle">
-          <span>Order summary</span>
+          <span>Order Summary</span>
           <span class="wiz-summary__hint muted" id="side-count">Nothing selected</span>
         </summary>
         <div class="wiz-summary__body">
+          <p class="hint">Updates as you fill in each step.</p>
+          <div class="side-customer-row"><span class="muted">Customer</span><p id="side-customer">Not selected</p></div>
+          <p class="muted" id="side-contact"></p>
           <ul class="side-list" id="side-list"><li class="muted">Nothing selected yet.</li></ul>
-          <p class="hint">Estimates appear as you select items. Final prices are calculated by the server on Review.</p>
+          <div class="new-order-side-total"><span>Estimated total</span><strong id="side-total">&mdash;</strong></div>
+          <p class="hint" id="side-quote-status" aria-live="polite">Enter quantities for a quote.</p>
+          <p class="hint" id="side-step">Step 1 of 5</p>
         </div>
       </details>
     </aside>

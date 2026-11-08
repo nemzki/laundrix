@@ -2,6 +2,7 @@ import secrets
 
 from flask import abort, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user
+from sqlalchemy import func
 
 from app.core.decorators import role_required
 from app.extensions import db
@@ -38,13 +39,16 @@ def _get_order_or_404(reference):
 def index():
     term = request.args.get("q", "").strip()
     status = request.args.get("status", "")
+    payment = request.args.get("payment", "")
+    if payment not in ("unpaid", "partial", "paid"):
+        payment = ""
     page = request.args.get("page", 1, type=int)
     pagination = db.paginate(
-        services.order_query(term, status), page=max(page, 1), per_page=services.PAGE_SIZE, error_out=False
+        services.order_query(term, status, payment), page=max(page, 1), per_page=services.PAGE_SIZE, error_out=False
     )
     return render_template(
         "orders/index.html", pagination=pagination, orders=pagination.items,
-        term=term, status=status, statuses=OrderStatus, counts=services.status_counts(),
+        term=term, status=status, payment=payment, statuses=OrderStatus, counts=services.status_counts(),
     )
 
 
@@ -126,12 +130,53 @@ def customer_search():
 def customers():
     term = request.args.get("q", "").strip()
     page = request.args.get("page", 1, type=int)
-    q = db.select(Customer).order_by(Customer.full_name)
+    # Approved customer-directory integration: stable paging and existing ledger eligibility.
+    customer_filter = request.args.get("filter", "all")
+    if customer_filter not in ("all", "owing", "settled"):
+        customer_filter = "all"
+    q = db.select(Customer).order_by(Customer.full_name, Customer.id)
     if term:
         like = f"%{services._like_escape(term)}%"
         q = q.where(Customer.full_name.ilike(like, escape="\\") | Customer.contact_number.like(like))
+    if customer_filter != "all":
+        owing = payment_services.orders_by_payment_status("outstanding").with_only_columns(Order.customer_id).order_by(None)
+        q = q.where(Customer.id.in_(owing) if customer_filter == "owing" else Customer.id.not_in(owing))
     pagination = db.paginate(q, page=max(page, 1), per_page=services.PAGE_SIZE, error_out=False)
-    return render_template("orders/customers.html", pagination=pagination, customers=pagination.items, term=term)
+    return render_template(
+        "orders/customers.html", pagination=pagination, customers=pagination.items, term=term,
+        customer_filter=customer_filter, profiles=services.directory_profiles(pagination.items),
+        directory_count=db.session.scalar(db.select(func.count(Customer.id))),
+    )
+
+
+def _directory_customer_response(customer):
+    profile = services.directory_profiles([customer])[customer.id]
+    return jsonify(ok=True, customer={
+        "id": customer.id, "full_name": customer.full_name, "contact_number": customer.contact_number,
+        "url": url_for("orders.directory_customer", customer_id=customer.id),
+        "profile_html": render_template("orders/_customer_profile.html", profile=profile),
+    })
+
+
+# Approved minimal Admin-only directory endpoints. Auth/CSRF and payment flows stay unchanged.
+@bp.post("/customers")
+@role_required(Role.ADMIN)
+def create_customer():
+    customer, errors, duplicates = services.save_directory_customer(request.get_json(silent=True), current_user)
+    if errors:
+        return jsonify(ok=False, errors=errors, duplicates=duplicates), 422
+    return _directory_customer_response(customer)
+
+
+@bp.route("/customers/<int:customer_id>", methods=["GET", "POST"])
+@role_required(Role.ADMIN)
+def directory_customer(customer_id):
+    customer = db.get_or_404(Customer, customer_id)
+    if request.method == "POST":
+        customer, errors, duplicates = services.save_directory_customer(request.get_json(silent=True), current_user, customer)
+        if errors:
+            return jsonify(ok=False, errors=errors, duplicates=duplicates), 422
+    return _directory_customer_response(customer)
 
 
 # ----------------------------------------------------------------------------- single order
