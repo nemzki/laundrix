@@ -1,4 +1,4 @@
-body.app.customers-page .content { max-width:1440px; margin-inline:auto; padding:28px 24px; width:100%; }
+body.app.customers-page:not(.admin-workspace) .content { max-width:1440px; margin-inline:auto; padding:28px 24px; width:100%; }
 body.app.customers-page .page-header { gap:16px; align-items:center; margin-bottom:24px; }
 body.app.customers-page .page-header h1 { font-size:24px; line-height:32px; font-weight:600; }
 body.app.customers-page .page-header p { font-size:13px; line-height:20px; }
@@ -84,4 +84,4 @@ body.app #customerModal .modal-header, body.app #customerModal .modal-body, body
 .cm-toast { position:fixed; top:76px; right:20px; z-index:1100; width:360px; max-width:calc(100vw - 32px); padding:14px 36px 14px 14px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:12px; color:#065f46; font-size:13px; pointer-events:none; }
 .cm-toast button { position:absolute; top:6px; right:10px; border:0; background:transparent; color:inherit; font-size:20px; pointer-events:auto; }
 .cm-toast p { margin:5px 0 0; }
-@media(max-width:767px) { body.app.customers-page .content { padding:20px 16px 32px; } .cm-filters { padding:12px; } .cm-search { width:100%; } .cm-filter { max-width:100%; } }
+@media(max-width:767px) { body.app.customers-page:not(.admin-workspace) .content { padding:20px 16px 32px; } .cm-filters { padding:12px; } .cm-search { width:100%; } .cm-filter { max-width:100%; } }

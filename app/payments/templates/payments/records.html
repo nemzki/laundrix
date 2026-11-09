@@ -1,37 +1,40 @@
 {% extends "core/app_shell.html" %}
 {% from "core/_icons.html" import icon %}
 {% from "core/_forms.html" import render_pagination %}
+{% from "payments/_finance_nav.html" import finance_nav %}
 {% block title %}Payment Records · Laundrix{% endblock %}
-{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% block body_class %}{{ super() }} payment-records-page{% endblock %}
+{% block page_head %}
+  <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/modules/payment-records.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/modules/finance-nav.css') }}">
+{% endblock %}
 {% block page_title %}Payment Records{% endblock %}
 {% block page_subtitle %}Every recorded payment and correction. Entries are never edited or deleted.{% endblock %}
-{% block page_actions %}
-  <a class="btn btn-outline" href="{{ url_for('payments.summary') }}">{{ icon('chart', 16) }}<span>Summaries</span></a>
-  <a class="btn btn-outline" href="{{ url_for('payments.settings') }}">Payment Settings</a>
-{% endblock %}
 {% block content %}
-<div class="tabs">
-  <a class="tab active" href="{{ url_for('payments.records') }}">All Payments</a>
-  <a class="tab" href="{{ url_for('payments.outstanding') }}">Outstanding Balances</a>
-  <a class="tab" href="{{ url_for('payments.summary') }}">Summaries</a>
-</div>
-<form class="search-bar filters" method="get">
-  <select class="input" name="method" aria-label="Method"><option value="">All Methods</option>
-    {% for m in methods %}<option value="{{ m.code }}" {% if f.method == m.code %}selected{% endif %}>{{ m.label }}</option>{% endfor %}</select>
-  <select class="input" name="staff" aria-label="Recorded By"><option value="">All Staff</option>
-    {% for u in staff %}<option value="{{ u.id }}" {% if f.staff == u.id %}selected{% endif %}>{{ u.full_name or u.email }}</option>{% endfor %}</select>
-  <select class="input" name="kind" aria-label="Type"><option value="">Payments and Reversals</option>
+<section class="card payment-records-panel" aria-label="Payment Records">
+{{ finance_nav('records', inset=true) }}
+<form class="payment-records-filters" method="get" aria-label="Filter Payment Records">
+  <div class="field"><label for="records-method">Method</label>
+  <select id="records-method" class="input" name="method"><option value="">All Methods</option>
+    {% for m in methods %}<option value="{{ m.code }}" {% if f.method == m.code %}selected{% endif %}>{{ m.label }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="records-staff">Recorded By</label>
+  <select id="records-staff" class="input" name="staff"><option value="">All Staff</option>
+    {% for u in staff %}<option value="{{ u.id }}" {% if f.staff == u.id %}selected{% endif %}>{{ u.full_name or u.email }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="records-kind">Type</label>
+  <select id="records-kind" class="input" name="kind"><option value="">Payments and Reversals</option>
     <option value="payment" {% if f.kind == 'payment' %}selected{% endif %}>Payments Only</option>
-    <option value="reversal" {% if f.kind == 'reversal' %}selected{% endif %}>Reversals Only</option></select>
-  <input class="input" type="date" name="from" value="{{ f['from'] }}" aria-label="From Date">
-  <input class="input" type="date" name="to" value="{{ f['to'] }}" aria-label="To Date">
-  <button class="btn btn-primary" type="submit">{{ icon('search', 16) }}<span>Filter</span></button>
-  <a class="btn btn-outline" href="{{ url_for('payments.records') }}">Clear</a>
+    <option value="reversal" {% if f.kind == 'reversal' %}selected{% endif %}>Reversals Only</option></select></div>
+  <div class="field"><label for="records-from">From</label><input id="records-from" class="input" type="date" name="from" value="{{ f['from'] }}"></div>
+  <div class="field"><label for="records-to">To</label><input id="records-to" class="input" type="date" name="to" value="{{ f['to'] }}"></div>
+  <div class="payment-records-filter-actions"><button class="btn btn-primary" type="submit">{{ icon('search', 16) }}<span>Filter</span></button>
+  <a class="btn btn-outline" href="{{ url_for('payments.records') }}">Clear</a></div>
 </form>
-<div class="card">
+<div class="payment-records-results">
   {% if payments %}
-  <div class="table-wrap"><table class="table">
-    <thead><tr><th>When</th><th>Order</th><th>Method</th><th class="num">Amount</th><th>Recorded By</th><th>Details</th></tr></thead>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Payment transactions"><table class="table payment-records-table">
+    <caption class="visually-hidden">Recorded payments and reversals</caption>
+    <thead><tr><th scope="col">When</th><th scope="col">Order</th><th scope="col">Method</th><th scope="col" class="num">Amount</th><th scope="col">Recorded By</th><th scope="col">Details</th></tr></thead>
     <tbody>
     {% for p in payments %}
       <tr class="{% if p.kind == 'reversal' or p.reversal %}is-reversed{% endif %}">
@@ -50,4 +53,5 @@
     <div class="empty"><strong>No payments found</strong>Payments appear here once staff record them.</div>
   {% endif %}
 </div>
+</section>
 {% endblock %}

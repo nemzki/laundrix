@@ -138,6 +138,10 @@ for (const role of ['admin', 'staff'] as const) for (const width of [320, 768, 1
       }
     } else {
       await expect(page.getByRole('heading', { name: 'Popular Services' })).toBeVisible()
+      await expect(page.locator('[data-metric]').first()).toHaveCSS('border-radius', '14px')
+      await expect(page.locator('.dashboard-metric-value').first()).toHaveCSS('font-size', '26px')
+      await expect(page.locator('.dashboard-heading .dashboard-primary')).toHaveCSS('height', '36px')
+      await expect(page.locator('.dashboard-currency').first()).toHaveCSS('text-align', 'right')
       for (const item of data.popular) await expect(page.locator('.dashboard-popular')).toContainText(item.name)
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -209,6 +213,7 @@ for (const role of ['admin', 'staff'] as const) for (const width of [320, 768, 1
   await page.route('**/react-dashboard/dashboard.js', async route => { await gate; await route.continue() })
   await page.goto('/dashboard/', { waitUntil: 'commit' })
   await expect(page.locator('[data-metric]')).toHaveCount(role === 'admin' ? 8 : 7)
+  await page.waitForFunction(() => Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel=stylesheet]')).every(link => Boolean(link.sheet)))
   await page.evaluate(() => document.fonts.ready)
   const before = await page.locator('.dashboard-heading, [data-metric], .dashboard-panels').evaluateAll(elements => elements.map(element => {
     const rect = element.getBoundingClientRect(); return { x: rect.x, y: rect.y, width: rect.width, height: rect.height }

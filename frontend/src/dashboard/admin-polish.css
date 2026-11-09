@@ -1,0 +1,55 @@
+/* Admin content only. Shared workspace geometry, Staff, and identity workflow pages stay intact. */
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-heading { align-items: center; gap: 16px; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-heading > div { flex: 1 1 240px; min-width: 0; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-heading .dashboard-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 36px; min-height: 36px; padding: 6px 12px; border: 1px solid var(--primary);
+  border-radius: 8px; background: var(--primary); color: #fff;
+  font-size: 13px; line-height: 20px; font-weight: 500;
+}
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-heading .dashboard-primary svg { width: 16px; height: 16px; stroke-width: 1.75; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-card { border: 1px solid var(--border); border-radius: 14px; box-shadow: none; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-metric { display: block; position: relative; padding: 16px; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-metric-label { min-height: 40px; padding-right: 44px; font-size: 13px; line-height: 20px; font-weight: 400; color: var(--muted-foreground); }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-metric-value { margin-top: 4px; font-size: 26px; line-height: 34px; font-weight: 600; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-metric-icon { position: absolute; top: 16px; right: 16px; border-radius: 9px; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] [data-metric=ready] .dashboard-metric-icon { color: #047857; background: #ecfdf5; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] [data-metric=awaiting_receipt] .dashboard-metric-icon { color: #b45309; background: #fffbeb; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-panel-heading { padding: 16px; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-panel-heading h2 { font-size: 14px; line-height: 21px; font-weight: 500; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-recent-desktop { position: relative; overflow-x: auto; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table { min-width: 36rem; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table th:nth-child(1) { width: 29%; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table th:nth-child(2) { width: 27%; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table th:nth-child(3) { width: 18%; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table th:nth-child(4) { width: 26%; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table th { background: #f8fafc; color: #334155; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table .dashboard-currency { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table tbody tr:hover { background: #f8fafc; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-reference { font-size: 12px; font-weight: 500; color: var(--primary); }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-popular li { align-items: center; gap: 16px; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-popular li span:first-child { font-size: 13px; line-height: 20px; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-popular li span:last-child { padding: 3px 8px; border-radius: 6px; background: #f1f5f9; color: #475569; font-size: 12px; line-height: 18px; font-variant-numeric: tabular-nums; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-empty { padding: 24px 16px; font-size: 13px; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 14px 16px;
+  border: 1px solid #e2e8f0; border-radius: 12px; background: #fff;
+  color: #0f172a; font-family: 'Inter', system-ui, sans-serif;
+}
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity-icon { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 9px; background: #fffbeb; color: #b45309; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity-copy { flex: 1 1 240px; min-width: 0; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity h2 { margin: 0; font-size: 14px; line-height: 21px; font-weight: 500; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity-copy p { margin: 4px 0 0; color: #64748b; font-size: 13px; line-height: 20px; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity-badge { padding: 3px 8px; border-radius: 999px; background: #fef3c7; color: #92400e; font-size: 12px; line-height: 18px; font-weight: 500; white-space: nowrap; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity[data-idv-status=verified] :is(.dashboard-identity-badge, .dashboard-identity-icon) { background: #ecfdf5; color: #047857; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity[data-idv-status=in_progress] :is(.dashboard-identity-badge, .dashboard-identity-icon) { background: #eff6ff; color: #1d4ed8; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity-action { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; min-height: 36px; padding: 7px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #334155; font-size: 13px; line-height: 20px; font-weight: 500; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity-action.is-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+@media (max-width: 1023px) {
+  .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-metrics { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 479px) {
+  .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity-copy { flex-basis: calc(100% - 52px); }
+  .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity-action { width: 100%; }
+}

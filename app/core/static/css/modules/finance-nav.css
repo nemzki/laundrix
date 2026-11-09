@@ -1,0 +1,15 @@
+/* Reused by the Admin finance views; no workspace or sidebar rules. */
+.finance-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0 0 20px; }
+.finance-nav--inset { margin: 0; padding: 12px 16px; border-bottom: 1px solid var(--lx-border); }
+.finance-nav__link {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 36px; max-width: 100%; padding: 7px 12px;
+  border: 1px solid transparent; border-radius: 8px;
+  background: transparent; color: var(--lx-muted);
+  font-size: 13px; line-height: 20px; font-weight: 500;
+  text-align: center; text-decoration: none; white-space: normal;
+}
+.finance-nav__link:hover { color: var(--lx-text); background: #f1f5f9; }
+.finance-nav__link.is-active { background: #eff6ff; border-color: #bfdbfe; color: var(--lx-primary); }
+.finance-nav__link:focus-visible { outline: 2px solid var(--lx-primary); outline-offset: 2px; }
+@media (max-width: 767px) { .finance-nav--inset { padding: 12px; } }

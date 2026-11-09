@@ -5,6 +5,7 @@ import { parseDashboard } from './data'
 import { Dashboard } from './Dashboard'
 import '@prototype/styles.css'
 import './styles.css'
+import './admin-polish.css'
 
 const host = document.getElementById('laundrix-dashboard')
 const payload = document.getElementById('laundrix-dashboard-data')

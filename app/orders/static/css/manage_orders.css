@@ -1,7 +1,7 @@
 /* Scoped original Flask Manage Orders presentation. */
 @font-face { font-family:"Inter"; src:url("../../../core/static/fonts/inter/InterVariable.woff2") format("woff2"); font-style:normal; font-weight:100 900; font-display:swap; }
 .manage-orders-page { --lx-font:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-family:var(--lx-font); }
-body.app.manage-orders-page .content { width:100%; max-width:1440px; margin-inline:auto; padding:28px 24px; }
+body.app.manage-orders-page:not(.admin-workspace) .content { width:100%; max-width:1440px; margin-inline:auto; padding:28px 24px; }
 body.app.manage-orders-page .page-header { align-items:center; margin-bottom:24px; gap:16px; }
 body.app.manage-orders-page .page-header h1 { font-size:24px; line-height:32px; font-weight:600; letter-spacing:-.025em; }
 body.app.manage-orders-page .page-header p { font-size:13px; line-height:20px; }
@@ -84,8 +84,8 @@ body.app.manage-orders-page .page-header p { font-size:13px; line-height:20px; }
 .manage-orders-page .mo-modal .modal-footer .btn { min-height:34px; padding:6px 10px; border-radius:8px; font-size:12px; }
 .mo [hidden] { display:none !important; }
 .manage-orders-page [data-summary-receipt] { margin-top:16px; }
-@media(max-width:767px) { body.app.manage-orders-page .content { padding:20px 16px calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom,0px)); } .mo-search { width:100%; }.mo-controls { padding:12px; }.mo-footer { padding:12px; }.mo-table td { padding-inline:10px; } }
-@media(min-width:768px) and (max-width:960px) { body.app.manage-orders-page.manage-orders-staff .content { padding-bottom:calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom,0px)); } }
+@media(max-width:767px) { body.app.manage-orders-page:not(.admin-workspace) .content { padding:20px 16px calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom,0px)); } .mo-search { width:100%; }.mo-controls { padding:12px; }.mo-footer { padding:12px; }.mo-table td { padding-inline:10px; } }
+@media(min-width:768px) and (max-width:960px) { body.app.manage-orders-page.manage-orders-staff:not(.admin-workspace) .content { padding-bottom:calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom,0px)); } }
 
 /* Override the shared Admin :is() heading rule only inside this dialog. */
 body.app.manage-orders-page #orderSummaryModal .modal-content { background:#fff; }

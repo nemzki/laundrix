@@ -40,8 +40,8 @@ function RecentOrders({ data }: { data: DashboardData }) {
   const status = (row: DashboardData['recent'][number]) => <span className="dashboard-status" data-tone={row.tone} data-laundry-status={row.value}>{row.status}</span>
   return <Card className="dashboard-card dashboard-panel" aria-label="Recent Orders"><div className="dashboard-panel-heading"><h2>Recent Orders</h2><a href={data.urls.orders}>View All</a></div>
     {data.recent.length ? <><div className="dashboard-recent-desktop"><Table className="dashboard-table"><caption className="sr-only">Recent Orders</caption>
-      <TableHeader><TableRow><TableHead scope="col">Reference</TableHead><TableHead scope="col">Customer</TableHead><TableHead scope="col">Total</TableHead><TableHead scope="col">Status</TableHead></TableRow></TableHeader>
-      <TableBody>{data.recent.map(row => <TableRow key={row.reference}><TableCell><a className="dashboard-reference" href={row.url}>{row.reference}</a></TableCell><TableCell>{row.customer}</TableCell><TableCell>{row.total}</TableCell><TableCell>{status(row)}</TableCell></TableRow>)}</TableBody>
+      <TableHeader><TableRow><TableHead scope="col">{data.role === 'admin' ? 'Order Reference' : 'Reference'}</TableHead><TableHead scope="col">Customer</TableHead><TableHead scope="col" className="dashboard-currency">Total</TableHead><TableHead scope="col">Status</TableHead></TableRow></TableHeader>
+      <TableBody>{data.recent.map(row => <TableRow key={row.reference}><TableCell><a className="dashboard-reference" href={row.url}>{row.reference}</a></TableCell><TableCell>{row.customer}</TableCell><TableCell className="dashboard-currency">{row.total}</TableCell><TableCell>{status(row)}</TableCell></TableRow>)}</TableBody>
     </Table></div><div className="dashboard-recent-mobile">{data.recent.map(row => <article key={row.reference}><a className="dashboard-reference" href={row.url}>{row.reference}</a><p>{row.customer}</p><p>Total <strong>{row.total}</strong></p>{status(row)}</article>)}</div></> :
       <div className="dashboard-empty"><strong>No orders yet</strong><p>Create the first order to see activity here.</p></div>}
   </Card>
@@ -54,10 +54,11 @@ export function Dashboard({ data, identity, onReady }: { data: DashboardData; id
   return <TooltipProvider><AppShell role={data.role} sections={navigation} account={<Account data={data} />}
     brand={<a className="dashboard-brand" href={data.urls.home}><img src={data.urls.brand} alt="Laundrix" width={34} height={40} /><strong>Laundrix</strong></a>}
     header={<AppHeader section="Overview" title={data.title} />}>
-    <div className="dashboard-content"><IdentitySlot element={identity} />
+    <div className="dashboard-content">{data.role === 'staff' && <IdentitySlot element={identity} />}
       <div className="dashboard-heading"><div><h1>{data.title}</h1><p>{data.description}</p></div>
         <Button className="dashboard-primary" nativeButton={false} render={<a href={data.urls.newOrder} />}><Plus aria-hidden="true" />New Order</Button>
       </div>
+      {data.role === 'admin' && <IdentitySlot element={identity} />}
       {groups.map(group => <section className="dashboard-group" key={group} aria-label={group}><h2>{group}</h2>
         <div className={`dashboard-metrics${group === 'Order Overview' ? ' dashboard-metrics-two' : ''}`}>
           {data.metrics.filter(metric => metric.group === group).map(metric => {

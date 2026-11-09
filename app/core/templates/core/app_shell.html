@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/admin-consistency.css') }}">
   {% endif %}
 {% endblock %}
-{% block body_class %}app{% if polish_ui %} internal-ui{% if request.endpoint in ['payments.records','payments.summary','payments.settings'] %} finance-report{% endif %}{% endif %}{% endblock %}
+{% block body_class %}app{% if current_user.role == 'admin' and polish_ui %} admin-workspace{% endif %}{% if polish_ui %} internal-ui{% if request.endpoint in ['payments.records','payments.summary','payments.settings'] %} finance-report{% endif %}{% endif %}{% endblock %}
 
 {% block body %}
 {% set bp = request.blueprint %}

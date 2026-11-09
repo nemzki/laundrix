@@ -1,7 +1,7 @@
 /* Internal Order Details only. Business forms and status colors stay original. */
 @font-face { font-family: "Inter"; src: url("../../../core/static/fonts/inter/InterVariable.woff2") format("woff2"); font-style: normal; font-weight: 100 900; font-display: swap; }
 .order-detail-page { --lx-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-family: var(--lx-font); }
-body.app.order-detail-page .content { width: 100%; max-width: 1280px; margin-inline: auto; padding: 24px; }
+body.app.order-detail-page:not(.admin-workspace) .content { width: 100%; max-width: 1280px; margin-inline: auto; padding: 24px; }
 body.app.order-detail-page .page-header { align-items: start; gap: 16px; margin-bottom: 20px; }
 body.app.order-detail-page .page-header h1 { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -.025em; }
 body.app.order-detail-page .page-header p { font-size: 13px; line-height: 20px; }
@@ -65,10 +65,10 @@ body.app.order-detail-page .page-header p { font-size: 13px; line-height: 20px; 
  .order-detail-page .order-tracker__step:nth-child(3)::after { display: none; }
 }
 @media (min-width: 768px) and (max-width: 960px) {
- body.app.order-detail-page.order-detail-staff .content { padding-bottom: calc(var(--lx-bottom-nav-h) + 20px + env(safe-area-inset-bottom,0px)); }
+ body.app.order-detail-page.order-detail-staff:not(.admin-workspace) .content { padding-bottom: calc(var(--lx-bottom-nav-h) + 20px + env(safe-area-inset-bottom,0px)); }
 }
 @media (max-width: 767px) {
- body.app.order-detail-page .content { padding: 20px 16px calc(var(--lx-bottom-nav-h) + 20px + env(safe-area-inset-bottom,0px)); }
+ body.app.order-detail-page:not(.admin-workspace) .content { padding: 20px 16px calc(var(--lx-bottom-nav-h) + 20px + env(safe-area-inset-bottom,0px)); }
  .order-detail-page .order-detail-head-actions, .order-detail-page .order-detail-head-actions__btns { justify-content: flex-start; }
  .order-detail-page .order-tracker { grid-template-columns: repeat(2,minmax(0,1fr)); }
  .order-detail-page .order-tracker__step::after { display: none; }

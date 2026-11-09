@@ -26,7 +26,7 @@ export function FoundationPreview() {
   const items = fixtures.filter(item => item.name.toLowerCase().includes(query.toLowerCase()) && (filter === 'all' || item.name === 'Table'))
   return <TooltipProvider><AppShell role={role} sections={sections} account={<p className="px-2 py-1 text-xs text-muted-foreground">{role === 'admin' ? 'Admin' : 'Staff'} layout preview · no session</p>}
     header={<AppHeader section="Foundation" title="Shared components" />}>
-    <PageContainer className="max-w-none"><PageHeader title="Frontend foundation" description="Component preview only. No business operations or database connection."
+    <PageContainer><PageHeader title="Frontend foundation" description="Component preview only. No business operations or database connection."
       actions={<Button variant="outline" nativeButton={false} render={<a href={`?role=${role === 'admin' ? 'staff' : 'admin'}`} />}>Preview {role === 'admin' ? 'Staff' : 'Admin'}</Button>} />
       <Card id="components" size="sm"><CardHeader><CardTitle>Shared controls</CardTitle></CardHeader><CardContent className="flex flex-wrap items-center gap-2">
         <Dialog><DialogTrigger render={<Button variant="outline" />}>Open dialog</DialogTrigger><DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto"><DialogHeader><DialogTitle>Dialog preview</DialogTitle><DialogDescription>Focus remains inside until you close this preview.</DialogDescription></DialogHeader><p>Reusable dialog content.</p></DialogContent></Dialog>

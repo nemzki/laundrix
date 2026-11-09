@@ -1,6 +1,7 @@
 {% extends "core/app_shell.html" %}
 {% from "core/_icons.html" import icon %}
 {% from "core/_forms.html" import render_pagination %}
+{% from "payments/_finance_nav.html" import finance_nav %}
 {% from "orders/_customer_icons.html" import customer_icon %}
 {% from "payments/_icons.html" import payment_icon %}
 {% block title %}Outstanding Balances &middot; Laundrix{% endblock %}
@@ -9,17 +10,19 @@
 <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">
 <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/payment_modal.css') }}">
 <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/outstanding.css') }}">
+{% if current_user.role == 'admin' %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/modules/finance-nav.css') }}">{% endif %}
 <script src="{{ url_for('orders.static', filename='js/outstanding_loading.js') }}"></script>
 {% endblock %}
 {% block page_title %}Outstanding Balances{% endblock %}
 {% block page_subtitle %}Orders that still have money to collect. Record payments as customers settle.{% endblock %}
 {% block page_actions %}{% endblock %}
 {% block content %}
+{% if current_user.role == 'admin' %}{{ finance_nav('outstanding') }}{% endif %}
 <section class="ob" data-outstanding data-state="loading" data-count-unpaid="{{ url_for('orders.index', payment='unpaid') }}" data-count-partial="{{ url_for('orders.index', payment='partial') }}">
   <div class="ob-stats" id="outstanding-summary" aria-label="Outstanding balance summary">
     <article class="card ob-stat"><span class="ob-stat-icon">{{ icon('wallet',18) }}</span><h2>Total Outstanding</h2><strong data-owing-total>{{ owing_total|peso }}</strong><p><span data-owing-count>{{ owing_count }}</span> orders</p></article>
     <article class="card ob-stat"><span class="ob-stat-icon">{{ payment_icon('circle-dollar-sign') }}</span><h2>Unpaid Orders</h2><strong data-unpaid-count aria-live="polite">&mdash;</strong><p>No payment received yet</p></article>
-    <article class="card ob-stat"><span class="ob-stat-icon">{{ payment_icon('circle-dollar-sign') }}</span><h2>Partially Unpaid</h2><strong data-partial-count aria-live="polite">&mdash;</strong><p>Orders with remaining balances</p></article>
+    <article class="card ob-stat"><span class="ob-stat-icon">{{ payment_icon('circle-dollar-sign') }}</span><h2>Partially Paid</h2><strong data-partial-count aria-live="polite">&mdash;</strong><p>Orders with remaining balances</p></article>
   </div>
   <p class="ob-count-error" data-count-error hidden>Summary counts could not be loaded. <button class="btn btn-outline btn-sm" type="button" data-count-retry>Retry</button></p>
   <div class="card ob-panel">
@@ -32,7 +35,7 @@
           {% for key, label in [('outstanding','Unpaid & Partial'),('unpaid','Unpaid Only'),('partial','Partially Paid Only')] %}<option value="{{ key }}"{% if status == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
           </select>
         </div>{% endif %}
-        <button class="btn btn-outline ob-native-submit" type="submit">Apply filters</button>
+        <button class="btn btn-outline ob-native-submit" type="submit">Apply Filters</button>
         <a class="ob-clear" href="{{ url_for('payments.outstanding') }}" data-ob-link{% if status == 'outstanding' and not request.args.get('q') and request.args.get('sort','highest') == 'highest' %} hidden{% endif %}>Clear Filters</a>
       </div>
       <div class="ob-select-wrap ob-sort ob-client-control"><label class="visually-hidden" for="ob-sort">Sort orders</label>
@@ -42,9 +45,9 @@
       </div>
     </form>
     <div data-ob-results data-total="{{ pagination.total }}" data-page="{{ pagination.page }}" data-pages="{{ pagination.pages }}" data-per-page="{{ pagination.per_page }}">
-      <div class="ob-table-wrap"><table class="ob-table">
+      <div class="ob-table-wrap" tabindex="0" role="region" aria-label="Orders with outstanding balances"><table class="ob-table">
         <caption class="visually-hidden">Orders and their outstanding balances</caption>
-        <thead><tr>{% for name in ['Order Reference','Customer','Date Created','Laundry Status','Total','Balance','Payment','Action'] %}<th scope="col">{{ name }}</th>{% endfor %}</tr></thead>
+        <thead><tr>{% for name in ['Order Reference','Customer','Date Created','Laundry Status','Total','Balance','Payment','Action'] %}<th scope="col"{% if name in ['Total','Balance'] %} class="num"{% endif %}>{{ name }}</th>{% endfor %}</tr></thead>
         <tbody class="ob-skeleton" aria-hidden="true">{% for row in range(10) %}<tr>{% for col in range(8) %}<td><span></span></td>{% endfor %}</tr>{% endfor %}</tbody>
         <tbody class="ob-error"><tr><td colspan="8"><strong>Balances could not be loaded.</strong><p>Please try again.</p><button class="btn btn-outline" type="button" data-ob-retry>Retry</button></td></tr></tbody>
         <tbody class="ob-rows">
@@ -55,7 +58,7 @@
           <td><span class="status" data-laundry-status="{{ o.status }}">{{ o.status|status_label }}</span></td>
           <td class="num">{{ o.total|peso }}</td><td class="num{% if o.balance_due > 0 %} ob-balance{% endif %}"><strong>{{ o.balance_due|peso }}</strong></td>
           <td><span class="status" data-payment-status="{{ o.payment_status }}">{{ o.payment_status|payment_status_label }}</span></td>
-          <td>{% if o.balance_due > 0 %}<a class="btn btn-primary btn-sm" data-ob-payment href="{{ url_for('orders.detail',reference=o.reference) }}#payment">Record Payment</a>{% else %}<a class="btn btn-outline btn-sm" href="{{ url_for('orders.detail',reference=o.reference) }}">View order</a>{% endif %}</td>
+          <td>{% if o.balance_due > 0 %}<a class="btn btn-primary btn-sm" data-ob-payment href="{{ url_for('orders.detail',reference=o.reference) }}#payment">Record Payment</a>{% else %}<a class="btn btn-outline btn-sm" href="{{ url_for('orders.detail',reference=o.reference) }}">View Order</a>{% endif %}</td>
         </tr>{% else %}<tr><td colspan="8" class="ob-empty"><strong>{{ 'No fully paid orders.' if status == 'paid' else ('No orders owe a balance.' if status == 'outstanding' else 'No outstanding balances match this filter.') }}</strong><p>{{ 'Orders with a balance will appear here.' if status != 'paid' else 'Fully settled orders will appear here.' }}</p></td></tr>{% endfor %}
         </tbody>
       </table></div>

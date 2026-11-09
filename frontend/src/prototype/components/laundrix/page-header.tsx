@@ -23,5 +23,5 @@ export function PageHeader({
 }
 
 export function PageContainer({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn('mx-auto flex w-full max-w-[1440px] flex-col gap-6 p-4 md:p-6 lg:px-8', className)}>{children}</div>
+  return <div className={cn('flex w-full min-w-0 flex-col gap-6 p-4 md:p-6 lg:px-8', className)}>{children}</div>
 }

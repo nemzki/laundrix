@@ -244,7 +244,7 @@ def test_dashboards_show_payment_figures(admin_client, staff_client, pay):
     assert "\u20b10.00" in page(admin_client, "/dashboard/admin")
     order_from(place(staff_client, PARTIAL_CASH))
     admin_html = page(admin_client, "/dashboard/admin")
-    assert "Outstanding balance" in admin_html and "\u20b1100.00" in admin_html and "Collected today" in admin_html and "\u20b160.00" in admin_html
+    assert "Outstanding Balance" in admin_html and "\u20b1100.00" in admin_html and "Collected Today" in admin_html and "\u20b160.00" in admin_html
     staff_html = page(staff_client, "/dashboard/staff")
     assert "Awaiting receipt confirmation" in staff_html and "Collected today" not in staff_html
 
@@ -263,7 +263,7 @@ def ui_upload(client, data, name="qr.png"):
 
 def test_settings_page_saves_through_the_form(admin_client, staff_client, pay):
     html = page(admin_client, "/payments/settings")
-    for text in ("Payment QR image", "Payment methods", "Add method", "Save settings", "No QR uploaded yet"):
+    for text in ("Payment QR Code", "Payment Methods", "Add Method", "Save Settings", "No QR uploaded yet"):
         assert text in html
     assert staff_client.get("/payments/settings").status_code == 403
     r = admin_client.post("/payments/settings", data={"ui": "1", "partial_enabled": "on", "gcash_account_name": "My Shop"},

@@ -1,0 +1,71 @@
+/* Payment Settings components only; the existing Admin container owns width and gutters. */
+.ps-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 24px; }
+.ps-settings-form, .ps-secondary { display: grid; gap: 20px; min-width: 0; margin: 0; }
+body.app.payment-settings-page .ps-card { container-type: inline-size; min-width: 0; margin: 0; padding: 20px; border: 1px solid var(--lx-border); border-radius: 14px; box-shadow: none; }
+.ps-card-heading { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+.ps-card-heading > div { min-width: 0; }
+body.app.payment-settings-page #payment-settings h2 { margin: 0; font-size: 14px; line-height: 21px; font-weight: 500; letter-spacing: normal; }
+.ps-card-heading p { margin: 4px 0 0; color: var(--lx-muted); font-size: 13px; line-height: 20px; }
+.ps-icon { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 9px; color: var(--lx-primary); background: #eff6ff; }
+.ps-policy-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--lx-border); }
+.ps-policy-row:first-child { padding-top: 0; }
+.ps-policy-row:last-child { padding-bottom: 0; border-bottom: 0; }
+.ps-policy-row > div:first-child { min-width: 0; }
+.ps-policy-row label { color: var(--lx-text); font-size: 13px; line-height: 20px; font-weight: 500; cursor: pointer; }
+.ps-policy-row p { margin: 4px 0 0; color: var(--lx-muted); font-size: 12px; line-height: 18px; }
+.ps-policy-row .form-switch { flex-shrink: 0; margin: 0; padding: 0; min-height: 24px; }
+.ps-policy-row .form-check-input { float: none; width: 40px; height: 22px; margin: 0; cursor: pointer; }
+.ps-policy-row .form-check-input:checked, .ps-method-reference .form-check-input:checked { background-color: var(--lx-primary); border-color: var(--lx-primary); }
+.ps-card .field { margin: 0 0 16px; min-width: 0; }
+.ps-card .field:last-child { margin-bottom: 0; }
+.ps-card .field > label, .ps-modal .field > label { margin-bottom: 6px; font-size: 13px; line-height: 20px; font-weight: 500; }
+body.internal-ui.payment-settings-page :is(.ps-card, .ps-modal) .input { width: 100%; max-width: 100%; min-width: 0; min-height: 38px; padding: 8px 10px; border-radius: 8px; font-size: 13px; line-height: 20px; }
+body.internal-ui.payment-settings-page :is(.ps-card, .ps-modal) .input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgb(59 130 246 / 15%); }
+body.internal-ui.payment-settings-page .input[aria-invalid=true] { border-color: var(--lx-danger); }
+.ps-card textarea.input { min-height: 96px; resize: vertical; }
+.ps-card :is(.hint, .field-error), .ps-modal :is(.hint, .ps-form-error) { margin-top: 6px; font-size: 12px; line-height: 18px; }
+.ps-save-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.ps-save-row p { margin: 0; color: var(--lx-muted); font-size: 12px; }
+.ps-qr-layout { display: grid; grid-template-columns: 144px minmax(0, 1fr); align-items: start; gap: 20px; }
+.ps-qr-preview { display: grid; place-items: center; padding: 10px; border: 1px solid var(--lx-border); border-radius: 10px; background: #f8fafc; }
+.ps-qr-preview img { display: block; width: 100%; height: auto; object-fit: contain; }
+.ps-qr-controls { min-width: 0; }
+.ps-qr-status { margin: 0 0 8px; color: var(--lx-text); font-size: 13px; line-height: 20px; }
+.ps-qr-controls > .hint { margin-bottom: 16px; }
+.ps-qr-controls form { margin: 0; }
+.ps-qr-controls .remove-qr { margin-top: 10px; }
+.ps-qr-controls input[type=file] { overflow: hidden; padding: 6px; }
+.ps-methods-actions { display: flex; justify-content: flex-end; min-height: 36px; margin: -4px 0 16px; }
+.ps-methods-table { width: 100%; margin: 0; }
+body.internal-ui .ps-methods-table :is(th, td) { padding: 12px 10px; font-size: 13px; line-height: 20px; vertical-align: middle; }
+body.internal-ui .ps-methods-table th { font-size: 12px; font-weight: 500; white-space: normal; }
+.ps-methods-table th.num, .ps-methods-table td.num { text-align: right; }
+.ps-methods-table td:first-child { overflow-wrap: anywhere; }
+.ps-methods-table strong { font-weight: 500; }
+.ps-methods-table .sub { display: block; margin-top: 3px; color: var(--lx-muted); font-size: 11px; }
+.ps-methods-table form { margin: 0; }
+.ps-status { display: inline-flex; padding: 3px 8px; border-radius: 999px; background: #f1f5f9; color: #475569; font-size: 12px; line-height: 18px; white-space: nowrap; }
+.ps-status.is-enabled { background: #ecfdf5; color: #065f46; }
+.ps-methods-card .table-wrap:focus-visible { outline: 2px solid var(--lx-primary); outline-offset: 2px; }
+.ps-empty { display: grid; gap: 6px; padding: 20px 8px; text-align: center; }
+.ps-empty p { margin: 0; color: var(--lx-muted); font-size: 13px; }
+.ps-modal .modal-dialog { max-width: 480px; }
+.ps-modal .modal-content { border-radius: 14px; overflow: hidden; }
+body.app.payment-settings-page h2#ps-add-method-title { font-size: 16px; line-height: 24px; font-weight: 500; }
+.ps-modal .modal-header { padding: 18px 20px; }
+.ps-modal .ps-method-form { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.ps-method-fields { padding: 20px; overflow-y: auto; }
+.ps-method-fields .field { margin: 0 0 18px; }
+.ps-method-reference { margin: 0; font-size: 13px; line-height: 20px; }
+.ps-method-reference .form-check-input { margin-top: 3px; }
+.ps-method-footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--lx-border); background: #f8fafc; }
+.ps-form-error { color: var(--lx-danger); }
+.ps-native-method { margin-top: 20px; border-top: 1px solid var(--lx-border); padding-top: 16px; }
+body.app.payment-settings-page .ps-native-method h3 { font-size: 14px; }
+.ps-native-method .ps-method-fields { padding: 16px 0; }
+.ps-native-method .ps-method-footer { padding: 12px 0 0; background: transparent; }
+body.app.payment-settings-page dialog.confirm .btn-primary { background: var(--lx-danger); border-color: var(--lx-danger); }
+.payment-settings-page [hidden] { display: none !important; }
+@container (max-width: 460px) { .ps-qr-layout { grid-template-columns: minmax(0, 1fr); } .ps-qr-preview { width: 144px; } }
+@media (max-width: 1023px) { .ps-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 479px) { body.app.payment-settings-page .ps-card { padding: 16px; } .ps-methods-table { min-width: 430px; } .ps-save-row .btn { width: 100%; } }

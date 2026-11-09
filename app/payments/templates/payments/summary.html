@@ -1,40 +1,66 @@
 {% extends "core/app_shell.html" %}
 {% from "core/_icons.html" import icon %}
-{% block title %}Payment Summary · Laundrix{% endblock %}
-{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
+{% from "payments/_finance_nav.html" import finance_nav %}
+{% block title %}Payment Summary &middot; Laundrix{% endblock %}
+{% block body_class %}{{ super() }} payment-summary-page{% endblock %}
+{% block page_head %}
+  <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/modules/finance-nav.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/modules/payment-summary.css') }}">
+{% endblock %}
 {% block page_title %}Payment Summary{% endblock %}
-{% block page_subtitle %}Money recorded as received, net of reversals (a reversal counts on the day it is recorded).{% endblock %}
+{% block page_subtitle %}View payment collections, outstanding balances, and staff payment activity.{% endblock %}
 {% block content %}
-<div class="tabs">
-  <a class="tab" href="{{ url_for('payments.records') }}">All Payments</a>
-  <a class="tab" href="{{ url_for('payments.outstanding') }}">Outstanding Balances</a>
-  <a class="tab active" href="{{ url_for('payments.summary') }}">Summaries</a>
-</div>
-<div class="tabs">
-  {% for key, name in [('daily', 'Today'), ('weekly', 'This Week'), ('monthly', 'This Month')] %}
-    <a class="tab {% if period == key %}active{% endif %}" href="{{ url_for('payments.summary', period=key) }}">{{ name }} <span class="muted">{{ totals[key]|peso }}</span></a>
+{{ finance_nav('summary') }}
+{% set period_names = {'daily': 'Today', 'weekly': 'This Week', 'monthly': 'This Month'} %}
+<nav class="payment-summary-periods" aria-label="Reporting period">
+  {% for key, name in period_names.items() %}
+  <a class="payment-summary-period{% if period == key %} is-active{% endif %}" href="{{ url_for('payments.summary', period=key) }}"{% if period == key %} aria-current="page"{% endif %}>
+    <span>{{ name }}</span><span class="payment-summary-period-amount">{{ totals[key]|peso }}</span>
+  </a>
   {% endfor %}
-</div>
-<div class="grid grid-stats">
-  <div class="stat"><div class="stat-label">Collected ({{ label }})</div><div class="stat-value">{{ collected|peso }}</div></div>
-  <div class="stat"><div class="stat-label">Orders with a balance</div><div class="stat-value">{{ owing_count }}</div></div>
-  <div class="stat"><div class="stat-label">Total Outstanding</div><div class="stat-value">{{ owing_total|peso }}</div></div>
-</div>
-<div class="grid grid-2">
-  <div class="card">
-    <div class="card-head"><h2>Collections by Payment Method</h2></div>
+</nav>
+<section id="payment-summary-kpis" class="payment-summary-kpis" aria-label="Payment summary totals">
+  <article class="card payment-summary-kpi">
+    <div class="payment-summary-kpi-heading"><h2>Collected ({{ period_names[period] }})</h2><span class="payment-summary-icon">{{ icon('receipt', 18) }}</span></div>
+    <strong class="payment-summary-value" data-summary-value="collected">{{ collected|peso }}</strong>
+    <p>Net collections &middot; {{ label }}</p>
+  </article>
+  <article class="card payment-summary-kpi">
+    <div class="payment-summary-kpi-heading"><h2>Orders with a Balance</h2><span class="payment-summary-icon">{{ icon('users', 18) }}</span></div>
+    <strong class="payment-summary-value" data-summary-value="owing-count">{{ owing_count }}</strong>
+    <p>Orders with unpaid amounts</p>
+  </article>
+  <article class="card payment-summary-kpi">
+    <div class="payment-summary-kpi-heading"><h2>Total Outstanding</h2><span class="payment-summary-icon">{{ icon('wallet', 18) }}</span></div>
+    <strong class="payment-summary-value" data-summary-value="owing-total">{{ owing_total|peso }}</strong>
+    <p>Outstanding across tracked orders</p>
+  </article>
+</section>
+<div id="payment-summary-reports" class="payment-summary-reports">
+  <section class="card payment-summary-report" aria-labelledby="method-report-title">
+    <header class="payment-summary-report-heading"><h2 id="method-report-title">Collections by Payment Method</h2><p>Net payments recorded in the selected period.</p></header>
     {% if by_method %}
-    <table class="table"><thead><tr><th>Method</th><th class="num">Collected</th></tr></thead>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Collections by payment method"><table class="table payment-summary-table">
+      <thead><tr><th scope="col">Method</th><th scope="col" class="num">Collected</th></tr></thead>
       <tbody>{% for name, amount in by_method %}<tr><td>{{ name }}</td><td class="num">{{ amount|peso }}</td></tr>{% endfor %}</tbody>
-      <tfoot><tr class="total-row"><td>Total</td><td class="num">{{ collected|peso }}</td></tr></tfoot></table>
-    {% else %}<div class="empty"><strong>No collections</strong>Nothing was recorded in this period.</div>{% endif %}
-  </div>
-  <div class="card">
-    <div class="card-head"><h2>Activity by Staff Member</h2></div>
+      <tfoot><tr><th scope="row">Total</th><td class="num">{{ collected|peso }}</td></tr></tfoot>
+    </table></div>
+    {% else %}
+    <div class="payment-summary-empty"><span class="payment-summary-empty-icon">{{ icon('receipt', 20) }}</span><strong>No Collections</strong><p>No collections recorded for this period.</p></div>
+    {% endif %}
+  </section>
+  <section class="card payment-summary-report" aria-labelledby="staff-report-title">
+    <header class="payment-summary-report-heading"><h2 id="staff-report-title">Activity by Staff Member</h2><p>Recorded transactions and net collections grouped by staff member.</p></header>
     {% if by_staff %}
-    <table class="table"><thead><tr><th>Staff</th><th class="num">Entries</th><th class="num">Net Collected</th></tr></thead>
-      <tbody>{% for name, n, amount in by_staff %}<tr><td>{{ name }}</td><td class="num">{{ n }}</td><td class="num">{{ amount|peso }}</td></tr>{% endfor %}</tbody></table>
-    {% else %}<div class="empty"><strong>No activity</strong>No staff recorded payments in this period.</div>{% endif %}
-  </div>
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Staff payment activity"><table class="table payment-summary-table">
+      <thead><tr><th scope="col">Staff Member</th><th scope="col" class="num">Entries</th><th scope="col" class="num">Net Collected</th></tr></thead>
+      <tbody>{% for name, n, amount in by_staff %}<tr><td>{{ name }}</td><td class="num">{{ n }}</td><td class="num">{{ amount|peso }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% else %}
+    <div class="payment-summary-empty"><span class="payment-summary-empty-icon">{{ icon('users', 20) }}</span><strong>No Staff Activity</strong><p>No staff activity recorded for this period.</p></div>
+    {% endif %}
+  </section>
 </div>
+<p class="payment-summary-note">Collections are net of reversals. A reversal counts on the day it is recorded. Outstanding balances reflect current tracked orders.</p>
 {% endblock %}

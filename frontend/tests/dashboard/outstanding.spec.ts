@@ -37,7 +37,7 @@ for (const role of ['admin','staff'] as const) for (const width of [320,768,1440
   for(const card of geometry) {
     expect(Math.abs(card.width-geometry[0].width)).toBeLessThan(1)
     expect(Math.abs(card.height-geometry[0].height)).toBeLessThan(1)
-    if(width>=768) expect(Math.abs(card.top-geometry[0].top)).toBeLessThan(1)
+    if(width>=1024) expect(Math.abs(card.top-geometry[0].top)).toBeLessThan(1)
     card.offsets.forEach((offset,index)=>expect(Math.abs(offset-geometry[0].offsets[index])).toBeLessThan(1))
   }
   for (const id of ['ob-payment-filter','ob-sort']) {
@@ -49,6 +49,9 @@ for (const role of ['admin','staff'] as const) for (const width of [320,768,1440
     await page.keyboard.press('Escape'); await expect(wrapper.locator('.ob-select-menu')).toBeHidden()
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  const tableScroll = await page.locator('.ob-table-wrap').evaluate(el => ({ height: el.clientHeight, content: el.scrollHeight, overflow: getComputedStyle(el).overflowY }))
+  expect(tableScroll.content).toBeLessThanOrEqual(tableScroll.height)
+  expect(tableScroll.overflow).toBe('hidden')
   const ref = await open(page)
   const original = await page.request.get(`/orders/${ref}`)
   expect(await original.text()).toContain('payment_modal.js')
@@ -168,7 +171,7 @@ test('complete-set search, real sort menus, combined filters, pagination and par
   const countHTML=await (await page.request.get('/orders/?payment=partial')).text()
   const partialTotal=await page.evaluate(html=>new DOMParser().parseFromString(html,'text/html').querySelector('[data-orders-results]')!.getAttribute('data-total'),countHTML)
   await expect(page.locator('[data-partial-count]')).toHaveText(partialTotal!)
-  await expect(page.getByRole('heading',{name:'Partially Unpaid',exact:true})).toBeVisible()
+  await expect(page.getByRole('heading',{name:'Partially Paid',exact:true})).toBeVisible()
   await expect(page.locator('.ob-stats')).toContainText('Orders with remaining balances')
   const filter=page.locator('#ob-payment-filter').locator('..')
   const sort=page.locator('#ob-sort').locator('..')

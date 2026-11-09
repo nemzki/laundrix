@@ -1,5 +1,5 @@
 /* Admin Staff Management page chrome; intentionally excluded from protected sign-in pages. */
-body.app.staff-management-page .content {
+body.app.staff-management-page:not(.admin-workspace) .content {
   width: 100%;
   max-width: 1440px;
   margin-inline: auto;
@@ -45,7 +45,7 @@ body.app.staff-management-page .page-actions #staff-action-react [data-slot=butt
 }
 
 @media (max-width: 767px) {
-  body.app.staff-management-page .content {
+  body.app.staff-management-page:not(.admin-workspace) .content {
     padding: 20px 16px calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom, 0px));
   }
 

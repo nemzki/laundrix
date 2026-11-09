@@ -23,6 +23,12 @@ body.app {
 }
 body.app :is(button, input, select, textarea, .btn, .input) { font-family: inherit; }
 body.app .content { width: 100%; max-width: none; padding: 24px 32px 48px; }
+/* One workspace gutter for Admin content, breadcrumbs, and both dashboard paints. */
+body { --admin-page-gutter: 32px; }
+body.app.admin-workspace .content { margin-inline: 0; padding: 24px var(--admin-page-gutter) 48px; }
+.lx-react.lx-dashboard .dashboard-content { padding: 24px var(--admin-page-gutter) 48px; }
+.lx-react.lx-dashboard .dashboard-static-header { padding-inline: var(--admin-page-gutter); }
+.lx-react.lx-dashboard [data-slot=sidebar-inset] > header { padding-inline: var(--admin-page-gutter) !important; }
 body.app .page-header { margin-bottom: 24px; gap: 16px; }
 body.app :is(.page-header h1, #wizard .page-header h1) { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -.025em; }
 body.app .page-header p { font-size: 14px; line-height: 21px; margin-top: 4px; }
@@ -35,7 +41,7 @@ body.app :is(.table th, .status, .pill, .badge) { font-weight: 500; }
 body.app .card { border-radius: 12px; }
 body.app .admin-topbar {
   display: flex; align-items: center; gap: 12px; height: 56px;
-  position: sticky; top: 0; z-index: 30; padding: 0 32px;
+  position: sticky; top: 0; z-index: 30; padding: 0 var(--admin-page-gutter);
   background: #fff; border-bottom: 1px solid var(--border); min-width: 0;
 }
 body.app .admin-topbar__toggle {
@@ -58,8 +64,13 @@ body.app .admin-topbar li[aria-current] { color: var(--text); font-weight: 500; 
   body.app.admin-sidebar-collapsed .lx-sidebar { display: none; }
   body.app.admin-sidebar-collapsed .main { margin-left: 0; }
 }
-@media (max-width: 1023px) { body.app .admin-topbar { padding-inline: 24px; } }
-@media (max-width: 767px) { body.app .admin-topbar { padding-inline: 16px; gap: 8px; } }
+@media (max-width: 1023px) { body { --admin-page-gutter: 24px; } }
+@media (max-width: 767px) {
+  body { --admin-page-gutter: 16px; }
+  body.app .admin-topbar { gap: 8px; }
+  body.app.admin-workspace .content { padding: 20px var(--admin-page-gutter) calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom, 0px)); }
+  .lx-react.lx-dashboard .dashboard-content { padding: 20px var(--admin-page-gutter) calc(88px + env(safe-area-inset-bottom, 0px)); }
+}
 @media print { body.app .admin-topbar { display: none; } }
 /* Match the dashboard Sidebar primitives, not the legacy operational chrome. */
 body.app .lx-sidebar {
@@ -123,5 +134,5 @@ body.app .lx-sidebar__logout .btn {
   body.app .content { padding: 20px 16px calc(var(--lx-bottom-nav-h) + 20px); }
 }
 @media print {
-  body.app .content { padding: 0; }
+  body.app .content, body.app.admin-workspace .content { padding: 0; }
 }

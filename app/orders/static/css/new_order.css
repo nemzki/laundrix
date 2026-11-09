@@ -16,7 +16,7 @@
   --bg: var(--lx-bg); --radius: var(--lx-radius);
   font-family: var(--lx-font);
 }
-.new-order-page .content { max-width: none; padding: 24px 32px; }
+.new-order-page:not(.admin-workspace) .content { max-width: none; padding: 24px 32px; }
 .new-order-page .page-header h1 { font-size: 24px; font-weight: 600; letter-spacing: -.025em; }
 .new-order-page .page-header p { font-size: 14px; }
 .new-order-page #wizard { font-size: 14px; line-height: 1.5; scroll-margin-top: 72px; }
@@ -202,7 +202,7 @@
  .new-order-page #wizard .choice-grid-3 { grid-template-columns: repeat(3,minmax(0,1fr)); }
 }
 @media (max-width: 767px) {
- .new-order-page .content { padding: 20px 16px 88px; }
+ .new-order-page:not(.admin-workspace) .content { padding: 20px 16px 88px; }
  .new-order-page #wizard .wizard-main { padding: 20px 16px; }
  .new-order-page #wizard .choice-grid, .new-order-page #wizard .choice-grid-3 { grid-template-columns: minmax(0,1fr); }
  .new-order-page #wizard .wiz-steps { display: none; }

@@ -4,14 +4,14 @@
 {% set view = namespace(metrics=[], recent=[], popular=[], groups=[]) %}
 {% if admin_area %}
   {% set view.metrics = [
-    dict(key='total_orders', label='Total orders', value=stats.total_orders|string, group='Order Overview', icon='orders'),
-    dict(key='today', label="Today's orders", value=stats.today|string, group='Order Overview', icon='plus'),
+    dict(key='total_orders', label='Total Orders', value=stats.total_orders|string, group='Order Overview', icon='orders'),
+    dict(key='today', label="Today's Orders", value=stats.today|string, group='Order Overview', icon='plus'),
     dict(key='processing', label='Processing', value=stats.processing|string, group='Operational Status', icon='processing'),
-    dict(key='ready', label='Ready for pickup', value=stats.ready|string, group='Operational Status', icon='ready'),
-    dict(key='awaiting_receipt', label='Awaiting receipt confirmation', value=stats.awaiting_receipt|string, group='Operational Status', icon='alert'),
-    dict(key='owing_count', label='Orders with a balance', value=stats.owing_count|string, group='Financial Overview', icon='receipt'),
-    dict(key='owing_total', label='Outstanding balance', value=stats.owing_total|peso, group='Financial Overview', icon='wallet'),
-    dict(key='collected_today', label='Collected today', value=stats.collected_today|peso, group='Financial Overview', icon='chart')
+    dict(key='ready', label='Ready for Pickup', value=stats.ready|string, group='Operational Status', icon='ready'),
+    dict(key='awaiting_receipt', label='Awaiting Receipt Confirmation', value=stats.awaiting_receipt|string, group='Operational Status', icon='alert'),
+    dict(key='owing_count', label='Orders with a Balance', value=stats.owing_count|string, group='Financial Overview', icon='receipt'),
+    dict(key='owing_total', label='Outstanding Balance', value=stats.owing_total|peso, group='Financial Overview', icon='wallet'),
+    dict(key='collected_today', label='Collected Today', value=stats.collected_today|peso, group='Financial Overview', icon='chart')
   ] %}
   {% for name, n in stats.popular %}{% set view.popular = view.popular + [dict(name=name, count=n)] %}{% endfor %}
 {% else %}
