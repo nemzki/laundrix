@@ -1,4 +1,5 @@
 """Staff Management: the admin-only module, the staff lifecycle and its audit trail."""
+import json
 import re
 import uuid
 
@@ -65,9 +66,17 @@ def html(client, url):
 def test_admin_can_open_staff_management(admin_client):
     user = make_staff(status=S.PENDING_VERIFICATION, verified=False)
     page = html(admin_client, "/admin/staff/")
-    for text in ("Staff Management", "Total staff", "Active staff", "Pending verification", "Pending approval",
-                 "Suspended / deactivated", "Sam Cruz", "sam@example.com", "Add staff"):
+    for text in ("Staff Management", "Loading Staff Management", "staff-loader.js", "Sam Cruz", "sam@example.com"):
         assert text in page, text
+    payload = re.search(r'<script type="application/json" id="laundrix-staff-data">(.*?)</script>', page, re.S)
+    assert payload is not None
+    data = json.loads(payload.group(1))
+    row = next(row for row in data['rows'] if row['id'] == user.id)
+    assert row['status'] == S.PENDING_VERIFICATION
+    assert data['counts']['total'] == 1
+    assert data['counts'][S.PENDING_VERIFICATION] == 1
+    assert {item['value'] for item in data['filters']} == {'', *S.ALL}
+    assert 'staff-boot-skeleton' in page and 'data-staff-fallback' not in page
     assert "Add staff" in html(admin_client, "/admin/staff/new")
     assert "Sam Cruz" in html(admin_client, f"/admin/staff/{user.id}")
 

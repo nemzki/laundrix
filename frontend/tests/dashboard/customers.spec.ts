@@ -17,6 +17,14 @@ for(const width of [320,768,1440]) test(`customer directory and right-side profi
   await expect(page.locator('.cm-table th')).toHaveText(['Customer','Contact Number','Orders','Last Order','Balance','Action'])
   await expect(rows(page)).toHaveCount(15)
   await expect(page.locator('[data-directory-count]')).toHaveText('28')
+  const wrap=page.locator('.cm-table-wrap')
+  await expect(wrap).toHaveCSS('overflow-y','hidden');await expect(wrap).toHaveCSS('max-height','none')
+  await expect(page.locator('.cm-table th').nth(2)).toHaveCSS('text-align','right');await expect(page.locator('.cm-table th').nth(4)).toHaveCSS('text-align','right')
+  await expect(rows(page).first().locator('.num').last()).toHaveCSS('font-variant-numeric','tabular-nums')
+  expect((await page.locator('.cm-search').boundingBox())!.height).toBe(36);expect((await page.locator('#customer-filter').boundingBox())!.height).toBe(36)
+  const edit=rows(page).first().locator('[data-edit-customer]');expect((await edit.boundingBox())!.width).toBe(36)
+  await edit.scrollIntoViewIfNeeded();await edit.focus();await expect(page.getByRole('tooltip')).toHaveText('Edit Customer')
+  await expect(edit).toHaveAccessibleDescription('Edit Customer');await page.keyboard.press('Escape');await expect(page.getByRole('tooltip')).toBeHidden()
   const first=rows(page).first(),url=await first.getAttribute('data-customer-url') || ''
   const saved=(await (await page.request.get(url)).json()).customer
   await first.locator('[data-view-customer]').click()
@@ -118,4 +126,44 @@ test('customer profile fetch retry and Staff permission remain enforced',async({
   expect((await page.request.post('/orders/customers',{data:{full_name:'No CSRF',contact_number:'09170000011'}})).status()).toBe(400)
   const context=await page.context().browser()!.newContext();const staff=await context.newPage()
   try {await login(staff,'staff');expect((await staff.request.get('/orders/customers')).status()).toBe(403);expect((await staff.request.get('/orders/customers/1')).status()).toBe(403)} finally {await context.close()}
+})
+
+
+test('four real customer records expand naturally and preserve layout across viewport sizes',async({page})=>{
+  await login(page);await page.goto('/orders/customers');await ready(page)
+  const csrf=await page.locator('#customerForm [name=csrf_token]').inputValue()
+  for(let i=0;i<4;i++){
+    const response=await page.request.post('/orders/customers',{headers:{'X-CSRFToken':csrf},data:{full_name:'Polish Four '+i+' '+('Long Customer Name '.repeat(6)),contact_number:'0918999000'+i}})
+    expect(response.status()).toBe(200)
+  }
+  await page.locator('#customer-search').fill('Polish Four');await expect(page).toHaveURL(/q=Polish/);await ready(page);await expect(rows(page)).toHaveCount(4)
+  for(const width of [320,768,1440]){
+    await page.setViewportSize({width,height:900});await expect(rows(page)).toHaveCount(4)
+    const main=await page.locator('main.content').boundingBox(),wrap=page.locator('.cm-table-wrap')
+    await expect(wrap).toHaveCSS('overflow-y','hidden');await expect(wrap).toHaveCSS('max-height','none')
+    const bounds=(await wrap.boundingBox())!,table=(await page.locator('.cm-table').boundingBox())!,pager=(await page.locator('.cm-pagination').boundingBox())!
+    expect(Math.abs(bounds.height-table.height)).toBeLessThanOrEqual(20);expect(pager.y).toBeCloseTo(bounds.y+bounds.height,0)
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+    expect(await rows(page).evaluateAll(els=>els.every(row=>{const actions=row.querySelector('.cm-actions')!,name=row.querySelector('.cm-customer strong')!;return actions.scrollWidth<=actions.clientWidth && name.scrollWidth<=name.clientWidth}))).toBe(true)
+    const edit=rows(page).first().locator('[data-edit-customer]');await edit.focus();await edit.hover();await expect(page.getByRole('tooltip')).toHaveText('Edit Customer');await page.keyboard.press('Escape');await expect(page.getByRole('tooltip')).toBeHidden()
+    expect(await page.locator('main.content').boundingBox()).toEqual(main)
+    await page.screenshot({path:`test-results/dashboard/customers-polish-${width}-${test.info().project.use.colorScheme||'light'}.png`,fullPage:true})
+  }
+})
+
+
+test('Customers styles are present before enhancement and after refresh',async({page})=>{
+  await login(page)
+  let release!:()=>void
+  const gate=new Promise<void>(resolve=>{release=resolve})
+  await page.route('**/js/customers.js',async route=>{await gate;await route.continue()})
+  await page.goto('/orders/customers',{waitUntil:'commit'})
+  try {
+    await expect(page.locator('.cm-table')).toBeVisible();await expect(page.locator('.cm-table-wrap')).toHaveCSS('overflow-y','hidden')
+    await expect(page.locator('[data-edit-customer]').first()).toBeHidden()
+    await expect(page.locator('.cm-native-submit')).toBeVisible()
+    await expect(page.locator('.cm-panel')).toHaveCSS('border-radius','12px')
+  } finally {release()}
+  await ready(page);await expect(page.locator('[data-edit-customer]').first()).toBeVisible()
+  await page.reload();await ready(page);await expect(page.locator('.cm-table-wrap')).toHaveCSS('overflow-y','hidden')
 })

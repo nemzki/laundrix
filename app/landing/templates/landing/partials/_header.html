@@ -1,0 +1,27 @@
+<header class="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md">
+  <div class="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+    <a href="#home" aria-label="Laundrix home" class="rounded-lg">{{ brand_logo('landing') }}</a>
+    <nav aria-label="Main" class="hidden md:block">
+      <ul class="flex items-center gap-1">
+        <li><a href="#home" class="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">Home</a></li>
+        <li><a href="#features" class="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">Features</a></li>
+        <li><a href="#how-it-works" class="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">How It Works</a></li>
+        <li><a href="#about" class="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">About</a></li>
+      </ul>
+    </nav>
+    <div class="flex items-center gap-2">
+      <a href="{{ url_for('auth.login') }}" class="group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 bg-primary text-primary-foreground hover:bg-primary/80 gap-1.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 h-9 px-4" data-sign-in="">Sign In</a>
+      <button type="button" tabindex="0" data-slot="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu" class="group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&amp;_svg]:pointer-events-none [&amp;_svg]:shrink-0 [&amp;_svg:not([class*='size-'])]:size-4 hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50 size-9 md:hidden" data-mobile-toggle=""><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg></button>
+    </div>
+  </div>
+  <div id="mobile-menu" hidden="" class="border-t border-border/70 bg-background md:hidden">
+    <nav aria-label="Mobile">
+      <ul class="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
+        <li><a href="#home" class="block rounded-lg px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-secondary">Home</a></li>
+        <li><a href="#features" class="block rounded-lg px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-secondary">Features</a></li>
+        <li><a href="#how-it-works" class="block rounded-lg px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-secondary">How It Works</a></li>
+        <li><a href="#about" class="block rounded-lg px-3 py-3 text-base font-medium text-foreground transition-colors hover:bg-secondary">About</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>

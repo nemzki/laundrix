@@ -1,5 +1,6 @@
 {% from "core/_icons.html" import icon %}
 {% from "core/_nav_shared.html" import nav_groups, logout_button, user_initials, nav_link %}
+{% from "core/_theme_selector.html" import theme_selector %}
 
 <nav class="lx-bottom-nav" aria-label="Primary mobile navigation">
   {{ nav_link(url_for('dashboard.index'), 'Dashboard', 'dashboard', bp == 'dashboard', 'lx-bottom-nav__item') }}
@@ -56,6 +57,7 @@
         <strong>{{ current_user.full_name or current_user.email }}</strong>
         <span class="lx-sidebar__role">{{ 'Admin' if is_admin else 'Staff' }}</span>
       </div>
+      {% if theme_enabled %}{{ theme_selector() }}{% endif %}
     </div>
     <nav class="lx-nav-drawer__nav" aria-label="All destinations">
       {{ nav_groups(is_admin, ep, bp, 'lx-nav__link', true) }}

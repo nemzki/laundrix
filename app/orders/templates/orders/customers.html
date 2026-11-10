@@ -12,21 +12,22 @@
 <section class="cm" data-customer-directory data-index-url="{{ url_for('orders.customers') }}" data-create-url="{{ url_for('orders.create_customer') }}">
   <div class="card cm-panel">
     <form class="cm-filters" method="get" action="{{ url_for('orders.customers') }}" role="search">
-      <div class="cm-search">{{ icon('search',16) }}<label class="visually-hidden" for="customer-search">Search name or mobile number</label><input class="input" id="customer-search" type="search" name="q" value="{{ term }}" placeholder="Search name or mobile number" autocomplete="off"></div>
-      <label class="visually-hidden" for="customer-filter">Customer filter</label><select class="input cm-filter" id="customer-filter" name="filter">{% for value,label in [('all','All customers'),('owing','With outstanding balance'),('settled','No outstanding balance')] %}<option value="{{ value }}"{% if customer_filter == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      <div class="cm-search">{{ icon('search',16) }}<label class="visually-hidden" for="customer-search">Search Name or Mobile Number</label><input class="input" id="customer-search" type="search" name="q" value="{{ term }}" placeholder="Search Name or Mobile Number" autocomplete="off"></div>
+      <label class="visually-hidden" for="customer-filter">Customer filter</label><select class="input cm-filter" id="customer-filter" name="filter">{% for value,label in [('all','All Customers'),('owing','With Outstanding Balance'),('settled','No Outstanding Balance')] %}<option value="{{ value }}"{% if customer_filter == value %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
       <button class="btn btn-outline cm-native-submit" type="submit">Search</button>
-      <a class="cm-clear" href="{{ url_for('orders.customers') }}" data-customer-page{% if not term and customer_filter == 'all' %} hidden{% endif %}>Clear Filters</a>
+      <a class="btn cm-clear" href="{{ url_for('orders.customers') }}" data-customer-page{% if not term and customer_filter == 'all' %} hidden{% endif %}>Clear Filters</a>
     </form>
     <div data-customer-results data-page="{{ pagination.page }}" data-pages="{{ pagination.pages }}" data-total="{{ pagination.total }}">
       <div class="cm-table-wrap"><table class="cm-table"><caption class="visually-hidden">Customer directory</caption>
-        <thead><tr>{% for label in ['Customer','Contact Number','Orders','Last Order','Balance','Action'] %}<th scope="col">{{ label }}</th>{% endfor %}</tr></thead>
+        <colgroup><col class="cm-col-customer"><col class="cm-col-contact"><col class="cm-col-orders"><col class="cm-col-date"><col class="cm-col-balance"><col class="cm-col-action"></colgroup>
+        <thead><tr>{% for label in ['Customer','Contact Number','Orders','Last Order','Balance','Action'] %}<th scope="col"{% if label in ['Orders','Balance'] %} class="num"{% endif %}>{{ label }}</th>{% endfor %}</tr></thead>
         <tbody>{% for customer in customers %}{% set profile = profiles[customer.id] %}
         <tr data-customer-id="{{ customer.id }}" data-customer-url="{{ url_for('orders.directory_customer',customer_id=customer.id) }}">
           <td><span class="cm-customer">{{ avatar(customer.full_name) }}<strong>{{ customer.full_name }}</strong></span></td>
           <td class="cm-contact">{{ customer.contact_number }}</td><td class="num">{{ profile.order_count }}</td>
           <td class="cm-date">{{ profile.last_order.created_at|localdt('%b %d, %Y') if profile.last_order else 'No orders yet' }}</td>
           <td class="num{% if profile.balance > 0 %} cm-balance{% endif %}">{{ profile.balance|peso }}</td>
-          <td><div class="cm-actions"><button class="btn btn-outline cm-edit cm-enhanced-only" type="button" data-edit-customer aria-label="Edit {{ customer.full_name }}">{{ icon('edit',16) }}</button><button class="btn btn-outline cm-enhanced-only" type="button" data-view-customer>View</button></div></td>
+          <td><div class="cm-actions"><button class="btn btn-outline cm-edit cm-enhanced-only" type="button" data-edit-customer aria-label="Edit {{ customer.full_name }}" data-bs-title="Edit Customer">{{ icon('edit',16) }}</button><button class="btn btn-outline cm-enhanced-only" type="button" data-view-customer>View</button></div></td>
         </tr>{% else %}<tr><td colspan="6" class="cm-empty"><strong>{{ 'No customers match your filters.' if term or customer_filter != 'all' else 'No customers yet' }}</strong><p>{{ 'Try another search or clear your filters.' if term or customer_filter != 'all' else 'Add a customer or use the existing New Order workflow.' }}</p></td></tr>{% endfor %}</tbody>
       </table></div>
       <footer class="cm-pagination"><span>Showing {{ (pagination.page-1)*pagination.per_page+1 if customers else 0 }}&ndash;{{ (pagination.page-1)*pagination.per_page+customers|length if customers else 0 }} of {{ pagination.total }} customers</span>{{ render_pagination(pagination,'orders.customers',q=term or none,filter=customer_filter) }}</footer>
@@ -37,7 +38,7 @@
 </section>
 <div class="offcanvas offcanvas-end" id="customerSheet" tabindex="-1" aria-labelledby="customerSheetTitle">
   <div class="cm-sheet-content" data-customer-sheet-content></div>
-  <footer class="cm-sheet-footer"><button class="btn btn-outline" type="button" data-sheet-edit>{{ icon('edit',16) }} Edit details</button><a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus',16) }} New order</a></footer>
+  <footer class="cm-sheet-footer"><button class="btn btn-outline" type="button" data-sheet-edit>{{ icon('edit',16) }} Edit Details</button><a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus',16) }} New Order</a></footer>
 </div>
 {% include 'orders/_customer_modal.html' %}
 <div class="cm-toast" data-customer-toast role="status" hidden><button type="button" data-customer-toast-close aria-label="Dismiss notification">&times;</button><strong data-customer-toast-title></strong><p data-customer-toast-message></p></div>

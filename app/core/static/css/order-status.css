@@ -1,15 +1,15 @@
 /* Internal order status palette. Explicit domains keep payment and laundry semantics separate.
    Values match the requested Tailwind pastel palette; stored statuses/tones are unchanged. */
-[data-laundry-status="order_received"], [data-workflow-status="order_received"], .lx-react.lx-dashboard .dashboard-status[data-tone="info"] { --order-status-bg:#e0f2fe; --order-status-fg:#075985; --order-status-border:#bae6fd; }
-[data-laundry-status="pending_processing"], [data-workflow-status="pending_processing"], .lx-react.lx-dashboard .dashboard-status[data-tone="warn"] { --order-status-bg:#fef3c7; --order-status-fg:#92400e; --order-status-border:#fde68a; }
-[data-laundry-status="processing"], [data-workflow-status="processing"], .lx-react.lx-dashboard .dashboard-status[data-tone="progress"] { --order-status-bg:#dbeafe; --order-status-fg:#1e40af; --order-status-border:#bfdbfe; }
-[data-laundry-status="ready_for_pickup"], [data-workflow-status="ready_for_pickup"], .lx-react.lx-dashboard .dashboard-status[data-tone="ready"] { --order-status-bg:#ccfbf1; --order-status-fg:#115e59; --order-status-border:#99f6e4; }
-[data-laundry-status="picked_up"], [data-workflow-status="picked_up"], .lx-react.lx-dashboard .dashboard-status[data-tone="neutral"] { --order-status-bg:#ede9fe; --order-status-fg:#5b21b6; --order-status-border:#ddd6fe; }
-[data-laundry-status="completed"], [data-workflow-status="completed"], .lx-react.lx-dashboard .dashboard-status[data-tone="success"] { --order-status-bg:#e0e7ff; --order-status-fg:#3730a3; --order-status-border:#c7d2fe; }
-[data-payment-status="unpaid"] { --order-status-bg:#fee2e2; --order-status-fg:#991b1b; --order-status-border:#fecaca; }
-[data-payment-status="partial"] { --order-status-bg:#ffedd5; --order-status-fg:#9a3412; --order-status-border:#fed7aa; }
-[data-payment-status="paid"] { --order-status-bg:#d1fae5; --order-status-fg:#065f46; --order-status-border:#a7f3d0; }
-[data-payment-status="not_tracked"] { --order-status-bg:#f1f5f9; --order-status-fg:#334155; --order-status-border:#cbd5e1; }
+[data-laundry-status="order_received"], [data-workflow-status="order_received"], .lx-react.lx-dashboard .dashboard-status[data-tone="info"] { --order-status-bg:var(--lx-paint-cyan-bg, #e0f2fe); --order-status-fg:var(--lx-paint-cyan-ink, #075985); --order-status-border:var(--lx-paint-cyan-border, #bae6fd); }
+[data-laundry-status="pending_processing"], [data-workflow-status="pending_processing"], .lx-react.lx-dashboard .dashboard-status[data-tone="warn"] { --order-status-bg:var(--lx-paint-amber-bg, #fef3c7); --order-status-fg:var(--lx-paint-amber-ink, #92400e); --order-status-border:var(--lx-paint-amber-border, #fde68a); }
+[data-laundry-status="processing"], [data-workflow-status="processing"], .lx-react.lx-dashboard .dashboard-status[data-tone="progress"] { --order-status-bg:var(--lx-paint-blue-bg, #dbeafe); --order-status-fg:var(--lx-paint-blue-ink, #1e40af); --order-status-border:var(--lx-paint-blue-border, #bfdbfe); }
+[data-laundry-status="ready_for_pickup"], [data-workflow-status="ready_for_pickup"], .lx-react.lx-dashboard .dashboard-status[data-tone="ready"] { --order-status-bg:var(--lx-paint-teal-bg, #ccfbf1); --order-status-fg:var(--lx-paint-teal-ink, #115e59); --order-status-border:var(--lx-paint-teal-border, #99f6e4); }
+[data-laundry-status="picked_up"], [data-workflow-status="picked_up"], .lx-react.lx-dashboard .dashboard-status[data-tone="neutral"] { --order-status-bg:var(--lx-paint-purple-bg, #ede9fe); --order-status-fg:var(--lx-paint-purple-ink, #5b21b6); --order-status-border:var(--lx-paint-purple-border, #ddd6fe); }
+[data-laundry-status="completed"], [data-workflow-status="completed"], .lx-react.lx-dashboard .dashboard-status[data-tone="success"] { --order-status-bg:var(--lx-paint-indigo-bg, #e0e7ff); --order-status-fg:var(--lx-paint-indigo-ink, #3730a3); --order-status-border:var(--lx-paint-indigo-border, #c7d2fe); }
+[data-payment-status="unpaid"] { --order-status-bg:var(--lx-paint-red-bg, #fee2e2); --order-status-fg:var(--lx-paint-red-ink, #991b1b); --order-status-border:var(--lx-paint-red-border, #fecaca); }
+[data-payment-status="partial"] { --order-status-bg:var(--lx-paint-orange-bg, #ffedd5); --order-status-fg:var(--lx-paint-orange-ink, #9a3412); --order-status-border:var(--lx-paint-orange-border, #fed7aa); }
+[data-payment-status="paid"] { --order-status-bg:var(--lx-paint-green-bg, #d1fae5); --order-status-fg:var(--lx-paint-green-ink, #065f46); --order-status-border:var(--lx-paint-green-border, #a7f3d0); }
+[data-payment-status="not_tracked"] { --order-status-bg:var(--lx-paint-muted, #f1f5f9); --order-status-fg:var(--lx-paint-secondary, #334155); --order-status-border:var(--lx-paint-border, #cbd5e1); }
 
 /* One badge geometry for both rendering systems, independent of semantic tones.
    Specificity intentionally beats module .mo-table/.mo-summary badge overrides. */
@@ -25,7 +25,7 @@ body.app :is(.status,.lx-status):is([data-laundry-status],[data-payment-status])
 body.app .order-tracker__step[data-workflow-status] .order-tracker__marker {
  background:var(--order-status-bg); color:var(--order-status-fg); border:1px solid var(--order-status-border);
 }
-body.app .order-tracker__step[data-workflow-status].is-upcoming .order-tracker__marker { background:#fff; border-style:dashed; }
+body.app .order-tracker__step[data-workflow-status].is-upcoming .order-tracker__marker { background:var(--lx-paint-surface, #fff); border-style:dashed; }
 body.app .order-tracker__step[data-workflow-status].is-current .order-tracker__marker {
  border-color:var(--order-status-fg); box-shadow:0 0 0 3px var(--order-status-bg);
 }

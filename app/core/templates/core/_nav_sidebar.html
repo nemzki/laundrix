@@ -1,6 +1,7 @@
 {% from "core/_icons.html" import icon %}
 {% from "core/_brand.html" import brand_logo %}
 {% from "core/_nav_shared.html" import nav_groups, logout_button, user_initials %}
+{% from "core/_theme_selector.html" import theme_selector %}
 <aside class="lx-sidebar" id="app-sidebar" aria-label="Main navigation">
   <div class="lx-sidebar__brand">
     {{ brand_logo('sidebar', href=url_for('dashboard.index')) }}
@@ -21,6 +22,7 @@
         <strong class="lx-sidebar__user-name">{{ current_user.full_name or current_user.email }}</strong>
         <span class="lx-sidebar__role">{{ 'Admin' if is_admin else 'Staff' }}</span>
       </div>
+      {% if theme_enabled %}{{ theme_selector() }}{% endif %}
     </div>
     {{ logout_button('lx-sidebar__logout') }}
   </div>

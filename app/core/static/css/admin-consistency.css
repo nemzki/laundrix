@@ -42,7 +42,7 @@ body.app .card { border-radius: 12px; }
 body.app .admin-topbar {
   display: flex; align-items: center; gap: 12px; height: 56px;
   position: sticky; top: 0; z-index: 30; padding: 0 var(--admin-page-gutter);
-  background: #fff; border-bottom: 1px solid var(--border); min-width: 0;
+  background: var(--lx-paint-surface, #fff); border-bottom: 1px solid var(--border); min-width: 0;
 }
 body.app .admin-topbar__toggle {
   display: inline-flex; align-items: center; justify-content: center;
@@ -74,7 +74,7 @@ body.app .admin-topbar li[aria-current] { color: var(--text); font-weight: 500; 
 @media print { body.app .admin-topbar { display: none; } }
 /* Match the dashboard Sidebar primitives, not the legacy operational chrome. */
 body.app .lx-sidebar {
-  background: #fff; color: oklch(0.27 0.06 262);
+  background: var(--lx-paint-surface, #fff); color: oklch(0.27 0.06 262);
   border-color: oklch(0.915 0.01 255);
 }
 body.app .lx-sidebar__brand { height: 56px; flex-shrink: 0; padding: 0 16px; }

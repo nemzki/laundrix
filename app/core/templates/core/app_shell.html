@@ -2,7 +2,9 @@
 {% from "core/_icons.html" import icon %}
 {% from "core/_brand.html" import brand_logo %}
 {% set polish_ui = request.blueprint in ['orders','catalog','payments','staff_admin'] and request.endpoint not in ['staff_admin.new','staff_admin.enroll_link'] %}
+{% set theme_enabled = request.blueprint in ['dashboard','orders','catalog','payments','staff_admin'] and request.endpoint not in ['staff_admin.new','staff_admin.enroll_link'] %}
 {% block head %}
+  {% if theme_enabled %}<script src="{{ url_for('core.static', filename='js/theme.js') }}"></script>{% endif %}
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/app.css') }}">
   {% block page_head %}{% endblock %}
   {% if polish_ui %}<link rel="stylesheet" href="{{ url_for('core.static',filename='css/internal-polish.css') }}">{% endif %}
@@ -10,6 +12,7 @@
   {% if current_user.role == 'admin' and request.blueprint not in ['identity', 'staff_auth'] and request.endpoint != 'staff_admin.enroll_link' %}
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/admin-consistency.css') }}">
   {% endif %}
+  {% if theme_enabled %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/theme.css') }}">{% endif %}
 {% endblock %}
 {% block body_class %}app{% if current_user.role == 'admin' and polish_ui %} admin-workspace{% endif %}{% if polish_ui %} internal-ui{% if request.endpoint in ['payments.records','payments.summary','payments.settings'] %} finance-report{% endif %}{% endif %}{% endblock %}
 

@@ -150,7 +150,8 @@ for (const role of ['admin', 'staff'] as const) test(`${role} original receipt/s
   await expect(page.locator('#receipt')).toContainText('Received')
   for (const value of ['pending_processing', 'processing', 'ready_for_pickup']) await status(page, value)
   await expect(page.locator('.order-detail__timeline li strong').first()).toHaveText('Ready for Pickup')
-  expect(await page.locator('.order-tracker__step.is-done .order-tracker__marker').first().evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(224, 242, 254)')
+  const dark = await page.locator('html').getAttribute('data-lx-theme') === 'dark'
+  expect(await page.locator('.order-tracker__step.is-done .order-tracker__marker').first().evaluate(el => getComputedStyle(el).backgroundColor)).toBe(dark ? 'rgb(21, 51, 70)' : 'rgb(224, 242, 254)')
   await expect(page.locator('#sms .status')).toHaveText('Pending')
   await expect(page.locator('#sms')).toContainText('SMS is disabled. Nothing has been sent')
   await expect(page.locator('[data-sms-retry]')).toHaveCount(0)

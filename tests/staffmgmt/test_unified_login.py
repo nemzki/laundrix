@@ -56,9 +56,10 @@ def test_one_clean_login_page(app):
     assert 'class="lx-logo__text"' not in page
     landing = c.get("/").get_data(as_text=True)
     assert "/staff/login" not in landing
-    assert "hero-illustration.jpg" in landing
+    assert "laundrix-mascot.png" in landing
     assert "Does Laundrix automatically process GCash payments?" not in landing
-    assert "How are staff accounts authorized?" in landing
+    assert "Built for Wash Up! Laundry Shop" in landing
+    assert 'href="/auth/login"' in landing
 
 
 def test_signed_in_users_are_sent_to_their_own_dashboard(app, make_user, client_for):

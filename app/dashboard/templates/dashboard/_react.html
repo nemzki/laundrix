@@ -2,13 +2,16 @@
 {% from 'core/_icons.html' import icon %}
 {% from 'dashboard/_metric_icon.html' import metric_icon %}
 {% from 'core/_nav_shared.html' import user_initials %}
+{% from 'core/_theme_selector.html' import theme_selector %}
 {% block title %}{{ dashboard_title }} · Laundrix{% endblock %}
 {% block head %}
+  <script src="{{ url_for('core.static', filename='js/theme.js') }}"></script>
   <link rel="preload" href="{{ url_for('core.static', filename='react-dashboard/fonts/GeistSans-Variable.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link id="laundrix-dashboard-css" rel="stylesheet" href="{{ url_for('core.static', filename='react-dashboard/dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/order-status.css') }}">
   {% if config.IDV_ENABLED %}<link rel="stylesheet" href="{{ url_for('identity.static', filename='css/identity.css') }}">{% endif %}
   {% if admin_area %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/admin-consistency.css') }}">{% endif %}
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/theme.css') }}">
 {% endblock %}
 {% block body %}
 {% from 'dashboard/_data.html' import dashboard_data with context %}
@@ -24,6 +27,7 @@
 <div class="dashboard-account"><div class="dashboard-user">
   {% if d.user.picture %}<img src="{{ d.user.picture }}" alt="" width="36" height="36" referrerpolicy="no-referrer">{% else %}<span class="dashboard-avatar" aria-hidden="true">{{ user_initials(current_user) }}</span>{% endif %}
   <div><strong>{{ d.user.name }}</strong><span>{{ d.user.label }}</span></div>
+  {{ theme_selector() }}
 </div><form method="post" action="{{ d.urls.logout }}"><input type="hidden" name="csrf_token" value="{{ d.csrf }}"><button class="dashboard-native-button" type="submit">{{ icon('logout',16) }}Logout</button></form></div>
 {%- endmacro %}
 <script type="application/json" id="laundrix-dashboard-data">{{ dashboard_data|tojson }}</script>

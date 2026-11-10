@@ -1,0 +1,79 @@
+{
+  "source": "Original Laundrix Flask UI",
+  "data": "Synthetic browser fixture records",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "screens": [
+    {
+      "name": "dashboard",
+      "route": "/dashboard/",
+      "title": "Admin Dashboard",
+      "fields": [
+        "Order Reference",
+        "Customer",
+        "Total",
+        "Status"
+      ],
+      "sections": [
+        "Order Overview",
+        "Operational Status",
+        "Financial Overview",
+        "Recent Orders",
+        "Popular Services"
+      ],
+      "metrics": [
+        "Total Orders",
+        "Today's Orders",
+        "Processing",
+        "Ready for Pickup",
+        "Awaiting Receipt Confirmation",
+        "Orders with a Balance",
+        "Outstanding Balance",
+        "Collected Today"
+      ],
+      "filters": []
+    },
+    {
+      "name": "orders",
+      "route": "/orders/",
+      "title": "Manage Orders",
+      "fields": [
+        "Order Reference",
+        "Customer",
+        "Contact Number",
+        "Date Created",
+        "Laundry Status",
+        "Payment Status",
+        "Action"
+      ],
+      "sections": [
+        "Order Summary",
+        "Confirm Laundry Received"
+      ],
+      "metrics": [],
+      "filters": []
+    },
+    {
+      "name": "payments",
+      "route": "/payments/",
+      "title": "Payment Records",
+      "fields": [
+        "When",
+        "Order",
+        "Method",
+        "Amount",
+        "Recorded By",
+        "Details"
+      ],
+      "sections": [],
+      "metrics": [],
+      "filters": [
+        "Payments and Reversals",
+        "Payments Only",
+        "Reversals Only"
+      ]
+    }
+  ]
+}

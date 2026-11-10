@@ -13,8 +13,8 @@
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-metric-label { min-height: 40px; padding-right: 44px; font-size: 13px; line-height: 20px; font-weight: 400; color: var(--muted-foreground); }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-metric-value { margin-top: 4px; font-size: 26px; line-height: 34px; font-weight: 600; }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-metric-icon { position: absolute; top: 16px; right: 16px; border-radius: 9px; }
-.lx-react.lx-dashboard[data-dashboard-role=admin] [data-metric=ready] .dashboard-metric-icon { color: #047857; background: #ecfdf5; }
-.lx-react.lx-dashboard[data-dashboard-role=admin] [data-metric=awaiting_receipt] .dashboard-metric-icon { color: #b45309; background: #fffbeb; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] [data-metric=ready] .dashboard-metric-icon { color: var(--lx-paint-green-ink, #047857); background: var(--lx-paint-green-bg, #ecfdf5); }
+.lx-react.lx-dashboard[data-dashboard-role=admin] [data-metric=awaiting_receipt] .dashboard-metric-icon { color: var(--lx-paint-amber-ink, #b45309); background: var(--lx-paint-amber-bg, #fffbeb); }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-panel-heading { padding: 16px; }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-panel-heading h2 { font-size: 14px; line-height: 21px; font-weight: 500; }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-recent-desktop { position: relative; overflow-x: auto; }
@@ -23,13 +23,13 @@
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table th:nth-child(2) { width: 27%; }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table th:nth-child(3) { width: 18%; }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table th:nth-child(4) { width: 26%; }
-.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table th { background: #f8fafc; color: #334155; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table th { background: var(--lx-paint-subtle, #f8fafc); color: var(--lx-paint-secondary, #334155); }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table .dashboard-currency { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table tbody tr:hover { background: #f8fafc; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-table tbody tr:hover { background: var(--lx-paint-subtle, #f8fafc); }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-reference { font-size: 12px; font-weight: 500; color: var(--primary); }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-popular li { align-items: center; gap: 16px; }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-popular li span:first-child { font-size: 13px; line-height: 20px; }
-.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-popular li span:last-child { padding: 3px 8px; border-radius: 6px; background: #f1f5f9; color: #475569; font-size: 12px; line-height: 18px; font-variant-numeric: tabular-nums; }
+.lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-popular li span:last-child { padding: 3px 8px; border-radius: 6px; background: var(--lx-paint-muted, #f1f5f9); color: var(--lx-paint-secondary, #475569); font-size: 12px; line-height: 18px; font-variant-numeric: tabular-nums; }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-empty { padding: 24px 16px; font-size: 13px; }
 .lx-react.lx-dashboard[data-dashboard-role=admin] .dashboard-identity {
   display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 14px 16px;

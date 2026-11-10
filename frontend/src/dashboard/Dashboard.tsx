@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@prototype/components/ui/button'
 import { TooltipProvider } from '@prototype/components/ui/tooltip'
 import { useSidebar } from '@prototype/components/ui/sidebar'
+import { ThemeSelector } from '@/components/theme-selector'
 import type { DashboardData, DashboardIcon } from './data'
 
 const icons = { dashboard: LayoutDashboard, plus: Plus, orders: ClipboardList, wallet: Wallet, users: Users,
@@ -17,6 +18,7 @@ function Account({ data }: { data: DashboardData }) {
   return <div className="dashboard-account"><div className="dashboard-user">
     {data.user.picture ? <img src={data.user.picture} alt="" width={36} height={36} referrerPolicy="no-referrer" /> : <span className="dashboard-avatar" aria-hidden="true">{data.user.initials}</span>}
     <div><strong>{data.user.name}</strong><span>{data.user.label}</span></div>
+    <ThemeSelector />
   </div><form method="post" action={data.urls.logout}><input type="hidden" name="csrf_token" value={data.csrf} />
     <Button type="submit" variant="outline" className="dashboard-logout"><LogOut aria-hidden="true" />Logout</Button>
   </form></div>

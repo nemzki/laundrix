@@ -13,9 +13,11 @@ for(const width of [320,768,1440])test(`staff table, Add Dialog and details Shee
  for(const label of [/^Pending verification /i,/^Pending approval /i,/^Active \d+$/i,/^Suspended /i,/^Rejected /i,/^Inactive /i])await expect(page.getByRole('tab',{name:label})).toBeVisible()
  await page.locator('#staff-action-react').getByRole('button',{name:'Add Staff',exact:true}).click();await expect(dialog(page).getByRole('heading',{name:'Add Staff Account'})).toBeVisible()
  await expect(dialog(page).getByText("Enter the staff member's information to generate their enrollment link.",{exact:true})).toBeVisible()
- await expect(dialog(page).getByLabel('Full Name',{exact:true})).toBeVisible();await expect(dialog(page).getByLabel('Full Name',{exact:true})).toHaveAttribute('required','');await expect(dialog(page).getByLabel('Email',{exact:true})).toBeVisible();await expect(dialog(page).getByLabel('Email',{exact:true})).toHaveAttribute('required','')
+ await expect(dialog(page).getByRole('textbox',{name:'Full Name',exact:true})).toBeVisible();await expect(dialog(page).getByRole('textbox',{name:'Full Name',exact:true})).toHaveAttribute('required','');await expect(dialog(page).getByRole('textbox',{name:'Email',exact:true})).toBeVisible();await expect(dialog(page).getByRole('textbox',{name:'Email',exact:true})).toHaveAttribute('required','')
+ await expect(dialog(page)).toHaveCSS('padding','0px')
+ await expect(dialog(page).locator('.staff-form-footer')).toHaveCSS('padding','14px 20px');await expect(dialog(page).locator('.staff-form-footer')).toHaveCSS('margin','0px')
  await expect(dialog(page).getByRole('button',{name:'Add and Generate Link',exact:true})).toBeVisible();await expect(dialog(page).getByText('Role',{exact:true})).toHaveCount(0)
- await expect(dialog(page).locator('input:not([type=hidden])')).toHaveCount(2);await expect(dialog(page).getByRole('combobox')).toHaveCount(0)
+ await expect(dialog(page).locator('.staff-required')).toHaveCount(2);await expect(dialog(page).locator('input:not([type=hidden])')).toHaveCount(2);await expect(dialog(page).getByRole('combobox')).toHaveCount(0)
  const bounds=(await dialog(page).boundingBox())!;expect(bounds.x).toBeGreaterThanOrEqual(0);expect(bounds.x+bounds.width).toBeLessThanOrEqual(width);expect(bounds.y+bounds.height).toBeLessThanOrEqual(900)
  await page.screenshot({path:`test-results/dashboard/staff-${width}-add.png`})
  await dialog(page).getByRole('button',{name:'Cancel',exact:true}).click();await expect(page.locator('.staff-dialog')).toHaveCount(0);await expect(page.locator('#staff-action-react button')).toBeFocused()
@@ -31,11 +33,62 @@ test('six Staff status badges use distinct semantic colors',async({page})=>{
  const colors=await page.evaluate(()=>{const root=document.createElement('div');root.className='lx-react lx-staff';root.style.position='absolute';root.style.left='-10000px';const statuses=['pending_verification','pending_approval','active','suspended','rejected','deactivated'];for(const status of statuses){const badge=document.createElement('span');badge.className='staff-status';badge.dataset.accountStatus=status;root.append(badge)}document.body.append(root);const values=Array.from(root.children).map(element=>getComputedStyle(element).backgroundColor+'|'+getComputedStyle(element).color);root.remove();return values})
  expect(new Set(colors).size).toBe(6)
 })
+
+for (const width of [320,768,1440]) test(`staff polish wraps filters and preserves the Admin container at ${width}px`,async({page})=>{
+ await page.setViewportSize({width,height:1000});await login(page);await page.goto('/admin/staff/');await ready(page)
+ const dark=await page.locator('html').getAttribute('data-lx-theme')==='dark'
+ const labels=['All','Pending Verification','Pending Approval','Active','Suspended','Rejected','Inactive']
+ const tabs=page.getByRole('tablist',{name:'Account status'}).getByRole('tab')
+ const initial=await list(page)
+ expect(await tabs.evaluateAll(nodes=>nodes.map(node=>node.textContent?.replace(/\d+$/,'').trim()))).toEqual(labels)
+ const boxes=await tabs.evaluateAll(nodes=>nodes.map(node=>({top:node.getBoundingClientRect().top,height:node.getBoundingClientRect().height})))
+ for(const box of boxes)expect(box.height).toBe(36)
+ if(width<1000)expect(new Set(boxes.map(box=>box.top)).size).toBeGreaterThan(1)
+ await expect(page.locator('.staff-tabs')).toHaveCSS('flex-wrap','wrap')
+ await expect(tabs.first()).toHaveCSS('background-color',dark?'rgb(23, 46, 80)':'rgb(234, 244, 255)')
+ const content=await page.locator('main.content').boundingBox()
+ await page.getByRole('searchbox',{name:'Search staff'}).fill('staff@example.test')
+ await expect(page.locator('[data-staff-row]')).toHaveCount(1)
+ await page.locator('#staff-sort').selectOption('oldest')
+ await expect(page.locator('.staff-panel')).toHaveAttribute('aria-busy','false')
+ for(const control of [page.getByRole('searchbox',{name:'Search staff'}),page.locator('#staff-sort'),page.getByRole('button',{name:'Clear Filters',exact:true})])expect((await control.boundingBox())!.height).toBe(36)
+ const search=page.getByRole('searchbox',{name:'Search staff'}),before=await search.boundingBox();await search.focus();expect(await search.boundingBox()).toEqual(before);await expect(search).toHaveCSS('outline-style','none')
+ await page.getByRole('button',{name:'Clear Filters',exact:true}).click();await expect(page.locator('.staff-panel')).toHaveAttribute('aria-busy','false')
+ await expect(search).toHaveValue('');await expect(page.locator('#staff-sort')).toHaveValue('newest')
+ await expect(page.locator('[data-staff-row]')).toHaveCount(initial.rows.length)
+ expect(await page.locator('main.content').boundingBox()).toEqual(content)
+ await expect(page.locator('.staff-table')).toHaveCSS('table-layout','fixed')
+ await expect(page.locator('[data-slot=table-head]').first()).toHaveCSS('padding','10px 16px');await expect(page.locator('[data-slot=table-head]').first()).toHaveCSS('font-size','13px')
+ await expect(page.locator('[data-slot=table-cell]').first()).toHaveCSS('padding','10px 16px');await expect(page.locator('.staff-pagination')).toHaveCSS('padding','14px 16px')
+ const wrap=page.locator('[data-slot=table-container]');await expect(wrap).toHaveCSS('overflow-y','hidden')
+ expect(await wrap.evaluate(el=>el.scrollHeight<=el.clientHeight)).toBe(true)
+ // Long backend-supported names/emails must wrap inside their existing column.
+ await page.locator('.staff-person strong').first().evaluate(el=>el.textContent='Long Staff Name '.repeat(9))
+ await page.locator('.staff-person p').first().evaluate(el=>el.textContent='long.email.address.'.repeat(8)+'@example.test')
+ expect(await page.locator('.staff-person').first().evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true)
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+ await page.screenshot({path:`test-results/dashboard/staff-polish-${dark?'dark':'light'}-${width}.png`,fullPage:true})
+})
+
+test('every Staff status filter keeps its backend value and actual counts',async({page})=>{
+ await login(page);await page.goto('/admin/staff/');await ready(page)
+ const values=['','pending_verification','pending_approval','active','suspended','rejected','deactivated']
+ const labels=['All','Pending Verification','Pending Approval','Active','Suspended','Rejected','Inactive']
+ for(let i=0;i<values.length;i++){
+  const expected=await list(page,values[i]?'?status='+values[i]:'')
+  const tab=page.getByRole('tab',{name:new RegExp('^'+labels[i]+' \\d+$')})
+  expect(await tab.locator('.staff-tab-count').innerText()).toBe(String(values[i]?expected.counts[values[i]]:expected.counts.total))
+  await tab.click();await expect(page.locator('.staff-panel')).toHaveAttribute('aria-busy','false')
+  await expect(tab).toHaveAttribute('aria-selected','true')
+  expect(new URL(page.url()).searchParams.get('status')||'').toBe(values[i])
+  expect(await page.locator('[data-staff-row]').evaluateAll(nodes=>nodes.map(node=>Number(node.getAttribute('data-staff-row'))))).toEqual(expected.rows.map((row:{id:number})=>row.id))
+ }
+})
 test('actual creation, backend validation, one-time link and native fallback',async({page,browser})=>{
  await login(page);await page.goto('/admin/staff/');await ready(page);await page.locator('#staff-action-react button').click()
  await page.setViewportSize({width:390,height:780})
- await dialog(page).getByLabel('Full Name',{exact:true}).fill('New Staff QA');await dialog(page).getByLabel('Email',{exact:true}).fill('staff@example.test');await dialog(page).getByRole('button',{name:'Add and Generate Link',exact:true}).click();await expect(dialog(page).getByRole('alert')).toBeVisible();await expect(dialog(page).getByLabel('Full Name',{exact:true})).toHaveValue('New Staff QA')
- await dialog(page).getByLabel('Email',{exact:true}).fill('staff-ui-qa@example.test');let posts=0;page.on('request',request=>{if(request.method()==='POST'&&request.url().endsWith('/admin/staff/new'))posts++})
+ await dialog(page).getByRole('textbox',{name:'Full Name',exact:true}).fill('New Staff QA');await dialog(page).getByRole('textbox',{name:'Email',exact:true}).fill('staff@example.test');await dialog(page).getByRole('button',{name:'Add and Generate Link',exact:true}).click();await expect(dialog(page).getByRole('alert')).toBeVisible();await expect(dialog(page).getByRole('textbox',{name:'Full Name',exact:true})).toHaveValue('New Staff QA')
+ await dialog(page).getByRole('textbox',{name:'Email',exact:true}).fill('staff-ui-qa@example.test');let posts=0;page.on('request',request=>{if(request.method()==='POST'&&request.url().endsWith('/admin/staff/new'))posts++})
  await dialog(page).getByRole('button',{name:'Add and Generate Link',exact:true}).click();await expect(dialog(page).getByRole('heading',{name:'Enrollment Link Generated',exact:true})).toBeVisible();expect(posts).toBe(1)
  await expect(dialog(page).getByText('Link Ready to Share',{exact:true})).toBeVisible();await expect(dialog(page).locator('.staff-link-success')).toContainText('New Staff QA')
  await expect(dialog(page).locator('#staff-enrollment')).toHaveValue(/\/staff\/enroll\//);await expect(dialog(page).locator('.staff-expiration')).toContainText(/^Expires .+/);await expect(dialog(page).locator('.staff-enrollment-next')).toContainText('Pending approval')
@@ -44,7 +97,7 @@ test('actual creation, backend validation, one-time link and native fallback',as
  const enrollmentBounds=(await dialog(page).boundingBox())!;expect(enrollmentBounds.width).toBeLessThanOrEqual(390);expect(enrollmentBounds.height).toBeLessThan(780);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
  await expect(dialog(page).getByRole('link',{name:'View Account',exact:true})).toHaveAttribute('href',/\/admin\/staff\/\d+/);await dialog(page).getByRole('button',{name:'Done',exact:true}).click()
  const saved=await list(page,'?q=staff-ui-qa');expect(saved.total).toBe(1);expect(saved.rows[0].status).toBe('pending_verification');expect(saved.rows[0].role).toBe('staff')
- await page.getByRole('searchbox',{name:'Search staff'}).fill('staff-ui-qa');await expect(page.locator('[data-staff-row]')).toHaveCount(1);await expect(page.locator('[data-staff-row]')).toContainText('Pending verification')
+ await page.getByRole('searchbox',{name:'Search staff'}).fill('staff-ui-qa');await expect(page.locator('[data-staff-row]')).toHaveCount(1);await expect(page.locator('[data-staff-row]')).toContainText('Pending Verification')
  const native=await browser.newContext({storageState:await page.context().storageState(),javaScriptEnabled:false});try{const tab=await native.newPage();await tab.goto('http://127.0.0.1:8771/admin/staff/');await expect(tab.locator('.staff-boot-skeleton')).toBeVisible();expect((await tab.request.get('/admin/staff/new')).status()).toBe(200)}finally{await native.close()}
 })
 test('server-backed filters, sorts, pagination and authorization',async({page,browser})=>{
@@ -53,7 +106,7 @@ test('server-backed filters, sorts, pagination and authorization',async({page,br
  for(let i=0;i<16;i++){const response=await page.request.post('/admin/staff/new',{form:{csrf_token:token,full_name:`Pagination Staff ${i}`,email:`staff-pagination-${i}@example.test`}});expect(response.status()).toBe(200)}
  await page.reload();await ready(page);const initial=await list(page);expect(initial.total).toBeGreaterThan(15);await expect(page.locator('[data-staff-row]')).toHaveCount(15)
  const first=await page.locator('[data-staff-row]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-staff-row')));await page.getByRole('button',{name:'Next',exact:true}).click();await expect(page.getByText('Page 2 of 2',{exact:true})).toBeVisible();const second=await page.locator('[data-staff-row]').evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-staff-row')));expect(second.some(id=>first.includes(id))).toBe(false)
- await page.getByRole('tab',{name:/^Pending verification /}).click();await expect(page.locator('.staff-pagination')).toContainText('Page 1');await expect(page.locator('[data-staff-row]')).not.toContainText(['Active'])
+ await page.getByRole('tab',{name:/^Pending Verification /}).click();await expect(page.locator('.staff-pagination')).toContainText('Page 1');await expect(page.locator('[data-staff-row]')).not.toContainText(['Active'])
  await page.getByRole('searchbox',{name:'Search staff'}).fill('staff-pagination-15@');await expect(page.locator('[data-staff-row]')).toHaveCount(1);await expect(page.locator('[data-staff-row]')).toContainText('Pagination Staff 15')
  await page.locator('#staff-sort').selectOption('name');await expect(page.locator('[data-staff-row]')).toHaveCount(1);await page.getByRole('button',{name:'Clear Filters',exact:true}).click();await expect(page.getByRole('tab',{name:/^All /})).toHaveAttribute('aria-selected','true')
  const staff=await browser.newContext();try{const tab=await staff.newPage();await tab.goto('http://127.0.0.1:8771/auth/login');await tab.getByRole('tab',{name:'Staff',exact:true}).click();await tab.locator('#staff-identifier').fill('staff@example.test');await tab.locator('#staff-password').fill('Browser-Test-Password!42');await tab.locator('form[data-auth-form=staff] button[type=submit]').click();await expect(tab).toHaveURL(/dashboard/);expect((await tab.request.get('/admin/staff/')).status()).toBe(403);expect((await tab.request.post('/admin/staff/new',{form:{}})).status()).toBeGreaterThanOrEqual(400)}finally{await staff.close()}
@@ -81,10 +134,10 @@ test('original lifecycle action, required reason, saved history and failure feed
 
 test('replacement enrollment link, rejection and deactivation use original saved workflows',async({page})=>{
  await login(page);await page.goto('/admin/staff/');await ready(page);const createResponse=await page.request.get('/admin/staff/new');const token=await page.evaluate(html=>new DOMParser().parseFromString(html,'text/html').querySelector<HTMLInputElement>('[name=csrf_token]')!.value,await createResponse.text());const email=`staff-link-qa-${Date.now()}@example.test`;const created=await page.request.post('/admin/staff/new',{form:{csrf_token:token,full_name:'Staff Link QA',email}});expect(created.status()).toBe(200);await page.goto(`/admin/staff/?q=${encodeURIComponent(email)}`);await ready(page)
- const actionTrigger=page.locator('[data-staff-row]').first().getByRole('button',{name:/Actions for/});await actionTrigger.click();const generateLink=page.getByRole('menuitem',{name:'Generate New Link',exact:true}),reject=page.getByRole('menuitem',{name:'Reject Account',exact:true}),deactivate=page.getByRole('menuitem',{name:'Deactivate Account',exact:true});await expect(generateLink).toHaveAttribute('data-variant','default');await expect(reject).toHaveAttribute('data-variant','destructive');await expect(deactivate).toHaveAttribute('data-variant','destructive');await expect(page.locator('[data-slot=dropdown-menu-separator]')).toHaveCount(1);await expect(reject).toHaveCSS('color','rgb(220, 38, 38)');await expect(reject.locator('svg')).toHaveCSS('color','rgb(220, 38, 38)');await reject.hover();await expect(reject).toHaveCSS('background-color','rgb(254, 242, 242)');await page.keyboard.press('Escape');await actionTrigger.focus();await page.keyboard.press('Enter');await expect(generateLink).toBeVisible();await page.keyboard.press('ArrowDown');await page.keyboard.press('ArrowDown');await expect(reject).toBeFocused();await expect(reject).toHaveCSS('outline-style','solid');await page.keyboard.press('Escape');await viewFirst(page)
+ const dark=await page.locator('html').getAttribute('data-lx-theme')==='dark'; const actionTrigger=page.locator('[data-staff-row]').first().getByRole('button',{name:/Actions for/});await actionTrigger.click();const generateLink=page.getByRole('menuitem',{name:'Generate New Link',exact:true}),reject=page.getByRole('menuitem',{name:'Reject Account',exact:true}),deactivate=page.getByRole('menuitem',{name:'Deactivate Account',exact:true});await expect(generateLink).toHaveAttribute('data-variant','default');await expect(reject).toHaveAttribute('data-variant','destructive');await expect(deactivate).toHaveAttribute('data-variant','destructive');await expect(page.locator('[data-slot=dropdown-menu-separator]')).toHaveCount(1);await expect(reject).toHaveCSS('color',dark?'rgb(252, 165, 165)':'rgb(220, 38, 38)');await expect(reject.locator('svg')).toHaveCSS('color',dark?'rgb(252, 165, 165)':'rgb(220, 38, 38)');await reject.hover();await expect(reject).toHaveCSS('background-color',dark?'rgb(59, 32, 44)':'rgb(254, 242, 242)');await page.keyboard.press('Escape');await actionTrigger.focus();await page.keyboard.press('Enter');await expect(generateLink).toBeVisible();await page.keyboard.press('Home');await expect(page.getByRole('menuitem',{name:'View Details',exact:true})).toBeFocused();await page.keyboard.press('ArrowDown');await expect(generateLink).toBeFocused();await page.keyboard.press('ArrowDown');await expect(reject).toBeFocused();await expect(reject).toHaveCSS('outline-style','solid');await page.keyboard.press('Escape');await viewFirst(page)
  await page.locator('.staff-sheet').getByRole('button',{name:'Generate New Link',exact:true}).click();await dialog(page).getByRole('button',{name:'Confirm',exact:true}).click();await expect(dialog(page).getByRole('heading',{name:'Enrollment Link Generated',exact:true})).toBeVisible();await expect(dialog(page).locator('#staff-enrollment')).toHaveValue(/\/staff\/enroll\//);const enrollmentBounds=(await dialog(page).boundingBox())!;expect(enrollmentBounds.width).toBeLessThanOrEqual(520);expect(enrollmentBounds.width).toBeGreaterThanOrEqual(480);expect(enrollmentBounds.height).toBeLessThan(900);await dialog(page).getByRole('button',{name:'Done',exact:true}).click()
  await page.locator('.staff-sheet').getByRole('button',{name:'Reject Account',exact:true}).click();await expect(dialog(page).getByRole('heading',{name:'Reject Account',exact:true})).toBeVisible();await expect(dialog(page).getByText('Are you sure you want to reject this staff account? The staff member will not be able to sign in.',{exact:true})).toBeVisible();await expect(dialog(page).getByText('Staff Link QA',{exact:true})).toBeVisible();const rejectReason=dialog(page).getByLabel('Reason for Rejection *');await expect(rejectReason).toHaveAttribute('rows','3');await expect(rejectReason).toHaveAttribute('name','reason');await expect(rejectReason).toHaveAttribute('placeholder','Enter the reason for rejecting this account...');const rejectBounds=(await dialog(page).boundingBox())!;expect(rejectBounds.width).toBeLessThanOrEqual(480);await rejectReason.fill('   ');await dialog(page).getByRole('button',{name:'Reject Account',exact:true}).click();await expect(dialog(page).getByRole('alert')).toContainText('3 to 255 characters');await expect(dialog(page)).toBeVisible();await rejectReason.fill('QA rejected registration');await dialog(page).getByRole('button',{name:'Reject Account',exact:true}).click();await expect(page.locator('.staff-dialog')).toHaveCount(0);await expect(page.locator('.staff-sheet .staff-status')).toHaveText('Rejected');await expect(page.locator('.staff-facts')).toContainText('None active')
- await page.locator('.staff-sheet').getByRole('button',{name:'Deactivate Account',exact:true}).click();await expect(dialog(page).getByRole('heading',{name:'Deactivate Account',exact:true})).toBeVisible();await expect(dialog(page).locator('.staff-confirm-icon')).toBeVisible();await dialog(page).getByLabel('Reason for Deactivation *').fill('QA offboarding');await dialog(page).getByRole('button',{name:'Deactivate Account',exact:true}).click();await expect(page.locator('.staff-dialog')).toHaveCount(0);await expect(page.locator('.staff-sheet .staff-status')).toHaveText('Deactivated');await expect(page.locator('.staff-account-actions')).toContainText('No further actions')
+ await page.locator('.staff-sheet').getByRole('button',{name:'Deactivate Account',exact:true}).click();await expect(dialog(page).getByRole('heading',{name:'Deactivate Account',exact:true})).toBeVisible();await expect(dialog(page).locator('.staff-confirm-icon')).toBeVisible();await dialog(page).getByLabel('Reason for Deactivation *').fill('QA offboarding');await dialog(page).getByRole('button',{name:'Deactivate Account',exact:true}).click();await expect(page.locator('.staff-dialog')).toHaveCount(0);await expect(page.locator('.staff-sheet .staff-status')).toHaveText('Inactive');await expect(page.locator('.staff-account-actions')).toContainText('No further actions')
  expect((await list(page,`?q=${encodeURIComponent(email)}`)).rows[0].status).toBe('deactivated')
  await page.keyboard.press('Escape');await page.getByRole('tab',{name:/^Inactive /}).click();await expect(page.locator('[data-staff-row]')).toContainText('Staff Link QA')
 })

@@ -30,17 +30,18 @@ for(const width of [320,768,1440])test(`React catalog, real categories and prese
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message))
   await page.setViewportSize({width,height:900});await login(page);await page.goto('/admin/services/');await ready(page)
   const original=await data(page),services=original.rows.filter(item=>item.kind==='services')
+  const dark=await page.locator('html').getAttribute('data-lx-theme')==='dark'
   const strip=page.getByRole('tablist',{name:'Catalog modules'})
   const tabs=strip.getByRole('tab'),boxes=await tabs.evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().top))
   expect(new Set(boxes).size).toBe(1)
   await expect(strip).toHaveCSS('overflow-y','hidden')
   const inactive=strip.getByRole('tab',{name:/^Services /})
   await expect(inactive).toHaveCSS('background-color','rgba(0, 0, 0, 0)')
-  await inactive.hover();await expect(inactive).toHaveCSS('background-color','rgb(248, 250, 252)')
-  await inactive.focus();await page.keyboard.press('ArrowRight');await expect(strip.getByRole('tab',{name:/^Packages /})).toBeFocused();await page.keyboard.press('ArrowLeft');await expect(inactive).toBeFocused();await expect(inactive).toHaveCSS('box-shadow','rgb(59, 130, 246) 0px 0px 0px 1px inset')
+  await inactive.hover();await expect(inactive).toHaveCSS('background-color',dark?'rgb(24, 34, 53)':'rgb(248, 250, 252)')
+  await inactive.focus();await page.keyboard.press('ArrowRight');await expect(strip.getByRole('tab',{name:/^Packages /})).toBeFocused();await page.keyboard.press('ArrowLeft');await expect(inactive).toBeFocused();await expect(inactive).toHaveCSS('box-shadow',`${dark?'rgb(52, 120, 246)':'rgb(59, 130, 246)'} 0px 0px 0px 1px inset`)
   await page.keyboard.press('End');await expect(strip.getByRole('tab',{name:/^Add-ons /})).toBeFocused()
   await strip.getByRole('tab',{name:/^All /}).click()
-  await expect(strip.getByRole('tab',{name:/^All /})).toHaveCSS('background-color','rgb(241, 245, 249)')
+  await expect(strip.getByRole('tab',{name:/^All /})).toHaveCSS('background-color',dark?'rgb(37, 50, 72)':'rgb(241, 245, 249)')
 
   await expect(page.getByRole('button',{name:'Refresh',exact:true})).toHaveCount(0)
   const contrast=await page.locator('#laundrix-catalog [data-slot=badge]').evaluateAll(nodes=>{

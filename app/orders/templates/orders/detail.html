@@ -225,30 +225,33 @@
         <dl class="order-detail__finance">
           <div><dt>Total Amount</dt><dd>{{ order.total|peso }}</dd></div>
           <div><dt>Amount Paid</dt><dd>{{ order.amount_paid|peso }}</dd></div>
-          <div><dt>Remaining</dt><dd{% if order.balance_due > 0 %} class="is-unpaid"{% endif %}>{{ order.balance_due|peso }}</dd></div>
+          <div><dt>Remaining Balance</dt><dd{% if order.balance_due > 0 %} class="is-unpaid"{% endif %}>{{ order.balance_due|peso }}</dd></div>
         </dl>
         <dl class="kv order-detail__kv order-detail__pay-summary">
-          <dt>Arrangement</dt><dd>{{ order.payment_arrangement|arrangement_label }}</dd>
+          <dt>Payment Arrangement</dt><dd>{{ order.payment_arrangement|arrangement_label }}</dd>
         </dl>
 
-        <p class="hint">All payments recorded for this order.</p>
         <h3 class="subhead">Payment history</h3>
+        <p class="hint">All payments recorded for this order, including corrections.</p>
         {% if order.payments %}
         <ul class="pay-txns" aria-label="Payment transactions">
           {% for p in order.payments %}
           <li class="pay-txn{% if p.kind == 'reversal' or p.reversal %} is-reversed{% endif %}">
             <div class="pay-txn__body">
               <div class="pay-txn__meta">
-                <span class="mono">Payment #{{ p.id }}</span> <time datetime="{{ p.paid_at }}">{{ p.paid_at|localdt }}</time>
-                <span class="pay-txn__by">{{ (p.recorded_by.full_name or p.recorded_by.email) if p.recorded_by else 'Unknown user' }}</span>
+                <strong class="pay-txn__reference">Payment #{{ p.id }}</strong>
+                <time datetime="{{ p.paid_at }}">{{ p.paid_at|localdt }}</time>
+                <span class="pay-txn__by">Recorded by {{ (p.recorded_by.full_name or p.recorded_by.email) if p.recorded_by else 'Unknown user' }}</span>
               </div>
               <div class="pay-txn__method">
-                <strong>{{ p.method_label }}</strong>
+                <span class="pill">{{ p.method_label }}</span>
+                {% if p.kind == 'reversal' %}<span class="sub">Reverses Payment #{{ p.reverses_payment_id }}</span>{% endif %}
                 {% if p.reference %}<span class="sub">Ref: {{ p.reference }}</span>{% endif %}
                 {% if p.notes %}<span class="sub">{{ p.notes }}</span>{% endif %}
               </div>
               <div class="pay-txn__amount num">{% if p.kind == 'reversal' %}-{% endif %}{{ p.amount|peso }}</div>
             </div>
+            {% if p.kind == 'reversal' or p.reversal or is_admin %}
             <div class="pay-txn__action">
               {% if p.kind == 'reversal' %}
               <span class="pill pill-off">Reversal</span>
@@ -260,10 +263,11 @@
                       data-action="{{ url_for('payments.reverse', payment_id=p.id) }}"
                       data-amount="{{ p.amount|peso }}"
                       data-method="{{ p.method_label }}">
-                Reverse payment
+                {{ icon('spin', 16) }} Reverse payment
               </button>
               {% endif %}
             </div>
+            {% endif %}
           </li>
           {% endfor %}
         </ul>

@@ -71,8 +71,8 @@
 }
 
 .lx-dash__kpi--primary {
-  background: linear-gradient(180deg, #f8fbff 0%, var(--lx-surface) 100%);
-  border-color: #dbeafe;
+  background: linear-gradient(180deg, var(--lx-paint-subtle, #f8fbff) 0%, var(--lx-surface) 100%);
+  border-color: var(--lx-paint-blue-bg, #dbeafe);
 }
 
 .lx-dash__kpi--primary .lx-dash__kpi-value {
@@ -93,18 +93,18 @@
 }
 
 .lx-dash__kpi--primary .lx-dash__kpi-icon {
-  background: #dbeafe;
+  background: var(--lx-paint-blue-bg, #dbeafe);
   color: var(--lx-primary);
 }
 
 .lx-dash__kpi--progress .lx-dash__kpi-icon {
-  background: #ede9fe;
-  color: #5b21b6;
+  background: var(--lx-paint-purple-bg, #ede9fe);
+  color: var(--lx-paint-purple-ink, #5b21b6);
 }
 
 .lx-dash__kpi--ready .lx-dash__kpi-icon {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--lx-paint-green-bg, #dcfce7);
+  color: var(--lx-paint-green-ink, #166534);
 }
 
 .lx-dash__kpi--warn .lx-dash__kpi-icon {
@@ -118,8 +118,8 @@
 }
 
 .lx-dash__kpi--money .lx-dash__kpi-icon {
-  background: #e0f2fe;
-  color: #075985;
+  background: var(--lx-paint-cyan-bg, #e0f2fe);
+  color: var(--lx-paint-cyan-ink, #075985);
 }
 
 .lx-dash__panels {
@@ -179,7 +179,7 @@
 }
 
 .lx-dash__recent .table tbody tr:hover {
-  background: #f8fbff;
+  background: var(--lx-paint-subtle, #f8fbff);
 }
 
 .lx-dash__recent .table a {

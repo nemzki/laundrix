@@ -4,6 +4,10 @@
   var root=document.querySelector("[data-customer-directory]");
   if(!root || !window.fetch || !window.AbortController) return;
   document.documentElement.classList.add("customers-enhanced");
+  // Delegate tooltips so server-paginated rows retain hover and keyboard hints.
+  new bootstrap.Tooltip(root,{selector:"[data-edit-customer]",trigger:"hover focus",container:"body",customClass:"cm-edit-tooltip"});
+  function hideEditHints(dispose) {root.querySelectorAll("[data-edit-customer]").forEach(function(button){var hint=bootstrap.Tooltip.getInstance(button);if(hint){if(dispose) hint.dispose();else hint.hide();}});}
+  document.addEventListener("keydown",function(event){if(event.key==="Escape") hideEditHints(false);});
   var search=root.querySelector("[name=q]"), filter=root.querySelector("[name=filter]");
   var sheet=document.getElementById("customerSheet"), sheetUI=bootstrap.Offcanvas.getOrCreateInstance(sheet);
   var modal=document.getElementById("customerModal"), modalUI=bootstrap.Modal.getOrCreateInstance(modal);
@@ -48,6 +52,7 @@
         var bounded=new URL(url);if(Number(results.dataset.pages)>1) bounded.searchParams.set("page",results.dataset.pages);else bounded.searchParams.delete("page");
         return loadDirectory(bounded,push,true);
       }
+      hideEditHints(true);
       root.querySelector("[data-customer-results]").replaceWith(results);
       document.querySelector("[data-directory-count]").textContent=doc.querySelector("[data-directory-count]").textContent;
       if(!push || document.activeElement!==search) search.value=url.searchParams.get("q") || "";
@@ -124,7 +129,7 @@
       form.querySelector("[data-duplicate-confirm-label]").textContent=kind==="edit" ? "Use this contact number despite the existing customer match." : "Save a separate customer with this contact number.";
       form.action=safeURL(url);modal.querySelector("#customerModalTitle").textContent=kind==="edit" ? "Edit Customer" : "Add Customer";
       modal.querySelector("[data-customer-modal-description]").textContent=kind==="edit" ? "Update this customer's contact details." : "Enter the customer's contact details.";
-      submit.textContent=kind==="edit" ? "Save Changes" : "Save customer";modalReady=false;formReady=kind==="add";enableFields(false);modalUI.show();
+      submit.textContent=kind==="edit" ? "Save Changes" : "Save Customer";modalReady=false;formReady=kind==="add";enableFields(false);modalUI.show();
       if(kind==="edit") prepareEdit(url,id);
     }
     if(fromSheet && sheet.classList.contains("show")){sheet.addEventListener("hidden.bs.offcanvas",start,{once:true});sheetUI.hide();}
@@ -136,6 +141,7 @@
     if(pageLink && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.button===0){event.preventDefault();loadDirectory(new URL(pageLink.href),true);return;}
     var action=event.target.closest("[data-view-customer], [data-edit-customer]");
     if(!action) return;
+    hideEditHints(false);
     var row=action.closest("[data-customer-id]"), id=Number(row.dataset.customerId), url=safeURL(row.dataset.customerUrl);
     if(action.hasAttribute("data-view-customer")){viewTrigger=action;selected=null;showSheetStatus("Loading latest customer details...");sheetUI.show();loadProfile(url,id);}
     else openEditor("edit",url,id,false,action);
@@ -174,7 +180,7 @@
       var refreshed=await loadDirectory(new URL(location.href),false);
       if(!refreshed) announce("Customer saved",saved.full_name+" was saved. Retry loading the directory to refresh the list.");
     } catch(error){var area=form.querySelector("[data-customer-errors]");area.textContent=error.message || "The save could not be confirmed. Refresh before retrying.";area.hidden=false;}
-    finally {saving=false;enableFields(modalReady && formReady);submit.textContent=mode==="edit" ? "Save Changes" : "Save customer";}
+    finally {saving=false;enableFields(modalReady && formReady);submit.textContent=mode==="edit" ? "Save Changes" : "Save Customer";}
   });
   document.addEventListener("visibilitychange",function(){if(!document.hidden){loadDirectory(new URL(location.href),false);if(sheet.classList.contains("show") && selected) loadProfile(profileURL,selected.id);}});
   root.dataset.state="ready";
