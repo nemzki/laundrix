@@ -1,0 +1,39 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% block title %}Analytics &amp; Reports · Laundrix{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('analytics.static', filename='css/analytics.css') }}">{% endblock %}
+{% block page_title %}Analytics &amp; Reports{% endblock %}
+{% block page_subtitle %}Business performance, operational trends, and predictive insights.{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-outline" id="an-refresh" href="{{ url_for('analytics.index') }}?{{ query }}">{{ icon('search', 16) }}<span>Refresh</span></a>
+{% endblock %}
+
+{% block content %}
+<div class="analytics" id="analytics-root"
+     data-api-base="{{ url_for('analytics.index') }}api/"
+     data-query="{{ query }}">
+  {% include "analytics/_overview.html" %}
+
+  <noscript><div class="alert alert-warn">Charts and the detail tabs need JavaScript. The headline figures above work without it.</div></noscript>
+
+  <div class="tabs an-tabs" role="tablist" aria-label="Analytics sections">
+    {% for key, name in [('sales', 'Sales'), ('orders', 'Orders'), ('services', 'Services'), ('customers', 'Customers'), ('payments', 'Payments'), ('balances', 'Balances')] %}
+      <button class="tab {% if loop.first %}active{% endif %}" type="button" role="tab" id="tab-{{ key }}"
+              aria-controls="panel-{{ key }}" aria-selected="{{ 'true' if loop.first else 'false' }}"
+              data-tab="{{ key }}">{{ name }}</button>
+    {% endfor %}
+  </div>
+
+  {% include "analytics/_sales.html" %}
+  {% include "analytics/_orders.html" %}
+  {% include "analytics/_services.html" %}
+  {% include "analytics/_customers.html" %}
+  {% include "analytics/_payments.html" %}
+  {% include "analytics/_balances.html" %}
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+  <script src="{{ url_for('analytics.static', filename='vendor/chart.umd.js') }}" defer></script>
+  <script src="{{ url_for('analytics.static', filename='js/analytics.js') }}" defer></script>
+{% endblock %}

@@ -26,6 +26,10 @@ def register_commands(app):
 
     register_auth_commands(app)
 
+    from app.analytics.ml.cli import register_ml_commands
+
+    register_ml_commands(app)
+
     @app.cli.command("check-db")
     def check_db():
         """Test the MySQL connection."""

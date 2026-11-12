@@ -215,7 +215,13 @@ def test_the_migration_chains_from_the_current_head_without_a_second_head():
         down = re.search(r"^down_revision\s*=\s*(?:None|['\"](\w+)['\"])", text, re.M).group(1)
         graph[rev] = down
     heads = [r for r in graph if r not in graph.values()]
-    assert heads == ["f2b7d4c9a1e3"] and graph["f2b7d4c9a1e3"] == "e7b3c9a4d1f6"
+    assert len(heads) == 1  # still exactly one head: no second branch
+    assert graph["f2b7d4c9a1e3"] == "e7b3c9a4d1f6"  # the SMS migration still chains from its parent
+    chain, rev = [], heads[0]
+    while rev is not None:
+        chain.append(rev)
+        rev = graph[rev]
+    assert "f2b7d4c9a1e3" in chain  # and is still on the line of history leading to the head
 
 
 def test_existing_orders_migrate_with_consent_false(conn):

@@ -22,6 +22,7 @@
       <a class="nav-link {% if request.endpoint == 'payments.outstanding' %}active{% endif %}" href="{{ url_for('payments.outstanding') }}">{{ icon('wallet') }}<span>Outstanding Balances</span></a>
       {% if is_admin %}
         <a class="nav-link {% if request.endpoint in ('payments.records', 'payments.summary', 'payments.settings') %}active{% endif %}" href="{{ url_for('payments.records') }}">{{ icon('chart') }}<span>Payments</span></a>
+        <a class="nav-link {% if bp == 'analytics' %}active{% endif %}" href="{{ url_for('analytics.index') }}">{{ icon('chart') }}<span>Analytics &amp; Reports</span></a>
         <a class="nav-link {% if bp == 'catalog' %}active{% endif %}" href="{{ url_for('catalog.index') }}">{{ icon('tag') }}<span>Services &amp; Pricing</span></a>
         <a class="nav-link {% if request.endpoint == 'orders.customers' %}active{% endif %}" href="{{ url_for('orders.customers') }}">{{ icon('users') }}<span>Customers</span></a>
         <a class="nav-link {% if bp == 'staff_admin' %}active{% endif %}" href="{{ url_for('staff_admin.index') }}">{{ icon('users') }}<span>Staff Management</span></a>

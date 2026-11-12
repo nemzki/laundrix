@@ -8,6 +8,7 @@ from app.models.catalog import (
 from app.models.customer import Customer
 from app.models.order import ItemType, Order, OrderItem, OrderStatus, OrderStatusHistory
 from app.models.sms import SMSNotification, SMSStatus
+from app.models.analytics_model import AnalyticsModelRun, ModelRunStatus
 from app.models.payment import (
     Payment, PaymentArrangement, PaymentEvent, PaymentKind, PaymentMethod, PaymentSettings, PaymentStatus,
 )
@@ -18,6 +19,7 @@ __all__ = [
     "ICON_KEYS", "PackageMeasure", "PricingUnit", "Service", "ServiceAddon", "ServicePackage",
     "Customer", "ItemType", "Order", "OrderItem", "OrderStatus", "OrderStatusHistory",
     "SMSNotification", "SMSStatus",
+    "AnalyticsModelRun", "ModelRunStatus",
     "Payment", "PaymentArrangement", "PaymentEvent", "PaymentKind", "PaymentMethod",
     "PaymentSettings", "PaymentStatus",
 ]

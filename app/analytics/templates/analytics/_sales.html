@@ -1,0 +1,13 @@
+<section class="an-panel" id="panel-sales" role="tabpanel" aria-labelledby="tab-sales" data-section="sales" hidden>
+  <div class="an-status" data-slot="status" role="status" aria-live="polite"></div>
+  <div class="an-body" data-slot="body" hidden>
+    <div class="grid an-tiles an-tiles-2" data-slot="tiles"></div>
+    <div class="card an-chart-card">
+      <div class="card-head"><h2>Sales trend</h2><div class="an-gran" role="group" aria-label="Group by"><button type="button" class="an-chip" data-gran="day">Daily</button><button type="button" class="an-chip" data-gran="week">Weekly</button><button type="button" class="an-chip" data-gran="month">Monthly</button></div></div>
+      <div class="an-chart"><canvas id="chart-sales" role="img" aria-label="Line chart comparing gross order value with payments collected over time"></canvas></div>
+      <p class="an-chart-note muted" data-slot="note-sales" hidden></p>
+      <details class="an-data" data-slot="details-sales"><summary>View as data table</summary><div class="table-wrap" data-slot="table-sales"></div></details>
+    </div>
+    <p class="an-footnote muted" data-slot="definitions"></p>
+  </div>
+</section>

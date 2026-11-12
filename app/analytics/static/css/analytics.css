@@ -1,0 +1,80 @@
+/* Analytics & Reports. Loaded after app.css; reuses its variables and components.
+   CSP is style-src 'self': no inline styles. Colours for charts live in the --an-* variables
+   below and are read by analytics.js, so the palette is defined in one place. */
+.analytics {
+  --an-1: #2563eb; /* blue    - primary series, gross order value */
+  --an-2: #15803d; /* green   - money actually collected          */
+  --an-3: #0891b2; /* cyan                                          */
+  --an-4: #b45309; /* amber                                         */
+  --an-5: #7c3aed; /* violet                                        */
+  --an-6: #be185d; /* rose                                          */
+  --an-7: #475569; /* slate                                         */
+  --an-8: #0b1f4a; /* navy                                          */
+  --an-grid: #e2e8f0;
+}
+.analytics [hidden] { display: none !important; }
+
+/* ---------- filters ---------- */
+.an-filters { display: grid; gap: .85rem; margin-bottom: 1rem; }
+.an-presets, .an-gran { display: flex; flex-wrap: wrap; gap: .4rem; }
+.an-chip {
+  display: inline-flex; align-items: center; padding: .38rem .85rem; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--white); color: var(--navy);
+  font: inherit; font-size: .86rem; font-weight: 600; text-decoration: none; cursor: pointer;
+}
+.an-chip:hover { border-color: var(--primary); }
+.an-chip.active, .an-chip[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: #fff; }
+.an-chip:focus-visible, .an-tabs .tab:focus-visible { outline: 3px solid rgba(37, 99, 235, .35); outline-offset: 2px; }
+.an-custom { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: flex-end; }
+.an-date { display: grid; gap: .2rem; font-size: .8rem; font-weight: 600; color: var(--muted); }
+.an-date .input { width: auto; min-width: 10.5rem; }
+.an-period { margin: 0; font-size: .9rem; }
+.an-tz { margin-left: .4rem; padding: .1rem .5rem; border-radius: 999px; background: var(--primary-soft); color: var(--primary-dark); font-size: .74rem; font-weight: 700; }
+
+/* ---------- KPI cards & tiles ---------- */
+.an-kpis, .an-tiles { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: .6rem; }
+.an-tiles { margin-bottom: 1rem; }
+.an-tiles-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.an-kpi .stat-value, .an-tiles .stat-value { font-size: 1.6rem; overflow-wrap: anywhere; }
+.an-delta { margin-top: .3rem; font-size: .86rem; font-weight: 700; color: var(--muted); }
+.an-good { color: var(--success); }
+.an-bad { color: var(--danger); }
+.an-neutral { color: var(--muted); }
+.an-sub { margin-top: .1rem; font-size: .8rem; color: var(--muted); }
+.an-footnote { font-size: .82rem; margin: .4rem 0 1rem; }
+.stat.an-aside { background: #f8fafc; border-style: dashed; }
+
+/* ---------- tabs & panels ---------- */
+.an-tabs { margin-top: .6rem; }
+.an-tabs .tab { background: none; border: 0; border-bottom: 3px solid transparent; font: inherit; font-weight: 700; cursor: pointer; }
+.an-tabs .tab.active { border-bottom-color: var(--primary); }
+.an-status:empty { display: none; }
+.an-loading { padding: 2rem 1rem; text-align: center; color: var(--muted); }
+.an-loading::before { content: ""; display: block; width: 28px; height: 28px; margin: 0 auto .6rem; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--primary); animation: an-spin .8s linear infinite; }
+@keyframes an-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .an-loading::before { animation: none; } }
+
+/* ---------- charts ---------- */
+.an-chart-card { min-width: 0; margin-bottom: 1rem; }
+.analytics .card + .card { margin-top: 0; }
+.an-chart { position: relative; height: 320px; }
+.an-chart canvas { max-width: 100%; }
+.an-chart-note { font-size: .84rem; margin: .5rem 0 0; }
+.an-data { margin-top: .8rem; font-size: .88rem; }
+.an-data summary { cursor: pointer; color: var(--primary-dark); font-weight: 600; }
+.an-data .table-wrap { margin-top: .5rem; }
+.analytics .grid + .card, .analytics .grid-2 { margin-bottom: 1rem; }
+.an-empty-chart { display: grid; place-items: center; height: 100%; }
+.an-defs { margin: 0; padding-left: 1.1rem; font-size: .88rem; color: var(--muted); }
+.an-defs li { margin-bottom: .4rem; }
+.analytics tfoot td { font-weight: 800; border-top: 2px solid var(--border); }
+.analytics .table td.an-rank { width: 3rem; color: var(--muted); }
+.an-partial { color: var(--muted); font-size: .8rem; }
+
+@media (max-width: 640px) {
+  .an-chart { height: 260px; }
+  .an-date .input { min-width: 9rem; }
+  .an-kpis, .an-tiles { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
+@media print { .an-filters, .an-tabs, .page-actions { display: none; } }

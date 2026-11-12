@@ -1,0 +1,20 @@
+<section class="an-panel" id="panel-orders" role="tabpanel" aria-labelledby="tab-orders" data-section="orders" hidden>
+  <div class="an-status" data-slot="status" role="status" aria-live="polite"></div>
+  <div class="an-body" data-slot="body" hidden>
+    <div class="grid an-tiles" data-slot="tiles"></div>
+    <div class="grid grid-2">
+    <div class="card an-chart-card">
+      <div class="card-head"><h2>Orders by status</h2></div>
+      <div class="an-chart"><canvas id="chart-orders-status" role="img" aria-label="Doughnut chart of orders by status"></canvas></div>
+      <p class="an-chart-note muted" data-slot="note-orders-status" hidden></p>
+      <details class="an-data" data-slot="details-orders-status"><summary>View as data table</summary><div class="table-wrap" data-slot="table-orders-status"></div></details>
+    </div>
+    <div class="card an-chart-card">
+      <div class="card-head"><h2>Order volume</h2><div class="an-gran" role="group" aria-label="Group by"><button type="button" class="an-chip" data-gran="day">Daily</button><button type="button" class="an-chip" data-gran="week">Weekly</button><button type="button" class="an-chip" data-gran="month">Monthly</button></div></div>
+      <div class="an-chart"><canvas id="chart-orders-volume" role="img" aria-label="Bar chart of order volume over time"></canvas></div>
+      <p class="an-chart-note muted" data-slot="note-orders-volume" hidden></p>
+      <details class="an-data" data-slot="details-orders-volume"><summary>View as data table</summary><div class="table-wrap" data-slot="table-orders-volume"></div></details>
+    </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,43 @@
+{# Date filters + headline KPI cards. Values are computed server-side (services.present_kpis). #}
+<section class="card an-filters" aria-label="Date range">
+  <div class="an-presets" role="group" aria-label="Quick date filters">
+    {% for key, name in presets.items() if key != 'custom' %}
+      <a class="an-chip {% if rng.preset == key %}active{% endif %}" href="{{ url_for('analytics.index', range=key) }}"
+         {% if rng.preset == key %}aria-current="true"{% endif %}>{{ name }}</a>
+    {% endfor %}
+  </div>
+  <form class="an-custom" method="get" action="{{ url_for('analytics.index') }}">
+    <input type="hidden" name="range" value="custom">
+    <label class="an-date"><span>From</span>
+      <input class="input" type="date" name="start" value="{{ rng.start.isoformat() }}" min="{{ min_date_iso }}" max="{{ today_iso }}" required></label>
+    <label class="an-date"><span>To</span>
+      <input class="input" type="date" name="end" value="{{ rng.end.isoformat() }}" min="{{ min_date_iso }}" max="{{ today_iso }}" required></label>
+    <button class="btn btn-primary btn-sm" type="submit">Apply custom range</button>
+  </form>
+  <p class="an-period muted">
+    Showing <strong>{{ period.label }}</strong>
+    <span aria-hidden="true">·</span>
+    compared with <strong>{{ period.previous.label }}</strong>
+    <span class="an-tz">Philippine time</span>
+  </p>
+</section>
+
+<section aria-label="Key figures">
+  <div class="grid an-kpis">
+    {% for k in kpis %}
+      <div class="stat an-kpi" data-kpi="{{ k.key }}">
+        <div class="stat-label" {% if k.definition %}title="{{ k.definition }}"{% endif %}>{{ k.label }}</div>
+        <div class="stat-value">{{ k.value_display }}</div>
+        <div class="an-delta an-{{ k.tone }}" {% if k.hint %}title="{{ k.hint }}"{% endif %}>
+          <span aria-hidden="true">{{ k.arrow }}</span> {{ k.delta_text }}
+          {% if k.sr_text %}<span class="sr-only">{{ k.sr_text }}</span>{% endif %}
+        </div>
+        <div class="an-sub">vs {{ k.previous_display }} in the previous period</div>
+      </div>
+    {% endfor %}
+  </div>
+  <p class="an-footnote muted">
+    <strong>Gross order value</strong> is what customers were billed. <strong>Payments collected</strong> is money actually
+    received, net of reversals. They are different measures and are never mixed.
+  </p>
+</section>

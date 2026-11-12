@@ -1,0 +1,28 @@
+<section class="an-panel" id="panel-services" role="tabpanel" aria-labelledby="tab-services" data-section="services" hidden>
+  <div class="an-status" data-slot="status" role="status" aria-live="polite"></div>
+  <div class="an-body" data-slot="body" hidden>
+    <p class="alert alert-info" data-slot="notes"></p>
+    <div class="grid grid-2">
+    <div class="card an-chart-card">
+      <div class="card-head"><h2>Most frequently ordered</h2></div>
+      <div class="an-chart"><canvas id="chart-services-top" role="img" aria-label="Bar chart of the most frequently ordered services and packages"></canvas></div>
+      <p class="an-chart-note muted" data-slot="note-services-top" hidden></p>
+      <details class="an-data" data-slot="details-services-top"><summary>View as data table</summary><div class="table-wrap" data-slot="table-services-top"></div></details>
+    </div>
+    <div class="card an-chart-card">
+      <div class="card-head"><h2>Demand trend (top services)</h2><div class="an-gran" role="group" aria-label="Group by"><button type="button" class="an-chip" data-gran="day">Daily</button><button type="button" class="an-chip" data-gran="week">Weekly</button><button type="button" class="an-chip" data-gran="month">Monthly</button></div></div>
+      <div class="an-chart"><canvas id="chart-services-trend" role="img" aria-label="Line chart of orders over time for the most ordered services"></canvas></div>
+      <p class="an-chart-note muted" data-slot="note-services-trend" hidden></p>
+      <details class="an-data" data-slot="details-services-trend"><summary>View as data table</summary><div class="table-wrap" data-slot="table-services-trend"></div></details>
+    </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Services &amp; packages</h2></div>
+      <div class="table-wrap" data-slot="table-services"></div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card"><div class="card-head"><h2>Least frequently ordered</h2></div><div class="table-wrap" data-slot="table-least"></div></div>
+      <div class="card"><div class="card-head"><h2>Add-ons</h2></div><div class="table-wrap" data-slot="table-addons"></div></div>
+    </div>
+  </div>
+</section>

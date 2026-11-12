@@ -1,0 +1,16 @@
+<section class="an-panel" id="panel-payments" role="tabpanel" aria-labelledby="tab-payments" data-section="payments" hidden>
+  <div class="an-status" data-slot="status" role="status" aria-live="polite"></div>
+  <div class="an-body" data-slot="body" hidden>
+    <div class="grid an-tiles" data-slot="tiles"></div>
+    <div class="grid grid-2">
+    <div class="card an-chart-card">
+      <div class="card-head"><h2>Collections by payment method</h2></div>
+      <div class="an-chart"><canvas id="chart-payments-methods" role="img" aria-label="Doughnut chart of net collections by payment method"></canvas></div>
+      <p class="an-chart-note muted" data-slot="note-payments-methods" hidden></p>
+      <details class="an-data" data-slot="details-payments-methods"><summary>View as data table</summary><div class="table-wrap" data-slot="table-payments-methods"></div></details>
+    </div>
+      <div class="card"><div class="card-head"><h2>Payment methods</h2></div><div class="table-wrap" data-slot="table-methods"></div>
+        <p class="an-footnote muted" data-slot="definitions"></p></div>
+    </div>
+  </div>
+</section>

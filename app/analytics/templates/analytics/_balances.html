@@ -1,0 +1,8 @@
+<section class="an-panel" id="panel-balances" role="tabpanel" aria-labelledby="tab-balances" data-section="balances" hidden>
+  <div class="an-status" data-slot="status" role="status" aria-live="polite"></div>
+  <div class="an-body" data-slot="body" hidden>
+    <div class="grid an-tiles" data-slot="tiles"></div>
+    <p class="an-footnote muted" data-slot="notes"></p>
+    <p><a class="btn btn-outline btn-sm" href="{{ url_for('payments.outstanding') }}">View the order-level outstanding list</a></p>
+  </div>
+</section>
