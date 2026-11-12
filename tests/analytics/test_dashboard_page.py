@@ -179,8 +179,11 @@ def test_sidebar_link_for_admin_only(admin_client, staff_client):
 
 
 def test_sidebar_link_is_active_on_the_analytics_page(admin_client):
-    assert re.search(r'class="nav-link active" href="/admin/analytics/"', page(admin_client))
-
+    html = page(admin_client)
+    assert re.search(
+        r'<a\s+class="lx-nav__link is-active"\s+href="/admin/analytics/"',
+        html,
+    )
 
 def test_no_contact_numbers_in_analytics_output(admin_client, dataset):
     assert "TESTCONTACT" not in page(admin_client)

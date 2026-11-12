@@ -38,8 +38,9 @@
 {% if admin_area %}
   {% set view.groups = view.groups + [
     dict(label='Management', items=[dict(label='Customers', url=url_for('orders.customers'), icon='users', active=false),
-      dict(label='Services & Pricing', url=url_for('catalog.index'), icon='services', active=false),
-      dict(label='Staff Management', url=url_for('staff_admin.index'), icon='staff', active=false)]),
+  dict(label='Services & Pricing', url=url_for('catalog.index'), icon='services', active=false),
+  dict(label='Staff Management', url=url_for('staff_admin.index'), icon='staff', active=false),
+  dict(label='Analytics & Reports', url=url_for('analytics.index'), icon='chart', active=false)]),
     dict(label='Finance', items=[dict(label='Payment Records', url=url_for('payments.records'), icon='receipt', active=false),
       dict(label='Payment Summary', url=url_for('payments.summary'), icon='chart', active=false),
       dict(label='Payment Settings', url=url_for('payments.settings'), icon='settings', active=false)])
