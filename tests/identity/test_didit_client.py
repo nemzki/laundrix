@@ -176,6 +176,126 @@ class Construction(unittest.TestCase):
         with self.assertRaises(ValueError):
             DiditProvider(KEY, "wf", "http://verification.didit.me")
 
+    def test_untrusted_https_base_url_is_refused(self):
+        with self.assertRaises(ValueError):
+            DiditProvider(KEY, "wf", "https://evil.example")
+
+
+class StandaloneBiometrics(unittest.TestCase):
+    # Minimal valid PNG signature; Didit is mocked, so no actual image decoding is needed.
+    PNG = b"\x89PNG\r\n\x1a\n" + b"test-image-payload"
+    JPEG = b"\xff\xd8\xff" + b"test-image-payload"
+
+    def test_passive_liveness_uses_multipart_endpoint_and_keeps_report(self):
+        report = {"status": "Approved", "score": 98, "method": "PASSIVE"}
+        http = FakeHttp(FakeResponse(200, report))
+        result = provider(http).passive_liveness(
+            self.JPEG, filename="staff-selfie.jpg", vendor_data="laundrix:42"
+        )
+        method, url, kwargs = http.calls[0]
+        self.assertEqual((method, url), (
+            "POST", "https://verification.didit.me/v3/passive-liveness/"
+        ))
+        self.assertEqual(kwargs["headers"]["x-api-key"], KEY)
+        self.assertEqual(kwargs["data"], {"vendor_data": "laundrix:42"})
+        self.assertEqual(kwargs["files"]["image"], (
+            "staff-selfie.jpg", self.JPEG, "image/jpeg"
+        ))
+        self.assertNotIn("json", kwargs)
+        self.assertEqual(result, report)
+        self.assertFalse(kwargs["allow_redirects"])
+
+    def test_face_search_uses_multipart_endpoint_and_documented_fields(self):
+        report = {"status": "Approved", "total_matches": 1, "matches": []}
+        http = FakeHttp(FakeResponse(200, report))
+        result = provider(http).face_search(
+            self.PNG,
+            filename="capture.png",
+            vendor_data="laundrix:42",
+            similarity_threshold=90,
+            allow_multiple_faces=False,
+        )
+        method, url, kwargs = http.calls[0]
+        self.assertEqual((method, url), (
+            "POST", "https://verification.didit.me/v3/face-search/"
+        ))
+        self.assertEqual(kwargs["data"], {
+            "vendor_data": "laundrix:42",
+            "similarity_threshold": "90",
+            "allow_multiple_faces": "false",
+        })
+        self.assertEqual(kwargs["files"]["image"], (
+            "capture.png", self.PNG, "image/png"
+        ))
+        self.assertEqual(result, report)
+
+    def test_face_search_defaults_threshold_and_multiple_face_policy(self):
+        http = FakeHttp(FakeResponse(200, {"total_matches": 0, "matches": []}))
+        provider(http).face_search(self.JPEG)
+        self.assertEqual(http.calls[0][2]["data"], {
+            "similarity_threshold": "70",
+            "allow_multiple_faces": "false",
+        })
+
+    def test_multipart_requests_do_not_retry(self):
+        http = FakeHttp(requests.Timeout())
+        with self.assertRaises(ProviderUnavailable):
+            provider(http).passive_liveness(self.JPEG)
+        self.assertEqual(len(http.calls), 1)
+
+    def test_biometric_calls_map_auth_and_rate_limit_errors(self):
+        with self.assertRaises(ProviderAuthError):
+            provider(FakeHttp(FakeResponse(403))).face_search(self.JPEG)
+        with self.assertRaises(ProviderRateLimited):
+            provider(FakeHttp(FakeResponse(429))).passive_liveness(self.JPEG)
+        with self.assertRaises(ProviderRejectedRequest):
+            provider(FakeHttp(FakeResponse(400))).face_search(self.JPEG)
+
+    def test_rejects_empty_oversized_or_unsupported_images_before_network(self):
+        http = FakeHttp()
+        client = provider(http)
+        invalid = (
+            (b"", "capture.jpg"),
+            (self.JPEG, "capture.gif"),
+            (self.PNG, "capture.jpg"),
+            (b"\xff\xd8\xff" + b"x" * (5 * 1024 * 1024), "capture.jpg"),
+        )
+        for image, filename in invalid:
+            with self.subTest(filename=filename, size=len(image)):
+                with self.assertRaises(ValueError):
+                    client.passive_liveness(image, filename=filename)
+        self.assertEqual(http.calls, [])
+
+    def test_rejects_invalid_face_search_options_before_network(self):
+        http = FakeHttp()
+        client = provider(http)
+        for threshold in (-1, 101, 90.5, True, "90"):
+            with self.subTest(threshold=threshold):
+                with self.assertRaises(ValueError):
+                    client.face_search(self.JPEG, similarity_threshold=threshold)
+        with self.assertRaises(ValueError):
+            client.face_search(self.JPEG, allow_multiple_faces="false")
+        self.assertEqual(http.calls, [])
+
+    def test_rejects_invalid_vendor_data_before_network(self):
+        http = FakeHttp()
+        client = provider(http)
+        for vendor_data in ("", "   ", "x" * 257, 42):
+            with self.subTest(vendor_data=repr(vendor_data)):
+                with self.assertRaises(ValueError):
+                    client.face_search(self.JPEG, vendor_data=vendor_data)
+        self.assertEqual(http.calls, [])
+
+    def test_filename_path_is_reduced_to_basename(self):
+        http = FakeHttp(FakeResponse(200, {"status": "Approved"}))
+        provider(http).passive_liveness(self.JPEG, filename="../../private/capture.jpg")
+        self.assertEqual(http.calls[0][2]["files"]["image"][0], "capture.jpg")
+
+    def test_invalid_provider_response_is_unavailable(self):
+        for response in (FakeResponse(200, []), FakeResponse(200, bad_json=True)):
+            with self.subTest(response=response):
+                with self.assertRaises(ProviderUnavailable):
+                    provider(FakeHttp(response)).face_search(self.JPEG)
 
 if __name__ == "__main__":
     unittest.main()

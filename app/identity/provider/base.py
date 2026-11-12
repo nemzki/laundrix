@@ -63,3 +63,29 @@ class IdentityProvider(ABC):
 
     @abstractmethod
     def get_decision(self, session_id: str) -> Decision: ...
+
+    def passive_liveness(
+        self,
+        image_bytes: bytes,
+        *,
+        filename: str = "capture.jpg",
+        vendor_data: Optional[str] = None,
+    ) -> dict:
+        """Run standalone passive liveness on one captured face image.
+
+        Providers that do not support standalone liveness may keep this default
+        implementation; callers should treat NotImplementedError as unsupported.
+        """
+        raise NotImplementedError("Standalone passive liveness is not supported")
+
+    def face_search(
+        self,
+        image_bytes: bytes,
+        *,
+        filename: str = "capture.jpg",
+        vendor_data: Optional[str] = None,
+        similarity_threshold: int = 70,
+        allow_multiple_faces: bool = False,
+    ) -> dict:
+        """Search the provider's enrolled face population for one reference image."""
+        raise NotImplementedError("Standalone face search is not supported")
