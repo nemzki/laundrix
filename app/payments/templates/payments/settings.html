@@ -1,84 +1,104 @@
 {% extends "core/app_shell.html" %}
 {% from "core/_icons.html" import icon %}
-{% from "core/_forms.html" import text, checkbox %}
-{% block title %}Payment Settings · Laundrix{% endblock %}
-{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
-{% block page_title %}Payment Settings{% endblock %}
-{% block page_subtitle %}Manual payment recording only. No payment is verified automatically and no provider credentials are stored.{% endblock %}
-{% block page_actions %}<a class="btn btn-outline" href="{{ url_for('payments.records') }}">{{ icon('arrow-left', 16) }}<span>Payments</span></a>{% endblock %}
-{% block content %}
-<div class="grid grid-2">
-  <div>
-    <form class="card" method="post" action="{{ url_for('payments.update_settings') }}" novalidate>
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <input type="hidden" name="ui" value="1">
-      <h2>Policies and display text</h2>
-      {{ checkbox('Allow Partial Payment', 'partial_enabled', values, errors) }}
-      {{ checkbox('Allow Pay Later', 'pay_later_enabled', values, errors) }}
-      {{ text('GCash account name', 'gcash_account_name', values, errors, maxlength=120, hint='Shown to staff when GCash is selected. Leave empty if not used.') }}
-      {{ text('GCash number or public identifier', 'gcash_account_number', values, errors, maxlength=40, inputmode='tel') }}
-      <div class="field {% if errors.get('payment_instructions') %}has-error{% endif %}">
-        <label for="f-payment_instructions">Payment instructions</label>
-        <textarea class="input" id="f-payment_instructions" name="payment_instructions" maxlength="1000">{{ values.get('payment_instructions') or '' }}</textarea>
-        <p class="hint">Shown to staff in the order wizard, and on stubs that still have a balance.</p>
-        {% if errors.get('payment_instructions') %}<p class="field-error">{{ errors['payment_instructions'] }}</p>{% endif %}
-      </div>
-      {{ text('Payment notice', 'payment_notice', values, errors, maxlength=255, hint='Short policy line, e.g. balances are due on pickup.') }}
-      {{ text('Stub footer', 'stub_footer', values, errors, maxlength=255) }}
-      {{ checkbox('Print the payment QR on stubs that still have a balance', 'show_qr_on_stub', values, errors) }}
-      <button class="btn btn-primary" type="submit">Save settings</button>
-    </form>
+{% from "core/_forms.html" import text %}
+{% macro setting_switch(name, title, description) -%}
+<div class="ps-policy-row">
+  <div><label for="ps-{{ name }}">{{ title }}</label><p id="ps-{{ name }}-hint">{{ description }}</p></div>
+  <div class="form-check form-switch"><input class="form-check-input" id="ps-{{ name }}" name="{{ name }}" type="checkbox" role="switch" aria-describedby="ps-{{ name }}-hint"{% if values.get(name) %} checked{% endif %}></div>
+</div>
+{%- endmacro %}
+{% macro method_form(prefix, enhanced=false) -%}
+<form class="ps-method-form" method="post" action="{{ url_for('payments.create_method') }}"{% if enhanced %} id="ps-add-method-form" data-return-url="{{ url_for('payments.settings') }}"{% endif %}>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
+  <div class="ps-method-fields">
+    <div class="field"><label for="{{ prefix }}-method-name">Method Name <span class="req" aria-hidden="true">*</span></label>
+      <input class="input" id="{{ prefix }}-method-name" name="label" minlength="2" maxlength="60" required aria-describedby="{{ prefix }}-method-hint{% if enhanced %} ps-method-error{% endif %}">
+      <p class="hint" id="{{ prefix }}-method-hint">Use 2 to 60 characters, for example Bank Transfer.</p>
+    </div>
+    <div class="ps-method-reference form-check"><input class="form-check-input" type="checkbox" name="requires_reference" id="{{ prefix }}-method-reference"><label class="form-check-label" for="{{ prefix }}-method-reference">Require a Reference Number</label></div>
+    {% if enhanced %}<p class="ps-form-error" id="ps-method-error" role="alert" hidden></p>{% endif %}
   </div>
-
-  <div>
-    <div class="card">
-      <h2>Payment QR image</h2>
-      <div class="qr-panel">
-        <img class="qr-preview" src="{{ url_for('payments.qr') }}" alt="Current payment QR" width="160" height="160">
-        <div>
-          <p class="muted">{{ 'This image is shown to staff when GCash is selected.' if settings.qr_filename else 'No QR uploaded yet. A placeholder is shown until you upload your own.' }}</p>
-          <p class="hint">PNG, JPEG or WebP, up to 2 MB, 100 to 2000 pixels per side. The image is re-encoded for safety.</p>
+  <div class="ps-method-footer">{% if enhanced %}<button class="btn btn-outline" type="button" data-bs-dismiss="modal">Cancel</button>{% endif %}<button class="btn btn-primary" type="submit">Add Method</button></div>
+</form>
+{%- endmacro %}
+{% block title %}Payment Settings &middot; Laundrix{% endblock %}
+{% block body_class %}{{ super() }} payment-settings-page{% endblock %}
+{% block page_head %}
+  <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/modules/payment-settings.css') }}">
+{% endblock %}
+{% block page_title %}Payment Settings{% endblock %}
+{% block page_subtitle %}Configure payment policies, methods, and GCash payment information.{% endblock %}
+{% block content %}
+<div id="payment-settings" class="ps-layout">
+  <form class="ps-settings-form" id="ps-settings-form" method="post" action="{{ url_for('payments.update_settings') }}" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
+    <section class="card ps-card" aria-labelledby="ps-policies-title">
+      <header class="ps-card-heading"><span class="ps-icon">{{ icon('settings',18) }}</span><div><h2 id="ps-policies-title">Payment Policies</h2><p>Manage how payments are accepted and recorded.</p></div></header>
+      <div class="ps-policy-list">
+        {{ setting_switch('partial_enabled', 'Allow Partial Payment', 'Let customers pay part of the order total and settle the balance later.') }}
+        {{ setting_switch('pay_later_enabled', 'Allow Pay Later', 'Allow orders to be recorded without an initial payment.') }}
+        {{ setting_switch('show_qr_on_stub', 'Show Payment QR on Stubs', 'Print the payment QR on stubs that still have a balance.') }}
+      </div>
+    </section>
+    <section class="card ps-card" aria-labelledby="ps-gcash-title">
+      <header class="ps-card-heading"><span class="ps-icon">{{ icon('wallet',18) }}</span><div><h2 id="ps-gcash-title">GCash Information</h2><p>Details shown to staff when GCash is selected.</p></div></header>
+      {{ text('GCash Account Name', 'gcash_account_name', values, errors, maxlength=120, hint='Enter the account name customers should check. Leave blank if not used.') }}
+      {{ text('GCash Number or Public Identifier', 'gcash_account_number', values, errors, maxlength=40, inputmode='tel', hint='Use digits, spaces, + ( ) or - only. Leave blank if not used.') }}
+    </section>
+    <section class="card ps-card" aria-labelledby="ps-text-title">
+      <header class="ps-card-heading"><span class="ps-icon">{{ icon('receipt',18) }}</span><div><h2 id="ps-text-title">Payment Instructions &amp; Receipt Text</h2><p>Keep payment guidance and printed messages clear and concise.</p></div></header>
+      <div class="field{% if errors.get('payment_instructions') %} has-error{% endif %}">
+        <label for="f-payment_instructions">Payment Instructions</label>
+        <textarea class="input" id="f-payment_instructions" name="payment_instructions" maxlength="1000" rows="3" aria-describedby="ps-instructions-hint{% if errors.get('payment_instructions') %} e-payment_instructions{% endif %}"{% if errors.get('payment_instructions') %} aria-invalid="true"{% endif %}>{{ values.get('payment_instructions') or '' }}</textarea>
+        <p class="hint" id="ps-instructions-hint">Shown in the order wizard and on stubs with a remaining balance.</p>
+        {% if errors.get('payment_instructions') %}<p class="field-error" id="e-payment_instructions">{{ errors['payment_instructions'] }}</p>{% endif %}
+      </div>
+      {{ text('Payment Notice', 'payment_notice', values, errors, maxlength=255, hint='A short policy line, for example when balances are due.') }}
+      {{ text('Stub Footer', 'stub_footer', values, errors, maxlength=255, hint='A closing message printed on the customer stub.') }}
+    </section>
+    <footer class="ps-save-row"><p>Changes apply when you save settings.</p><button class="btn btn-primary" type="submit">{{ icon('check',16) }}<span>Save Settings</span></button></footer>
+  </form>
+  <div class="ps-secondary">
+    <section class="card ps-card" aria-labelledby="ps-qr-title">
+      <header class="ps-card-heading"><span class="ps-icon"><svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h4m-7 4v-4m7 4h-3m3-7v-1"/></svg></span><div><h2 id="ps-qr-title">Payment QR Code</h2><p>Upload the QR code displayed when customers pay through GCash.</p></div></header>
+      <div class="ps-qr-layout">
+        <div class="ps-qr-preview"><img src="{{ url_for('payments.qr') }}" alt="Current payment QR" width="144" height="144"></div>
+        <div class="ps-qr-controls">
+          <p class="ps-qr-status">{{ 'A payment QR image is uploaded.' if settings.qr_filename else 'No QR uploaded yet. A placeholder is shown until you upload an image.' }}</p>
+          <p class="hint" id="ps-qr-limits">PNG, JPEG or WebP, up to 2 MB. Each side must be 100 to 2000 pixels. Images are re-encoded by the server.</p>
+          <form method="post" action="{{ url_for('payments.upload_qr') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
+            <div class="field"><label for="qr-file">Choose Image</label><input class="input" id="qr-file" type="file" name="image" accept="image/png,image/jpeg,image/webp" required aria-describedby="ps-qr-limits"></div>
+            <button class="btn btn-primary" type="submit">{{ icon('plus',16) }}<span>{{ 'Replace QR' if settings.qr_filename else 'Upload QR' }}</span></button>
+          </form>
+          {% if settings.qr_filename %}
+          <form class="remove-qr" method="post" action="{{ url_for('payments.remove_qr') }}" data-confirm="Remove the payment QR image? A placeholder will be shown instead." data-confirm-title="Remove QR Image">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
+            <button class="btn btn-danger" type="submit">{{ icon('x',16) }}<span>Remove QR Image</span></button>
+          </form>
+          {% endif %}
         </div>
       </div>
-      <form method="post" action="{{ url_for('payments.upload_qr') }}" enctype="multipart/form-data">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="ui" value="1">
-        <div class="field"><label for="qr-file">Choose image</label>
-          <input class="input" id="qr-file" type="file" name="image" accept="image/png,image/jpeg,image/webp" required></div>
-        <button class="btn btn-primary" type="submit">{{ 'Replace QR' if settings.qr_filename else 'Upload QR' }}</button>
-      </form>
-      {% if settings.qr_filename %}
-      <form class="remove-qr" method="post" action="{{ url_for('payments.remove_qr') }}"
-            data-confirm="Remove the payment QR image? A placeholder will be shown instead." data-confirm-title="Remove QR image">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="ui" value="1">
-        <button class="btn btn-danger btn-sm" type="submit">Remove QR image</button>
-      </form>
-      {% endif %}
-    </div>
-
-    <div class="card">
-      <h2>Payment methods</h2>
-      <table class="table"><thead><tr><th>Method</th><th>Reference</th><th>Status</th><th></th></tr></thead><tbody>
-      {% for m in methods %}
-        <tr><td><strong>{{ m.label }}</strong><span class="sub mono">{{ m.code }}</span></td>
-          <td>{{ 'Required' if m.requires_reference else 'Optional' }}</td>
-          <td><span class="pill {{ 'pill-on' if m.is_active else 'pill-off' }}">{{ 'Enabled' if m.is_active else 'Disabled' }}</span></td>
-          <td class="num"><form class="inline-form" method="post" action="{{ url_for('payments.toggle_method', method_id=m.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
-            <button class="btn btn-sm {{ 'btn-danger' if m.is_active else 'btn-outline' }}" type="submit">{{ 'Disable' if m.is_active else 'Enable' }}</button></form></td></tr>
-      {% else %}
-        <tr><td colspan="4"><div class="empty"><strong>No methods</strong>Run <span class="mono">flask --app run seed-payments</span>.</div></td></tr>
-      {% endfor %}
-      </tbody></table>
-      <form method="post" action="{{ url_for('payments.create_method') }}" class="add-method">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
-        <div class="field"><label for="m-label">Add a method (e.g. Bank Transfer)</label>
-          <input class="input" id="m-label" name="label" maxlength="60" required></div>
-        <div class="field field-check"><label class="check"><input type="checkbox" name="requires_reference"><span>Require a reference number</span></label></div>
-        <button class="btn btn-outline" type="submit">Add method</button>
-      </form>
-    </div>
+    </section>
+    <section class="card ps-card ps-methods-card" aria-labelledby="ps-methods-title">
+      <header class="ps-card-heading ps-methods-heading"><span class="ps-icon">{{ icon('receipt',18) }}</span><div><h2 id="ps-methods-title">Payment Methods</h2><p>Manage the methods available when recording payments.</p></div></header>
+      <div class="ps-methods-actions"><button class="btn btn-outline" type="button" data-bs-toggle="modal" data-bs-target="#ps-add-method-modal" data-add-method-trigger hidden>{{ icon('plus',16) }}<span>Add Payment Method</span></button></div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Payment methods"><table class="table ps-methods-table">
+        <thead><tr><th scope="col">Payment Method</th><th scope="col">Reference Requirement</th><th scope="col">Status</th><th scope="col" class="num">Action</th></tr></thead>
+        <tbody>{% for m in methods %}
+          <tr data-method-code="{{ m.code }}"><td><strong>{{ m.label }}</strong><span class="sub mono">{{ m.code }}</span></td><td>{{ 'Required' if m.requires_reference else 'Optional' }}</td>
+          <td><span class="ps-status{% if m.is_active %} is-enabled{% endif %}">{{ 'Enabled' if m.is_active else 'Disabled' }}</span></td>
+          <td class="num"><form method="post" action="{{ url_for('payments.toggle_method', method_id=m.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1"><button class="btn btn-sm {{ 'btn-danger' if m.is_active else 'btn-outline' }}" type="submit" aria-label="{{ 'Disable' if m.is_active else 'Enable' }} {{ m.label }}">{{ 'Disable' if m.is_active else 'Enable' }}</button></form></td></tr>
+        {% else %}<tr><td colspan="4"><div class="ps-empty"><strong>No Payment Methods</strong><p>Add a payment method to make it available to staff.</p></div></td></tr>{% endfor %}</tbody>
+      </table></div>
+      <noscript><div class="ps-native-method"><h3>Add Payment Method</h3>{{ method_form('native') }}</div></noscript>
+    </section>
   </div>
 </div>
+<div class="modal fade ps-modal" id="ps-add-method-modal" tabindex="-1" aria-labelledby="ps-add-method-title" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
+  <header class="modal-header"><h2 class="modal-title" id="ps-add-method-title">Add Payment Method</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></header>
+  {{ method_form('modal', enhanced=true) }}
+</div></div></div>
 {% endblock %}
+{% block page_scripts %}<script src="{{ url_for('core.static', filename='js/payment-settings.js') }}" defer></script>{% endblock %}

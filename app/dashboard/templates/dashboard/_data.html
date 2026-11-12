@@ -1,0 +1,55 @@
+{# Frontend view model from existing authorized context only. No new query or business rule. #}
+{% from 'core/_nav_shared.html' import user_initials %}
+{% set role = 'admin' if admin_area else 'staff' %}
+{% set view = namespace(metrics=[], recent=[], popular=[], groups=[]) %}
+{% if admin_area %}
+  {% set view.metrics = [
+    dict(key='total_orders', label='Total Orders', value=stats.total_orders|string, group='Order Overview', icon='orders'),
+    dict(key='today', label="Today's Orders", value=stats.today|string, group='Order Overview', icon='plus'),
+    dict(key='processing', label='Processing', value=stats.processing|string, group='Operational Status', icon='processing'),
+    dict(key='ready', label='Ready for Pickup', value=stats.ready|string, group='Operational Status', icon='ready'),
+    dict(key='awaiting_receipt', label='Awaiting Receipt Confirmation', value=stats.awaiting_receipt|string, group='Operational Status', icon='alert'),
+    dict(key='owing_count', label='Orders with a Balance', value=stats.owing_count|string, group='Financial Overview', icon='receipt'),
+    dict(key='owing_total', label='Outstanding Balance', value=stats.owing_total|peso, group='Financial Overview', icon='wallet'),
+    dict(key='collected_today', label='Collected Today', value=stats.collected_today|peso, group='Financial Overview', icon='chart')
+  ] %}
+  {% for name, n in stats.popular %}{% set view.popular = view.popular + [dict(name=name, count=n)] %}{% endfor %}
+{% else %}
+  {% set view.metrics = [
+    dict(key='today', label="Today's orders", value=stats.today|string, group='Daily operations', icon='plus'),
+    dict(key='pending', label='Pending orders', value=stats.pending|string, group='Daily operations', icon='orders'),
+    dict(key='processing', label='Processing', value=stats.processing|string, group='Daily operations', icon='processing'),
+    dict(key='ready', label='Ready for pickup', value=stats.ready|string, group='Daily operations', icon='ready'),
+    dict(key='awaiting_receipt', label='Awaiting receipt confirmation', value=stats.awaiting_receipt|string, group='Daily operations', icon='alert'),
+    dict(key='owing_count', label='Orders with a balance', value=stats.owing_count|string, group='Daily operations', icon='receipt'),
+    dict(key='owing_total', label='Outstanding balance', value=stats.owing_total|peso, group='Daily operations', icon='wallet')
+  ] %}
+{% endif %}
+{% for o in stats.recent %}
+  {% set view.recent = view.recent + [dict(reference=o.reference, customer=o.customer_name, total=o.total|peso,
+    status=o.status|status_label, value=o.status, tone=o.status|status_tone, url=url_for('orders.detail', reference=o.reference))] %}
+{% endfor %}
+{% set view.groups = [
+  dict(label='Overview', items=[dict(label='Dashboard', url=url_for('dashboard.index'), icon='dashboard', active=true)]),
+  dict(label='Operations', items=[dict(label='New Order', url=url_for('orders.new_order'), icon='plus', active=false),
+    dict(label='Manage Orders', url=url_for('orders.index'), icon='orders', active=false),
+    dict(label='Outstanding Balances', url=url_for('payments.outstanding'), icon='wallet', active=false)])
+] %}
+{% if admin_area %}
+  {% set view.groups = view.groups + [
+    dict(label='Management', items=[dict(label='Customers', url=url_for('orders.customers'), icon='users', active=false),
+      dict(label='Services & Pricing', url=url_for('catalog.index'), icon='services', active=false),
+      dict(label='Staff Management', url=url_for('staff_admin.index'), icon='staff', active=false)]),
+    dict(label='Finance', items=[dict(label='Payment Records', url=url_for('payments.records'), icon='receipt', active=false),
+      dict(label='Payment Summary', url=url_for('payments.summary'), icon='chart', active=false),
+      dict(label='Payment Settings', url=url_for('payments.settings'), icon='settings', active=false)])
+  ] %}
+{% endif %}
+{% set dashboard_data = dict(role=role, title=dashboard_title, description=dashboard_description,
+  user=dict(name=current_user.full_name or current_user.email, picture=current_user.picture_url or '',
+    initials=user_initials(current_user)|trim, label='Admin' if admin_area else 'Staff'),
+  metrics=view.metrics, recent=view.recent, popular=view.popular, navigation=view.groups,
+  urls=dict(home=url_for('dashboard.index'), newOrder=url_for('orders.new_order'), orders=url_for('orders.index'),
+    customers=url_for('orders.customers') if admin_area else url_for('payments.outstanding'),
+    logout=url_for('auth.logout'), fallback=url_for(request.endpoint, ui='jinja'),
+    brand=url_for('core.static', filename='images/mascot-original.svg')), csrf=csrf_token()) %}

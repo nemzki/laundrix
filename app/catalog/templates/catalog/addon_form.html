@@ -16,7 +16,7 @@
     {% else %}
       {{ text('Code', 'code', values, errors, required=True, maxlength=40, hint='Lowercase letters, numbers, underscores.') }}
     {% endif %}
-    {{ text('Price per unit (PHP)', 'price', values, errors, required=True, inputmode='decimal', placeholder='0.00') }}
+    {{ text('Price per Unit (PHP)', 'price', values, errors, required=True, inputmode='decimal', placeholder='0.00') }}
     <div class="span-2">{{ text('Description', 'description', values, errors, maxlength=255) }}</div>
     {{ icon_fields(values, errors, icon_keys) }}
     <div class="span-2">
@@ -25,7 +25,7 @@
       {{ checkbox('Active (available to Staff)', 'is_active', values, errors) }}
     </div>
   </div>
-  <div class="btn-row"><button class="btn btn-primary" type="submit">{{ 'Save changes' if obj else 'Create extra' }}</button>
+  <div class="btn-row"><button class="btn btn-primary" type="submit">{{ 'Save Changes' if obj else 'Create extra' }}</button>
     <a class="btn btn-outline" href="{{ url_for('catalog.index', tab='addons') }}">Cancel</a></div>
 </form>
 {% endblock %}

@@ -1,0 +1,164 @@
+{% extends "core/app_shell.html" %}
+{% from "core/_icons.html" import icon %}
+{% block title %}{{ dashboard_title }} · Laundrix{% endblock %}
+{% block page_head %}
+  <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">
+  <link rel="stylesheet" href="{{ url_for('dashboard.static', filename='css/dashboard.css') }}">
+  {% if config.IDV_ENABLED %}<link rel="stylesheet" href="{{ url_for('identity.static', filename='css/identity.css') }}">{% endif %}
+{% endblock %}
+{% block page_title %}{{ dashboard_title }}{% endblock %}
+{% block page_subtitle %}{{ dashboard_description }}{% endblock %}
+{% block page_actions %}<a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus', 16) }}<span>New order</span></a>{% endblock %}
+
+{% block content %}
+{% if config.IDV_ENABLED %}{% include "identity/_status_card.html" %}{% endif %}
+
+{% if admin_area %}
+<section class="lx-dash" aria-label="Admin dashboard">
+  <div class="lx-dash__group">
+    <h2 class="lx-dash__group-title">Order Overview</h2>
+    <div class="lx-dash__kpi-grid lx-dash__kpi-grid--2">
+      <article class="lx-dash__kpi lx-dash__kpi--primary">
+        <div class="lx-dash__kpi-copy">
+          <p class="lx-dash__kpi-label">Total Orders</p>
+          <p class="lx-dash__kpi-value">{{ stats.total_orders }}</p>
+        </div>
+        <span class="lx-dash__kpi-icon" aria-hidden="true">{{ icon('orders', 18) }}</span>
+      </article>
+      <article class="lx-dash__kpi lx-dash__kpi--primary">
+        <div class="lx-dash__kpi-copy">
+          <p class="lx-dash__kpi-label">Today's Orders</p>
+          <p class="lx-dash__kpi-value">{{ stats.today }}</p>
+        </div>
+        <span class="lx-dash__kpi-icon" aria-hidden="true">{{ icon('plus', 18) }}</span>
+      </article>
+    </div>
+  </div>
+
+  <div class="lx-dash__group">
+    <h2 class="lx-dash__group-title">Operational Status</h2>
+    <div class="lx-dash__kpi-grid lx-dash__kpi-grid--3">
+      <article class="lx-dash__kpi lx-dash__kpi--progress">
+        <div class="lx-dash__kpi-copy">
+          <p class="lx-dash__kpi-label">Processing</p>
+          <p class="lx-dash__kpi-value">{{ stats.processing }}</p>
+        </div>
+        <span class="lx-dash__kpi-icon" aria-hidden="true">{{ icon('spin', 18) }}</span>
+      </article>
+      <article class="lx-dash__kpi lx-dash__kpi--ready">
+        <div class="lx-dash__kpi-copy">
+          <p class="lx-dash__kpi-label">Ready for Pickup</p>
+          <p class="lx-dash__kpi-value">{{ stats.ready }}</p>
+        </div>
+        <span class="lx-dash__kpi-icon" aria-hidden="true">{{ icon('package', 18) }}</span>
+      </article>
+      <article class="lx-dash__kpi lx-dash__kpi--warn">
+        <div class="lx-dash__kpi-copy">
+          <p class="lx-dash__kpi-label">Awaiting Receipt Confirmation</p>
+          <p class="lx-dash__kpi-value">{{ stats.awaiting_receipt }}</p>
+        </div>
+        <span class="lx-dash__kpi-icon" aria-hidden="true">{{ icon('alert', 18) }}</span>
+      </article>
+    </div>
+  </div>
+
+  <div class="lx-dash__group">
+    <h2 class="lx-dash__group-title">Financial Overview</h2>
+    <div class="lx-dash__kpi-grid lx-dash__kpi-grid--3">
+      <article class="lx-dash__kpi lx-dash__kpi--money">
+        <div class="lx-dash__kpi-copy">
+          <p class="lx-dash__kpi-label">Orders with a Balance</p>
+          <p class="lx-dash__kpi-value">{{ stats.owing_count }}</p>
+        </div>
+        <span class="lx-dash__kpi-icon" aria-hidden="true">{{ icon('receipt', 18) }}</span>
+      </article>
+      <article class="lx-dash__kpi lx-dash__kpi--money">
+        <div class="lx-dash__kpi-copy">
+          <p class="lx-dash__kpi-label">Outstanding Balance</p>
+          <p class="lx-dash__kpi-value">{{ stats.owing_total|peso }}</p>
+        </div>
+        <span class="lx-dash__kpi-icon" aria-hidden="true">{{ icon('wallet', 18) }}</span>
+      </article>
+      <article class="lx-dash__kpi lx-dash__kpi--money">
+        <div class="lx-dash__kpi-copy">
+          <p class="lx-dash__kpi-label">Collected Today</p>
+          <p class="lx-dash__kpi-value">{{ stats.collected_today|peso }}</p>
+        </div>
+        <span class="lx-dash__kpi-icon" aria-hidden="true">{{ icon('chart', 18) }}</span>
+      </article>
+    </div>
+  </div>
+
+  <div class="lx-dash__panels">
+    <section class="lx-dash__panel lx-dash__recent">
+      <div class="card-head">
+        <h2>Recent orders</h2>
+        <a href="{{ url_for('orders.index') }}">View all</a>
+      </div>
+      {% if stats.recent %}
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Reference</th><th>Customer</th><th class="num">Total</th><th>Status</th></tr></thead>
+        <tbody>{% for o in stats.recent %}
+          <tr>
+            <td class="mono"><a href="{{ url_for('orders.detail', reference=o.reference) }}">{{ o.reference }}</a></td>
+            <td>{{ o.customer_name }}</td>
+            <td class="num">{{ o.total|peso }}</td>
+            <td><span class="status status-{{ o.status|status_tone }}">{{ o.status|status_label }}</span></td>
+          </tr>
+        {% endfor %}</tbody>
+      </table></div>
+      {% else %}
+        <div class="lx-dash__empty"><strong>No orders yet</strong>Create the first order to see activity here.</div>
+      {% endif %}
+    </section>
+
+    <section class="lx-dash__panel">
+      <div class="card-head"><h2>Popular services</h2></div>
+      {% if stats.popular %}
+        <ul class="lx-dash__services">
+          {% for name, n in stats.popular %}
+            <li class="lx-dash__service">
+              <span class="lx-dash__service-name">{{ name }}</span>
+              <span class="lx-dash__service-count">{{ n }} line{{ '' if n == 1 else 's' }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="lx-dash__empty"><strong>No data yet</strong>Popular services appear once orders exist.</div>
+      {% endif %}
+    </section>
+  </div>
+</section>
+
+{% else %}
+{# Staff dashboard: preserve existing KPI set and recent-orders layout. #}
+<div class="grid grid-stats">
+  <div class="stat"><div class="stat-label">Today's orders</div><div class="stat-value">{{ stats.today }}</div></div>
+  <div class="stat"><div class="stat-label">Pending orders</div><div class="stat-value">{{ stats.pending }}</div></div>
+  <div class="stat"><div class="stat-label">Processing</div><div class="stat-value">{{ stats.processing }}</div></div>
+  <div class="stat"><div class="stat-label">Ready for pickup</div><div class="stat-value">{{ stats.ready }}</div></div>
+  <div class="stat"><div class="stat-label">Awaiting receipt confirmation</div><div class="stat-value">{{ stats.awaiting_receipt }}</div></div>
+  <div class="stat"><div class="stat-label">Orders with a balance</div><div class="stat-value">{{ stats.owing_count }}</div></div>
+  <div class="stat"><div class="stat-label">Outstanding balance</div><div class="stat-value">{{ stats.owing_total|peso }}</div></div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-head"><h2>Recent orders</h2><a href="{{ url_for('orders.index') }}">View all</a></div>
+    {% if stats.recent %}
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Reference</th><th>Customer</th><th class="num">Total</th><th>Status</th></tr></thead>
+      <tbody>{% for o in stats.recent %}
+        <tr><td class="mono"><a href="{{ url_for('orders.detail', reference=o.reference) }}">{{ o.reference }}</a></td>
+            <td>{{ o.customer_name }}</td><td class="num">{{ o.total|peso }}</td>
+            <td><span class="status status-{{ o.status|status_tone }}">{{ o.status|status_label }}</span></td></tr>
+      {% endfor %}</tbody></table></div>
+    {% else %}
+      <div class="empty"><strong>No orders yet</strong>Create the first order to see activity here.</div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block page_scripts %}{% endblock %}

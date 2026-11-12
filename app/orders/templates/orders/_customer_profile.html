@@ -1,0 +1,25 @@
+{% from 'orders/_customer_components.html' import avatar %}
+{% from 'orders/_customer_icons.html' import customer_icon %}
+{% set customer = profile.customer %}
+<div class="cm-profile" data-customer-profile="{{ customer.id }}">
+  <header class="offcanvas-header cm-profile-header">
+    {{ avatar(customer.full_name) }}<div><h2 id="customerSheetTitle">{{ customer.full_name }}</h2><p>Customer since {{ customer.created_at|localdt('%b %d, %Y') }}</p></div>
+    <button class="btn-close" type="button" data-bs-dismiss="offcanvas" aria-label="Close customer details"></button>
+  </header>
+  <div class="offcanvas-body cm-profile-body">
+    <p class="cm-profile-contact">{{ customer_icon('phone') }}<span>{{ customer.contact_number }}</span></p>
+    <dl class="cm-profile-stats">
+      <div><dt>Orders</dt><dd data-profile-orders>{{ profile.order_count }}</dd></div>
+      <div><dt>Total Paid</dt><dd data-profile-paid>{{ profile.paid|peso }}</dd></div>
+      <div><dt>Balance</dt><dd data-profile-balance{% if profile.balance > 0 %} class="cm-balance"{% endif %}>{{ profile.balance|peso }}</dd></div>
+    </dl>
+    <section class="cm-history" aria-labelledby="customerHistoryTitle">
+      <h3 id="customerHistoryTitle">Order History</h3>
+      {% if profile.orders %}<div class="cm-history-list">{% for order in profile.orders %}
+      <a class="cm-history-order" href="{{ url_for('orders.detail',reference=order.reference) }}" data-history-reference="{{ order.reference }}">
+        <span><strong>{{ order.reference }}</strong><span class="cm-history-date">{{ order.created_at|localdt('%b %d, %Y') }}</span></span>
+        <span class="cm-history-statuses"><span class="status" data-laundry-status="{{ order.status }}">{{ order.status|status_label }}</span><span class="status" data-payment-status="{{ order.payment_status }}">{{ order.payment_status|payment_status_label }}</span></span>
+      </a>{% endfor %}</div>{% else %}<p class="cm-history-empty">No orders yet for this customer.</p>{% endif %}
+    </section>
+  </div>
+</div>

@@ -1,43 +1,109 @@
 {% extends "core/app_shell.html" %}
 {% from "core/_icons.html" import icon %}
-{% from "core/_forms.html" import render_pagination %}
+{% from "orders/_customer_icons.html" import customer_icon %}
 {% set is_admin = current_user.role == 'admin' %}
-{% block title %}{{ 'Order Records' if is_admin else 'Manage Orders' }} · Laundrix{% endblock %}
-{% block page_head %}<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">{% endblock %}
-{% block page_title %}{{ 'Order Records' if is_admin else 'Manage Orders' }}{% endblock %}
-{% block page_subtitle %}Search by reference, customer name or contact number.{% endblock %}
-{% block page_actions %}<a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus', 16) }}<span>New order</span></a>{% endblock %}
-{% block content %}
-<form class="search-bar" method="get">
-  <input class="input" type="search" name="q" value="{{ term }}" placeholder="Search orders" aria-label="Search orders">
-  <select class="input" name="status" aria-label="Filter by status">
-    <option value="">All statuses</option>
-    {% for s in statuses.FLOW %}<option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s|status_label }} ({{ counts[s] }})</option>{% endfor %}
-  </select>
-  <button class="btn btn-primary" type="submit">{{ icon('search', 16) }}<span>Search</span></button>
-  {% if term or status %}<a class="btn btn-outline" href="{{ url_for('orders.index') }}">Clear</a>{% endif %}
-</form>
-<div class="card">
-  {% if orders %}
-  <div class="table-wrap"><table class="table">
-    <thead><tr><th>Reference</th><th>Customer</th><th>Created</th><th class="num">Total</th><th>Status</th><th>Payment</th><th></th></tr></thead>
-    <tbody>
-    {% for o in orders %}
-      <tr>
-        <td class="mono"><a href="{{ url_for('orders.detail', reference=o.reference) }}">{{ o.reference }}</a></td>
-        <td>{{ o.customer_name }}<span class="sub">{{ o.customer_contact }}</span></td>
-        <td>{{ o.created_at|localdt }}</td>
-        <td class="num">{{ o.total|peso }}</td>
-        <td><span class="status status-{{ o.status|status_tone }}">{{ o.status|status_label }}</span>{% if not o.received_at %}<span class="sub">Awaiting receipt</span>{% endif %}</td>
-        <td><span class="status status-{{ o.payment_status|payment_status_tone }}">{{ o.payment_status|payment_status_label }}</span>{% if o.is_payment_tracked and o.balance_due > 0 %}<span class="sub">Balance {{ o.balance_due|peso }}</span>{% endif %}</td>
-        <td class="num"><a class="btn btn-outline btn-sm" href="{{ url_for('orders.detail', reference=o.reference) }}">View</a></td>
-      </tr>
-    {% endfor %}
-    </tbody></table></div>
-  {{ render_pagination(pagination, 'orders.index', q=term, status=status) }}
-  {% else %}
-    <div class="empty"><strong>{{ 'No orders match your search' if term or status else 'No orders yet' }}</strong>
-      {% if not (term or status) %}Orders you create will appear here.{% endif %}</div>
-  {% endif %}
-</div>
+{% set total_orders = counts.values()|sum %}
+{% set has_filters = term or status or payment %}
+{% block title %}Manage Orders &middot; Laundrix{% endblock %}
+{% block body_class %}{{ super() }} manage-orders-page{% if not is_admin %} manage-orders-staff{% endif %}{% endblock %}
+{% block page_head %}
+<script src="{{ url_for('orders.static', filename='js/orders_loading.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">
+<link rel="stylesheet" href="{{ url_for('orders.static', filename='css/manage_orders.css') }}">
 {% endblock %}
+{% block page_title %}Manage Orders{% endblock %}
+{% block page_subtitle %}Track every laundry order, check its status, and open order details.{% endblock %}
+{% block page_actions %}<a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus', 16) }}<span>New Order</span></a>{% endblock %}
+{% block content %}
+<section class="mo" data-manage-orders data-state="loading" data-index-url="{{ url_for('orders.index') }}" aria-label="Manage orders">
+  <div class="card mo-panel">
+    <div class="mo-controls">
+      <nav class="mo-tabs" aria-label="Laundry status filters">
+        <a class="mo-tab{% if not status %} is-active{% endif %}" href="{{ url_for('orders.index', q=term or none, payment=payment or none) }}"{% if not status %} aria-current="page"{% endif %}>All <span>{{ total_orders }}</span></a>
+        {% for s in statuses.FLOW %}<a class="mo-tab{% if status == s %} is-active{% endif %}" data-status="{{ s }}" href="{{ url_for('orders.index', q=term or none, status=s, payment=payment or none) }}"{% if status == s %} aria-current="page"{% endif %}>{{ s|status_label }} <span>{{ counts[s] }}</span></a>{% endfor %}
+      </nav>
+      <form class="mo-filters" method="get" action="{{ url_for('orders.index') }}" role="search">
+        <label class="visually-hidden" for="orders-search">Search reference, customer, or contact</label>
+        <div class="mo-search">{{ icon('search',16) }}<input class="input" id="orders-search" type="search" name="q" value="{{ term }}" placeholder="Search reference, customer, or contact" autocomplete="off"><button type="button" data-clear-search aria-label="Clear Search"{% if not term %} hidden{% endif %}>&times;</button></div>
+        <input type="hidden" name="status" value="{{ status }}">
+        <label class="visually-hidden" for="orders-payment">Payment status filter</label>
+        <select class="input mo-payment" id="orders-payment" name="payment">
+          {% for value, label in [('', 'All Payments'), ('unpaid', 'Unpaid'), ('partial', 'Partially Paid'), ('paid', 'Paid')] %}<option value="{{ value }}"{% if payment == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-outline mo-native-search" type="submit">Search</button>
+        <a class="mo-clear" data-clear-filters href="{{ url_for('orders.index') }}"{% if not has_filters %} hidden{% endif %}>Clear Filters</a>
+      </form>
+    </div>
+    <div class="mo-results" data-orders-results data-page="{{ pagination.page }}" data-pages="{{ pagination.pages }}" data-total="{{ pagination.total }}">
+      <div class="mo-table-wrap"><table class="mo-table">
+        <caption class="visually-hidden">Laundry orders</caption>
+        <colgroup><col class="mo-ref-col"><col class="mo-customer-col"><col class="mo-contact-col"><col class="mo-date-col"><col class="mo-laundry-col"><col class="mo-payment-col"><col class="mo-action-col"></colgroup>
+        <thead><tr><th scope="col">Order Reference</th><th scope="col">Customer</th><th scope="col">Contact Number</th><th scope="col">Date Created</th><th scope="col">Laundry Status</th><th scope="col">Payment Status</th><th scope="col">Action</th></tr></thead>
+        <tbody class="mo-skeleton" aria-hidden="true">{% for row in range(10) %}<tr>{% for col in range(7) %}<td><span></span></td>{% endfor %}</tr>{% endfor %}</tbody>
+        <tbody class="mo-error"><tr><td colspan="7"><strong>Orders could not be loaded.</strong><p>Please try again.</p><button class="btn btn-outline" type="button" data-orders-retry>Retry</button></td></tr></tbody>
+        <tbody class="mo-rows">
+          {% for o in orders %}<tr data-ref="{{ o.reference }}" data-laundry="{{ o.status }}" data-payment="{{ o.payment_status }}">
+            <td><span class="mo-reference">{{ o.reference }}</span></td><td>{{ o.customer_name }}</td><td class="mo-contact">{{ o.customer_contact }}</td>
+            <td><span>{{ o.created_at|localdt('%b %d, %Y')|replace(' 0',' ') }}</span><span class="mo-time">{{ o.created_at|localdt('%I:%M %p') }}</span></td>
+            <td><span class="status status-{{ o.status|status_tone }}" data-laundry-status="{{ o.status }}">{{ o.status|status_label }}</span>{% if not o.received_at %}<span class="mo-time">Awaiting receipt</span>{% endif %}</td>
+            <td><span class="status status-{{ o.payment_status|payment_status_tone }}" data-payment-status="{{ o.payment_status }}">{{ o.payment_status|payment_status_label }}</span></td>
+            <td><a class="btn btn-outline mo-view" href="{{ url_for('orders.detail', reference=o.reference) }}" data-order-summary aria-haspopup="dialog" aria-controls="orderSummaryModal" aria-label="View order {{ o.reference }}"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>View</a></td>
+          </tr>{% else %}<tr><td colspan="7" class="mo-empty"><strong>{{ 'No orders match your filters.' if has_filters else 'No orders yet.' }}</strong><p>{{ 'Try a different search or clear your filters.' if has_filters else 'Your saved orders will appear here.' }}</p>{% if has_filters %}<a class="btn btn-outline" data-clear-filters href="{{ url_for('orders.index') }}">Clear Filters</a>{% endif %}</td></tr>{% endfor %}
+        </tbody>
+      </table></div>
+      <footer class="mo-footer"><span>Showing <strong>{{ (pagination.page-1)*pagination.per_page+1 if orders else 0 }}&ndash;{{ (pagination.page-1)*pagination.per_page+orders|length if orders else 0 }}</strong> of <strong>{{ pagination.total }}</strong> orders</span>
+        <nav class="mo-pagination" aria-label="Pagination">
+          {% if pagination.has_prev %}<a href="{{ url_for('orders.index', q=term or none, status=status or none, payment=payment or none, page=pagination.prev_num) }}">Previous</a>{% else %}<button disabled>Previous</button>{% endif %}
+          {% for number in pagination.iter_pages(left_edge=1,right_edge=1,left_current=1,right_current=2) %}{% if number %}<a href="{{ url_for('orders.index', q=term or none, status=status or none, payment=payment or none, page=number) }}"{% if number == pagination.page %} aria-current="page"{% endif %}>{{ number }}</a>{% else %}<span aria-hidden="true">&hellip;</span>{% endif %}{% endfor %}
+          {% if pagination.has_next %}<a href="{{ url_for('orders.index', q=term or none, status=status or none, payment=payment or none, page=pagination.next_num) }}">Next</a>{% else %}<button disabled>Next</button>{% endif %}
+        </nav>
+      </footer>
+    </div>
+    <p class="mo-loading-label" role="status">Loading orders...</p><p class="visually-hidden" data-orders-announcement role="status"></p>
+  </div>
+</section>
+<div class="modal fade" id="orderSummaryModal" tabindex="-1" aria-labelledby="orderSummaryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content mo-modal">
+    <div class="modal-header"><h2 class="modal-title" id="orderSummaryModalLabel">Order Summary</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-body">
+      <div data-summary-loading role="status">Loading order summary...</div>
+      <div data-summary-error role="alert" hidden><p>Order summary could not be loaded.</p><button class="btn btn-outline" type="button" data-summary-retry>Retry</button></div>
+      <div data-summary-content hidden>
+        <h3 data-field="ref"></h3><p class="mo-summary-created">Created <span data-field="created"></span></p>
+        <div class="mo-summary-statuses"><div><span>Laundry Status</span><span class="status" data-field="laundry"></span><small data-field="awaiting" hidden>Awaiting receipt</small></div><div><span>Payment Status</span><span class="status" data-field="payment"></span></div></div>
+        <section class="mo-summary-customer"><h4>Customer</h4><div class="mo-customer-row">{{ customer_icon('user-round') }}<strong data-field="customer"></strong></div><div class="mo-customer-row">{{ customer_icon('phone') }}<span data-field="contact"></span></div></section>
+        <dl class="mo-summary-money"><dt>Total Amount</dt><dd data-field="total"></dd><dt>Amount Paid</dt><dd data-field="paid"></dd><dt>Remaining Balance</dt><dd data-field="balance"></dd></dl>
+        <div data-summary-receipt hidden><p class="hint">Confirm only once the physical laundry is in the shop. This does not change payment.</p><button class="btn btn-outline" type="button" data-confirm-received>Confirm Laundry Received</button></div>
+      </div>
+    </div>
+    <div class="modal-footer" data-summary-footer hidden><a class="btn btn-outline" data-field="stub" target="_blank" rel="noopener">{{ icon('printer',16) }} Print Stub</a><a class="btn btn-primary" data-field="detail">Open Full Order {{ icon('arrow-right',14) }}</a></div>
+  </div></div>
+</div>
+{# Confirm laundry received — posts to existing Flask route #}
+<div class="modal fade" id="confirmReceivedModal" tabindex="-1" aria-labelledby="confirmReceivedModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content orders-modal">
+      <form id="confirmReceivedForm" method="post" action="#">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="modal-header">
+          <h2 class="modal-title h5" id="confirmReceivedModalLabel">Confirm Laundry Received</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Confirm that the laundry for <strong class="mono" data-confirm-ref>—</strong> has been received by the shop?</p>
+          <p class="muted">This records receipt on the order and cannot be undone from this screen.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" data-confirm-submit>
+            <span data-label>Confirm received</span>
+            <span data-busy hidden>Confirming…</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block page_scripts %}<script src="{{ url_for('orders.static', filename='js/orders_list.js') }}" defer></script>{% endblock %}

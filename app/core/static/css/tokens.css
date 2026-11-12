@@ -1,0 +1,63 @@
+/* Laundrix design tokens. Loaded before Bootstrap; --bs-* overrides come after Bootstrap in base.css. */
+:root {
+  /* Brand */
+  --lx-primary: #2563eb;
+  --lx-primary-hover: #1d4ed8;
+  --lx-navy: #173b6d;
+  --lx-navy-2: #1e4a82;
+  --lx-primary-soft: #eaf4ff;
+
+  /* Surfaces */
+  --lx-bg: #f8fafc;
+  --lx-surface: #ffffff;
+  --lx-text: #0f172a;
+  --lx-muted: #64748b;
+  --lx-border: #e2e8f0;
+
+  /* Semantic */
+  --lx-danger: #dc2626;
+  --lx-danger-soft: #fef2f2;
+  --lx-success: #16a34a;
+  --lx-success-soft: #f0fdf4;
+  --lx-warn: #b45309;
+  --lx-warn-soft: #fffbeb;
+  --lx-info: #0284c7;
+  --lx-info-soft: #e0f2fe;
+
+  /* Shape / elevation */
+  --lx-radius: 14px;
+  --lx-radius-sm: 12px;
+  --lx-radius-lg: 16px;
+  --lx-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --lx-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+
+  /* Type */
+  --lx-font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --lx-font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+  /* Layout */
+  --lx-sidebar-w: 248px;
+  --lx-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+
+  /* Legacy aliases — keep existing page CSS working */
+  --navy: var(--lx-navy);
+  --navy-2: var(--lx-navy-2);
+  --primary: var(--lx-primary);
+  --primary-dark: var(--lx-primary-hover);
+  --primary-soft: var(--lx-primary-soft);
+  --text: var(--lx-text);
+  --muted: var(--lx-muted);
+  --border: var(--lx-border);
+  --bg: var(--lx-bg);
+  --white: var(--lx-surface);
+  --danger: var(--lx-danger);
+  --danger-soft: var(--lx-danger-soft);
+  --success: var(--lx-success);
+  --success-soft: var(--lx-success-soft);
+  --warn: var(--lx-warn);
+  --warn-soft: var(--lx-warn-soft);
+  --radius: var(--lx-radius);
+  --shadow: var(--lx-shadow);
+  --font: var(--lx-font);
+  --sidebar-w: var(--lx-sidebar-w);
+}

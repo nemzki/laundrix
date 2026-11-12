@@ -10,9 +10,9 @@
   {{ icon('alert', 16) }} This link is shown <strong>only once</strong>. It is stored as a hash and cannot be displayed again.
   If it is lost, issue a replacement from the staff member's page.
 </div>
-<div class="card">
+<div class="card" data-enrollment-name="{{ staff.full_name or staff.email }}">
   <h2>Enrollment link</h2>
-  <p class="muted">Send it to {{ staff.full_name or 'the staff member' }} privately. It works once and expires {{ expires|localdt }}.</p>
+  <p class="muted">Send it to {{ staff.full_name or 'the staff member' }} privately. It works once and expires <time data-enrollment-expires datetime="{{ expires.isoformat() }}">{{ expires|localdt }}</time>.</p>
   <div class="copy-row">
     <label class="sr-only" for="enroll-url">Enrollment link</label>
     <input class="input" id="enroll-url" type="text" readonly value="{{ enroll_url }}" autocomplete="off" spellcheck="false">

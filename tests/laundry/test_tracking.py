@@ -82,6 +82,6 @@ def test_printable_stub_contains_generated_qr_code(
     html = response.get_data(as_text=True)
 
     assert response.status_code == 200
-    assert "Scan to Track Your Order" in html
+    assert "Scan this QR code to check your order status." in html
     assert "data:image/png;base64," in html
     assert order.reference in html

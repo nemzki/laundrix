@@ -1,0 +1,21 @@
+{# Shared internal Admin chrome; labels do not grant permissions. #}
+{% set pages = {
+  'dashboard.index': ('Overview', 'Admin Dashboard'),
+  'orders.new_order': ('Operations', 'New Order'),
+  'orders.index': ('Operations', 'Manage Orders'),
+  'orders.detail': ('Operations', 'Order Details'),
+  'payments.outstanding': ('Operations', 'Outstanding Balances'),
+  'orders.customers': ('Management', 'Customers'),
+  'catalog.index': ('Management', 'Services & Pricing'),
+  'staff_admin.index': ('Management', 'Staff Management'),
+  'payments.records': ('Finance', 'Payment Records'),
+  'payments.summary': ('Finance', 'Payment Summary'),
+  'payments.settings': ('Finance', 'Payment Settings')
+} %}
+{% set section = 'Finance' if bp == 'payments' else 'Management' if bp in ['catalog', 'staff_admin'] else 'Overview' if bp == 'dashboard' else 'Operations' %}
+{% set crumb = pages.get(ep, (section, topbar_title)) %}
+<header class="admin-topbar" aria-label="Admin page header">
+  <button class="admin-topbar__toggle" type="button" data-admin-sidebar-toggle aria-label="Toggle sidebar" aria-controls="app-sidebar" aria-expanded="true"><svg class="icon" data-icon="panel-left" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg></button>
+  <span class="admin-topbar__separator" aria-hidden="true"></span>
+  <nav aria-label="Breadcrumb"><ol><li>{{ crumb[0] }}</li><li aria-hidden="true">/</li><li aria-current="page">{{ crumb[1] }}</li></ol></nav>
+</header>

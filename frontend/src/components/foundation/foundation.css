@@ -1,0 +1,62 @@
+/* Opt-in reference theme. No root/body rules and no shared Flask token changes. */
+.lx-react.lx-foundation.fx-preview-host { margin: 0; }
+@font-face { font-family: 'Laundrix Foundation Geist'; src: url('../../../../app/core/static/fonts/geist/GeistSans-Variable.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-display: swap; }
+.lx-foundation {
+ --lx-font: 'Laundrix Foundation Geist', system-ui, sans-serif;
+ --lx-font-mono: ui-monospace, monospace;
+ --lx-text-xs: .75rem; --lx-text-sm: .875rem; --lx-text-base: .875rem;
+ --lx-text-lg: 1.125rem; --lx-text-xl: 1.25rem; --lx-text-2xl: 1.5rem;
+ --lx-surface: var(--lx-paint-surface, #fff); --lx-bg: var(--lx-paint-subtle, #f7f9fc); --lx-text: var(--lx-paint-text, #162644); --lx-muted: var(--lx-paint-muted-text, #64748b);
+ --lx-primary: var(--lx-paint-blue, #1c69e3); --lx-primary-hover: var(--lx-paint-blue-ink, #185ac4); --lx-primary-soft: var(--lx-paint-blue-bg, #e5efff);
+ --lx-border: var(--lx-paint-border, #dfe3ea); --lx-navy: var(--lx-paint-text, #162644); --lx-danger: var(--lx-paint-red-ink, #b91c1c);
+ --lx-success: #15803d; --lx-warn: var(--lx-paint-amber-ink, #92400e); --lx-warn-soft: var(--lx-paint-amber-bg, #fffbeb);
+ --lx-radius-sm: .375rem; --lx-radius: .625rem; --lx-radius-lg: .75rem;
+ --background: var(--lx-paint-subtle, #f7f9fc); --card: var(--lx-paint-surface, #fff); --popover: var(--lx-paint-surface, #fff); --muted: var(--lx-paint-muted, #eef2f7);
+ --foreground: var(--lx-paint-text, #162644); --primary: var(--lx-paint-blue, #1c69e3); --primary-foreground: #fff;
+ --secondary: var(--lx-paint-muted, #eef2f7); --muted-foreground: var(--lx-paint-muted-text, #64748b); --accent: var(--lx-paint-blue-bg, #e5efff); --border: var(--lx-paint-border, #dfe3ea);
+ --popover-foreground: var(--lx-paint-text, #162644);
+ font-family: var(--lx-font); font-size: .875rem; color: var(--foreground);
+}
+.lx-foundation :focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.lx-foundation.fx-shell { min-height: 100svh; background: var(--background); display: grid; grid-template-columns: 16rem minmax(0,1fr); }
+.lx-foundation .fx-sidebar { position: sticky; top: 0; height: 100svh; overflow-y: auto; display: flex; flex-direction: column; border-right: 1px solid var(--border); background: var(--lx-paint-surface, white); }
+.lx-foundation .fx-brand { padding: 1.5rem 1.25rem; font-size: 1.125rem; font-weight: 700; }
+.lx-foundation .fx-nav { padding: 0 .75rem 1rem; }
+.lx-foundation .fx-nav section + section { margin-top: 1.5rem; }
+.lx-foundation .fx-nav-label { padding: .5rem .75rem; font-size: .6875rem; font-weight: 600; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: .08em; }
+.lx-foundation .fx-nav-link { display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; min-height: 44px; border-radius: .5rem; text-decoration: none; color: inherit; overflow-wrap: anywhere; }
+.lx-foundation .fx-nav-link:hover { background: var(--muted); }
+.lx-foundation .fx-nav-link[aria-current=page] { background: var(--accent); color: var(--primary); font-weight: 600; }
+.lx-foundation .fx-nav-link svg { flex-shrink: 0; }
+.lx-foundation .fx-account { margin-top: auto; padding: 1rem; border-top: 1px solid var(--border); overflow-wrap: anywhere; }
+.lx-foundation .fx-main { min-width: 0; }
+.lx-foundation .fx-header { display: flex; align-items: center; gap: .75rem; min-height: 4rem; padding: .75rem 2rem; border-bottom: 1px solid var(--border); background: var(--lx-paint-surface, white); overflow-wrap: anywhere; }
+.lx-foundation .fx-content { padding: 2rem; min-width: 0; }
+.lx-foundation .fx-page { display: grid; gap: 1.5rem; min-width: 0; width: 100%; }
+.lx-foundation .fx-page-heading { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.lx-foundation .fx-page-heading h1 { font-size: 1.5rem; font-weight: 650; letter-spacing: -.025em; overflow-wrap: anywhere; }
+.lx-foundation .fx-actions, .lx-foundation .fx-filters { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; min-width: 0; }
+.lx-foundation .fx-search { display: grid; gap: .5rem; flex: 1 1 16rem; min-width: 0; }
+.lx-foundation .fx-field { display: grid; gap: .5rem; min-width: 0; }
+.lx-foundation .fx-table-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--lx-paint-surface, white); min-width: 0; overflow: hidden; }
+.lx-foundation .fx-table { table-layout: fixed; }
+.lx-foundation .fx-table th { background: var(--muted); }
+.lx-foundation .fx-table td, .lx-foundation .fx-table th { padding: .875rem 1rem; white-space: normal; overflow-wrap: anywhere; }
+.lx-foundation .fx-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; }
+.lx-foundation .fx-state { padding: 2rem 1rem; display: grid; justify-items: center; gap: .75rem; text-align: center; overflow-wrap: anywhere; }
+.lx-foundation .lx-status[data-tone=danger] { background: var(--lx-paint-red-bg, #fef2f2); color: var(--lx-paint-red-ink, #b91c1c); }
+.lx-foundation .fx-dialog { width: calc(100% - 2rem); max-height: calc(100dvh - 2rem); overflow-y: auto; }
+.lx-foundation .fx-drawer { width: min(20rem, calc(100% - 2rem)); overflow-y: auto; }
+.lx-foundation .fx-toasts { position: fixed; bottom: 1rem; right: 1rem; width: min(24rem, calc(100% - 2rem)); z-index: 1080; display: grid; gap: .5rem; }
+.lx-foundation .fx-toast { display: flex; align-items: center; gap: .75rem; border: 1px solid var(--border); border-radius: var(--radius); padding: .75rem; background: var(--lx-paint-surface, white); box-shadow: 0 4px 16px #16264415; }
+.lx-foundation .fx-toast p { flex: 1; overflow-wrap: anywhere; min-width: 0; }
+.lx-foundation .fx-mobile-menu { display: none; }
+.lx-foundation .fx-skip { position: fixed; top: .5rem; left: .5rem; padding: .75rem; z-index: 1100; background: var(--lx-paint-surface, white); transform: translateY(-200%); }
+.lx-foundation .fx-skip:focus { transform: none; }
+@media (max-width: 767px) {
+ .lx-foundation.fx-shell { grid-template-columns: minmax(0,1fr); }
+ .lx-foundation .fx-sidebar { display: none; }
+ .lx-foundation .fx-mobile-menu { display: block; }
+ .lx-foundation .fx-content, .lx-foundation .fx-header { padding: 1rem; }
+ .lx-foundation .fx-table td, .lx-foundation .fx-table th { padding: .75rem .5rem; }
+}

@@ -1,0 +1,11 @@
+{% from 'core/_icons.html' import icon %}
+{% macro theme_selector() -%}
+<div class="lx-theme-picker" data-theme-picker>
+  <button type="button" class="lx-theme-trigger" data-theme-trigger title="Change Theme" aria-label="Change Theme" aria-haspopup="menu" aria-expanded="false">{{ icon('palette', 18) }}</button>
+  <div class="lx-theme-menu" data-theme-menu role="menu" aria-label="Theme" hidden>
+    {% for value, label, symbol in [('light','Light','sun'),('dark','Dark','moon'),('system','System','monitor')] %}
+    <button type="button" role="menuitemradio" aria-checked="{{ 'true' if value == 'system' else 'false' }}" tabindex="-1" data-theme-option="{{ value }}">{{ icon(symbol, 16) }}<span>{{ label }}</span><span class="lx-theme-check">{{ icon('check', 16) }}</span></button>
+    {% endfor %}
+  </div>
+</div>
+{%- endmacro %}

@@ -1,0 +1,67 @@
+{% from "core/_icons.html" import icon %}
+{% from "core/_nav_shared.html" import nav_groups, logout_button, user_initials, nav_link %}
+{% from "core/_theme_selector.html" import theme_selector %}
+
+<nav class="lx-bottom-nav" aria-label="Primary mobile navigation">
+  {{ nav_link(url_for('dashboard.index'), 'Dashboard', 'dashboard', bp == 'dashboard', 'lx-bottom-nav__item') }}
+  {{ nav_link(url_for('orders.index'), 'Orders', 'orders', bp == 'orders' and ep not in ('orders.new_order', 'orders.customers'), 'lx-bottom-nav__item') }}
+  <a
+    class="lx-bottom-nav__item lx-bottom-nav__item--primary{% if ep == 'orders.new_order' %} is-active{% endif %}"
+    href="{{ url_for('orders.new_order') }}"
+    {% if ep == 'orders.new_order' %}aria-current="page"{% endif %}
+  >
+    <span class="lx-bottom-nav__fab" aria-hidden="true">{{ icon('plus', 22) }}</span>
+    <span>New Order</span>
+  </a>
+  {% if is_admin %}
+    {{ nav_link(url_for('orders.customers'), 'Customers', 'users', ep == 'orders.customers', 'lx-bottom-nav__item') }}
+  {% else %}
+    {{ nav_link(url_for('payments.outstanding'), 'Balances', 'wallet', ep == 'payments.outstanding', 'lx-bottom-nav__item') }}
+  {% endif %}
+  <button
+    class="lx-bottom-nav__item"
+    type="button"
+    data-bs-toggle="offcanvas"
+    data-bs-target="#appNavDrawer"
+    aria-controls="appNavDrawer"
+  >
+    {{ icon('more') }}
+    <span>More</span>
+  </button>
+</nav>
+
+<div
+  class="offcanvas offcanvas-end lx-nav-drawer"
+  tabindex="-1"
+  id="appNavDrawer"
+  aria-labelledby="appNavDrawerLabel"
+>
+  <div class="offcanvas-header">
+    <div>
+      <h2 class="offcanvas-title" id="appNavDrawerLabel">Menu</h2>
+      <p class="lx-nav-drawer__user muted mb-0">
+        {{ current_user.full_name or current_user.email }}
+        · {{ 'Admin' if is_admin else 'Staff' }}
+      </p>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close menu"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="lx-nav-drawer__profile">
+      {% if current_user.picture_url %}
+        <img class="lx-sidebar__avatar" src="{{ current_user.picture_url }}" alt="" referrerpolicy="no-referrer" width="40" height="40">
+      {% else %}
+        <span class="lx-sidebar__avatar lx-sidebar__avatar--initials" aria-hidden="true">{{ user_initials(current_user) }}</span>
+      {% endif %}
+      <div>
+        <strong>{{ current_user.full_name or current_user.email }}</strong>
+        <span class="lx-sidebar__role">{{ 'Admin' if is_admin else 'Staff' }}</span>
+      </div>
+      {% if theme_enabled %}{{ theme_selector() }}{% endif %}
+    </div>
+    <nav class="lx-nav-drawer__nav" aria-label="All destinations">
+      {{ nav_groups(is_admin, ep, bp, 'lx-nav__link', true) }}
+    </nav>
+    {{ logout_button('lx-nav-drawer__logout') }}
+  </div>
+</div>

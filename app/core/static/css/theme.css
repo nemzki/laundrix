@@ -1,0 +1,107 @@
+/* Internal shells only load this file. Light colors and all layout geometry remain module-owned. */
+.lx-theme-picker { position: relative; flex: 0 0 auto; margin-left: auto; }
+.lx-theme-trigger { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 6px; border: 1px solid var(--lx-border); border-radius: 8px; background: transparent; color: var(--lx-muted); }
+.lx-theme-trigger:hover { background: var(--lx-primary-soft); color: var(--lx-primary); }
+.lx-theme-trigger:focus-visible, .lx-theme-menu button:focus-visible { outline: 2px solid var(--lx-primary); outline-offset: 2px; }
+.lx-theme-menu { position: absolute; bottom: calc(100% + 8px); right: 0; width: 156px; padding: 4px; border: 1px solid var(--lx-border); border-radius: 10px; background: var(--lx-surface); color: var(--lx-text); box-shadow: var(--lx-shadow); z-index: 1100; }
+.lx-theme-menu[hidden] { display: none !important; }
+.lx-theme-menu button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px; border: 0; border-radius: 6px; background: transparent; color: inherit; font: inherit; font-size: 13px; text-align: left; }
+.lx-theme-menu button:is(:hover, :focus-visible, [aria-checked=true]) { background: var(--lx-primary-soft); color: var(--lx-text); }
+.lx-theme-menu .lx-theme-check { margin-left: auto; color: inherit; visibility: hidden; }
+.lx-theme-menu [aria-checked=true] .lx-theme-check { visibility: visible; }
+.lx-theme-menu svg { flex-shrink: 0; }
+.lx-sidebar__user-meta { min-width: 0; }
+.lx-nav-drawer__profile > div:not(.lx-theme-picker) { min-width: 0; overflow-wrap: anywhere; }
+.lx-react.lx-dashboard .dashboard-user > .lx-theme-picker { display: block; min-width: 32px; }
+.lx-react.lx-dashboard .dashboard-user > div:not(.lx-theme-picker) { flex: 1; }
+.lx-react.lx-dashboard .lx-theme-menu span { color: inherit; font-size: inherit; }
+
+@media screen {
+  html[data-lx-theme=dark], html[data-lx-theme=dark] body, html[data-lx-theme=dark] .lx-react {
+    color-scheme: dark;
+    --lx-bg: #0f172a; --lx-surface: #1e293b; --lx-text: #f1f5f9; --lx-muted: #94a3b8; --lx-border: #334155;
+    --lx-navy: #f1f5f9; --lx-navy-2: #cbd5e1;
+    --lx-primary: #3478f6; --lx-primary-hover: #2864d6; --lx-primary-soft: #172e50;
+    --lx-danger: #fca5a5; --lx-danger-soft: #3b202c;
+    --lx-success: #86efac; --lx-success-soft: #14332e;
+    --lx-warn: #fcd34d; --lx-warn-soft: #382e1b;
+    --lx-info: #7dd3fc; --lx-info-soft: #153346;
+    --lx-shadow: 0 4px 18px #0004;
+    /* Neutral and semantic aliases used by the original module colors below. */
+    --lx-paint-surface: #1e293b; --lx-paint-subtle: #182235; --lx-paint-muted: #253248;
+    --lx-paint-border: #334155; --lx-paint-text: #f1f5f9; --lx-paint-secondary: #cbd5e1; --lx-paint-muted-text: #94a3b8;
+    --lx-paint-blue-bg: #172e50; --lx-paint-blue-ink: #93c5fd; --lx-paint-blue-border: #315687; --lx-paint-blue: #3478f6;
+    --lx-paint-red-bg: #3b202c; --lx-paint-red-ink: #fca5a5; --lx-paint-red-border: #75404b;
+    --lx-paint-red-solid: #dc2626; --lx-paint-blue-solid: #2563eb;
+    --lx-paint-rose-bg: #3c2038; --lx-paint-rose-ink: #fda4af; --lx-paint-rose-border: #79445f;
+    --lx-paint-orange-bg: #3b291c; --lx-paint-orange-ink: #fdba74; --lx-paint-orange-border: #75482b;
+    --lx-paint-green-bg: #14332e; --lx-paint-green-ink: #86efac; --lx-paint-green-border: #2e6450;
+    --lx-paint-amber-bg: #382e1b; --lx-paint-amber-ink: #fcd34d; --lx-paint-amber-border: #76602a;
+    --lx-paint-purple-bg: #30264b; --lx-paint-purple-ink: #c4b5fd; --lx-paint-purple-border: #5a4785;
+    --lx-paint-cyan-bg: #153346; --lx-paint-cyan-ink: #7dd3fc; --lx-paint-cyan-border: #2f657d;
+    --lx-paint-teal-bg: #163835; --lx-paint-teal-ink: #99f6e4; --lx-paint-teal-border: #306f66;
+    --lx-paint-indigo-bg: #282d50; --lx-paint-indigo-ink: #c7d2fe; --lx-paint-indigo-border: #4b568c;
+    /* One palette for Tailwind, Foundation, dashboard and body-mounted portals. */
+    --background: var(--lx-bg); --foreground: var(--lx-text); --card: var(--lx-surface); --card-foreground: var(--lx-text);
+    --popover: var(--lx-surface); --popover-foreground: var(--lx-text);
+    --primary: var(--lx-primary); --primary-foreground: #fff;
+    --secondary: #253248; --secondary-foreground: var(--lx-text);
+    --muted: var(--lx-muted); --muted-foreground: var(--lx-muted);
+    --accent: var(--lx-primary-soft); --accent-foreground: var(--lx-text);
+    --border: var(--lx-border); --input: var(--lx-border); --ring: var(--lx-primary);
+    --destructive: var(--lx-danger); --success: var(--lx-success); --warning: var(--lx-warn); --info: var(--lx-info);
+    --sidebar: #111827; --sidebar-foreground: var(--lx-text); --sidebar-border: var(--lx-border);
+    --sidebar-primary: var(--lx-primary); --sidebar-primary-foreground: #fff;
+    --sidebar-accent: var(--lx-primary-soft); --sidebar-accent-foreground: #93c5fd; --sidebar-ring: var(--lx-primary);
+    --bs-body-bg: var(--lx-bg); --bs-body-bg-rgb: 15,23,42;
+    --bs-body-color: var(--lx-text); --bs-body-color-rgb: 241,245,249;
+    --bs-border-color: var(--lx-border); --bs-secondary-color: var(--lx-muted);
+    --bs-secondary-bg: #253248; --bs-tertiary-bg: #182235;
+    --bs-link-color: #93c5fd; --bs-link-hover-color: #bfdbfe;
+  }
+  html[data-lx-theme=dark] .lx-react { --muted: #253248; }
+  html[data-lx-theme=dark] body { background: var(--lx-bg); color: var(--lx-text); }
+  html[data-lx-theme=dark] body.app :is(.lx-sidebar, .lx-nav-drawer, .lx-bottom-nav) { background: #111827; color: var(--lx-text); border-color: var(--lx-border); }
+  html[data-lx-theme=dark] body.app :is(.admin-topbar, .app-topbar) { background: var(--lx-surface); color: var(--lx-text); }
+  html[data-lx-theme=dark] body.app .lx-sidebar :is(.lx-nav__group-label, .lx-sidebar__role) { color: var(--lx-muted); }
+  html[data-lx-theme=dark] body.app .lx-sidebar .lx-nav__link:is(:hover, .is-active) { background: var(--lx-primary-soft); color: #93c5fd; }
+  html[data-lx-theme=dark] :is(.input, .form-control, .form-select, input, select, textarea) { color: var(--lx-text); }
+  html[data-lx-theme=dark] :is(.input, .form-control, .form-select, textarea)::placeholder { color: var(--lx-muted); }
+  html[data-lx-theme=dark] .lx-react :is(.bg-white, .bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100) { background-color: var(--lx-surface); }
+  html[data-lx-theme=dark] .lx-react :is(.text-slate-500, .text-slate-600, .text-gray-500) { color: var(--lx-muted); }
+  html[data-lx-theme=dark] .lx-react :is(.text-slate-700, .text-slate-800, .text-slate-900) { color: var(--lx-text); }
+  html[data-lx-theme=dark] .lx-react [data-slot=badge][data-variant=services] { background: var(--lx-paint-blue-bg); color: var(--lx-paint-blue-ink); border-color: var(--lx-paint-blue-border) !important; }
+  html[data-lx-theme=dark] .lx-react [data-slot=badge][data-variant=packages] { background: var(--lx-paint-purple-bg); color: var(--lx-paint-purple-ink); border-color: var(--lx-paint-purple-border) !important; }
+  html[data-lx-theme=dark] .lx-react [data-slot=badge][data-variant=addons] { background: var(--lx-paint-teal-bg); color: var(--lx-paint-teal-ink); border-color: var(--lx-paint-teal-border) !important; }
+  html[data-lx-theme=dark] .lx-react [data-slot=switch] > span { background: #fff; }
+  /* A slightly deeper fill keeps small white button labels above 4.5:1 contrast. */
+  html[data-lx-theme=dark] :is(.btn-primary, .mo-server-primary, .dashboard-primary, [data-slot=button][data-variant=default]) { --primary: #2c6ce2; --lx-primary: #2c6ce2; }
+  html[data-lx-theme=dark] .lx-react [data-slot=button][data-variant=default],
+  html[data-lx-theme=dark] :is(.btn-primary, .mo-server-primary) { color: #fff; }
+  html[data-lx-theme=dark] .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+  html[data-lx-theme=dark] .status-success { background: var(--lx-success-soft); color: var(--lx-success); }
+  /* QR assets keep their white quiet zone; raster images are never recolored. */
+  html[data-lx-theme=dark] :is(.qr-preview, [data-tracking-image]) { background: #fff; }
+  /* Existing identity cards are protected islands inside the dashboard. */
+  html[data-lx-theme=dark] :is(#dashboard-preserved-identity, .idv-card) {
+    color-scheme: light;
+    --lx-bg: #f8fafc; --lx-surface: #fff; --lx-text: #0f172a; --lx-muted: #64748b; --lx-border: #e2e8f0;
+    --lx-navy: #173b6d; --lx-navy-2: #1e4a82; --lx-primary: #2563eb; --lx-primary-hover: #1d4ed8; --lx-primary-soft: #eaf4ff;
+    --lx-danger: #dc2626; --lx-danger-soft: #fef2f2; --lx-success: #16a34a; --lx-success-soft: #f0fdf4;
+    --lx-warn: #b45309; --lx-warn-soft: #fffbeb; --lx-info: #0284c7; --lx-info-soft: #e0f2fe;
+    --navy: var(--lx-navy); --primary: var(--lx-primary); --muted: var(--lx-muted); --border: var(--lx-border);
+    --text: var(--lx-text); --white: var(--lx-surface); --foreground: #0f172a;
+    --lx-paint-surface: initial; --lx-paint-subtle: initial; --lx-paint-muted: initial; --lx-paint-border: initial;
+    --lx-paint-text: initial; --lx-paint-secondary: initial; --lx-paint-muted-text: initial;
+    --lx-paint-blue-bg: initial; --lx-paint-blue-ink: initial; --lx-paint-blue-border: initial;
+    --lx-paint-red-bg: initial; --lx-paint-red-ink: initial; --lx-paint-red-border: initial;
+    --lx-paint-green-bg: initial; --lx-paint-green-ink: initial; --lx-paint-green-border: initial;
+    --lx-paint-amber-bg: initial; --lx-paint-amber-ink: initial; --lx-paint-amber-border: initial;
+  }
+}
+
+@media print {
+  .lx-theme-picker { display: none !important; }
+  html[data-lx-theme] { color-scheme: light; --bs-body-bg: #fff; --bs-body-color: #000; --bs-border-color: #ddd; }
+  html[data-lx-theme] body { background: #fff !important; color: #000 !important; }
+}

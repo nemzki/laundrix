@@ -1,0 +1,89 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@custom-variant dark (&:where([data-lx-theme="dark"], [data-lx-theme="dark"] *));
+
+@theme inline {
+ --font-sans: var(--lx-font);
+ --font-heading: var(--lx-font);
+ --font-mono: var(--lx-font-mono);
+ --text-xs: var(--lx-text-xs);
+ --text-sm: var(--lx-text-sm);
+ --text-base: var(--lx-text-base);
+ --text-lg: var(--lx-text-lg);
+ --text-xl: var(--lx-text-xl);
+ --text-2xl: var(--lx-text-2xl);
+ --color-background: var(--background);
+ --color-foreground: var(--foreground);
+ --color-card: var(--card);
+ --color-card-foreground: var(--foreground);
+ --color-popover: var(--popover);
+ --color-popover-foreground: var(--foreground);
+ --color-primary: var(--primary);
+ --color-primary-foreground: var(--primary-foreground);
+ --color-secondary: var(--secondary);
+ --color-secondary-foreground: var(--foreground);
+ --color-muted: var(--muted);
+ --color-muted-foreground: var(--muted-foreground);
+ --color-accent: var(--accent);
+ --color-accent-foreground: var(--lx-navy);
+ --color-destructive: var(--lx-danger);
+ --color-border: var(--border);
+ --color-input: var(--border);
+ --color-ring: var(--lx-primary);
+ --radius-sm: var(--lx-radius-sm);
+ --radius-md: var(--lx-radius-sm);
+ --radius-lg: var(--lx-radius);
+ --radius-xl: var(--lx-radius-lg);
+}
+
+/* These are aliases, not a second design palette. */
+.lx-react {
+ --lx-react-css-ready: 1;
+ --background: var(--lx-surface);
+ --foreground: var(--lx-text);
+ --card: var(--lx-surface);
+ --popover: var(--lx-surface);
+ --primary: var(--lx-primary);
+ --primary-foreground: var(--lx-surface);
+ --secondary: var(--lx-primary-soft);
+ --muted: var(--lx-bg);
+ --muted-foreground: var(--lx-muted);
+ --accent: var(--lx-primary-soft);
+ --border: var(--lx-border);
+ --radius: var(--lx-radius);
+ font-family: var(--lx-font);
+ color: var(--lx-text);
+ font-size: var(--lx-text-base);
+ line-height: 1.5;
+ min-width: 0;
+}
+.lx-react *, .lx-react ::before, .lx-react ::after { border-color: var(--lx-border); }
+.lx-react [data-slot="button"], .lx-react [data-slot="input"], .lx-react [data-slot="select-trigger"] { min-height: 36px; }
+.lx-react [data-slot="button"][data-variant="default"]:hover { background: var(--lx-primary-hover); }
+.lx-react [data-slot="dialog-content"] { z-index: 1060; }
+.lx-react [data-slot="dialog-overlay"] { z-index: 1055; }
+/* Shared portal hierarchy: menus remain above dialogs; protected pages do not load this CSS. */
+.lx-react [data-slot="select-content"] { z-index: 1080; }
+.lx-react [data-slot="dropdown-menu-content"] { z-index: 1080; }
+.lx-react [data-slot="sheet-overlay"] { z-index: 1055; }
+.lx-react [data-slot="sheet-content"] { z-index: 1060; }
+.lx-react [data-slot="button"][data-size^="icon"] { min-height:32px; min-width:32px; }
+.lx-react :is([data-slot="input"],[data-slot="select-trigger"]):not([aria-invalid="true"]):focus-visible {
+ outline:none; border-color:var(--lx-primary); box-shadow:0 0 0 2px color-mix(in srgb,var(--lx-primary) 18%,transparent);
+}
+.lx-react [data-radix-select-viewport] { scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; }
+.lx-react [data-radix-select-viewport]::-webkit-scrollbar { display: none; }
+.lx-react [data-slot="dialog-header"] { padding-right: 2rem; }
+.lx-react [data-slot="tabs-list"] { height: auto; min-height: 36px; }
+.lx-react [data-slot="table-cell"], .lx-react [data-slot="table-head"] { overflow-wrap: anywhere; }
+/* Exact existing status treatments from components.css, including legacy tones. */
+.lx-react .lx-status[data-tone="info"] { background: var(--lx-paint-cyan-bg, #e0f2fe); color: var(--lx-paint-cyan-ink, #075985); }
+.lx-react .lx-status[data-tone="warn"] { background: var(--lx-warn-soft); color: var(--lx-warn); }
+.lx-react .lx-status[data-tone="progress"] { background: var(--lx-paint-purple-bg, #ede9fe); color: var(--lx-paint-purple-ink, #5b21b6); }
+.lx-react .lx-status[data-tone="ready"] { background: var(--lx-paint-green-bg, #dcfce7); color: var(--lx-paint-green-ink, #166534); }
+.lx-react .lx-status[data-tone="neutral"] { background: var(--lx-paint-border, #e2e8f0); color: var(--lx-paint-secondary, #334155); }
+.lx-react .lx-status[data-tone="success"] { background: var(--lx-paint-green-bg, #d1fae5); color: var(--lx-paint-green-ink, #065f46); }
+@media (prefers-reduced-motion: reduce) {
+ .lx-react *, .lx-react ::before, .lx-react ::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

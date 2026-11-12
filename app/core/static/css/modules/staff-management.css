@@ -1,0 +1,65 @@
+/* Admin Staff Management page chrome; intentionally excluded from protected sign-in pages. */
+body.app.staff-management-page:not(.admin-workspace) .content {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding: 28px 24px;
+}
+
+body.app.staff-management-page .page-header {
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+body.app.staff-management-page .page-header h1 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -.025em;
+}
+
+body.app.staff-management-page .page-header p {
+  font-size: 13px;
+  line-height: 20px;
+}
+
+body.app.staff-management-page .page-actions {
+  display: flex;
+  min-width: 122px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+body.app.staff-management-page .page-actions #staff-action-react {
+  display: flex;
+  justify-content: flex-end;
+}
+
+body.app.staff-management-page .page-actions #staff-action-react [data-slot=button] {
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+@media (max-width: 767px) {
+  body.app.staff-management-page:not(.admin-workspace) .content {
+    padding: 20px 16px calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.app.staff-management-page .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  body.app.staff-management-page .page-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  body.app.staff-management-page .page-actions #staff-action-react {
+    justify-content: flex-start;
+  }
+}

@@ -1,105 +1,31 @@
-{% extends "core/base.html" %}
-{% block title %}Laundrix · Laundry business management{% endblock %}
-{% block head %}
+{% from "core/_brand.html" import brand_logo %}
+<!DOCTYPE html>
+<html lang="en" class="_0bjUvq_variable" data-scroll-behavior="smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Laundrix brings customer records, laundry orders, services, and payments together for Wash Up! Laundry Shop.">
+  <title>Laundrix — Laundry Management, Made Simple</title>
+  <link rel="icon" href="{{ url_for('core.static', filename='images/mascot-original.svg') }}" type="image/svg+xml">
+  <link rel="preload" href="{{ url_for('landing.static', filename='fonts/07c7676b89ed2778-s.p.45535valc9rzk.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('landing.static', filename='css/v0-landing.css') }}">
   <link rel="stylesheet" href="{{ url_for('landing.static', filename='css/landing.css') }}">
-{% endblock %}
-
-{% block body %}
-<header class="nav">
-  <div class="container nav-inner">
-    <a class="brand" href="#top"><span class="brand-mark">L</span>Laundrix</a>
-    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
-    <nav class="nav-links" id="navLinks">
-      <a href="#features">Features</a>
-      <a href="#how">How it works</a>
-      <a href="#roles">Roles</a>
-      <a class="btn btn-primary btn-sm" href="{{ url_for('auth.login') }}">Sign in</a>
-    </nav>
-  </div>
-</header>
-
-<main id="top">
-  <section class="hero">
-    <div class="container hero-grid">
-      <div>
-        <span class="pill">Laundry business management</span>
-        <h1>Run your laundry business with clarity.</h1>
-        <p class="lead">Track every order from drop-off to pickup, keep customer records organized,
-          and give your team the right access — all in one secure place.</p>
-        <div class="hero-cta">
-          <a class="btn btn-primary" href="{{ url_for('auth.login') }}">Get started</a>
-          <a class="btn btn-outline" href="#features">See features</a>
-        </div>
-      </div>
-
-      <div class="preview" aria-hidden="true">
-        <div class="preview-head"><span></span><span></span><span></span></div>
-        <div class="preview-row"><b>Order #1042</b><span class="tag tag-blue">Received</span></div>
-        <div class="preview-row"><b>Order #1041</b><span class="tag tag-amber">Washing</span></div>
-        <div class="preview-row"><b>Order #1040</b><span class="tag tag-green">Ready for pickup</span></div>
-        <div class="preview-bar"><i></i></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="features" class="section">
-    <div class="container">
-      <h2 class="section-title">Everything the front desk needs</h2>
-      <p class="section-sub">Built for the daily rhythm of a laundry shop.</p>
-      <div class="cards">
-        <article class="card"><div class="icon">🧺</div><h3>Order tracking</h3>
-          <p>Follow each load through received, washing, ready, and picked up.</p></article>
-        <article class="card"><div class="icon">👥</div><h3>Customer records</h3>
-          <p>Keep contact details and order history one click away.</p></article>
-        <article class="card"><div class="icon">💳</div><h3>Pricing &amp; payments</h3>
-          <p>Set service rates and record payments without a calculator.</p></article>
-        <article class="card"><div class="icon">📊</div><h3>Reports</h3>
-          <p>See daily and monthly activity so you can plan with confidence.</p></article>
-        <article class="card"><div class="icon">🔐</div><h3>Secure sign-in</h3>
-          <p>Google handles authentication — no passwords stored in Laundrix.</p></article>
-        <article class="card"><div class="icon">🛡️</div><h3>Role-based access</h3>
-          <p>Admins manage the business; staff see only what they need.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <section id="how" class="section section-alt">
-    <div class="container">
-      <h2 class="section-title">How it works</h2>
-      <ol class="steps">
-        <li><span>1</span><div><h3>Sign in with Google</h3><p>Use the Google account your admin authorized.</p></div></li>
-        <li><span>2</span><div><h3>Manage orders</h3><p>Create, update, and complete orders from your dashboard.</p></div></li>
-        <li><span>3</span><div><h3>Grow with insight</h3><p>Review reports and keep your team in sync.</p></div></li>
-      </ol>
-    </div>
-  </section>
-
-  <section id="roles" class="section">
-    <div class="container roles">
-      <div class="role-card">
-        <h3>Admin</h3>
-        <p>Full control of the business: manage staff access, services, pricing, and reports.</p>
-      </div>
-      <div class="role-card">
-        <h3>Staff</h3>
-        <p>Handle day-to-day work: create orders, update statuses, and serve customers.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="cta">
-    <div class="container">
-      <h2>Ready to simplify your laundry operations?</h2>
-      <a class="btn btn-light" href="{{ url_for('auth.login') }}">Sign in to Laundrix</a>
-    </div>
-  </section>
-</main>
-
-<footer class="footer">
-  <div class="container">© {{ now_year }} Laundrix. All rights reserved.</div>
-</footer>
-{% endblock %}
-
-{% block scripts %}
-  <script src="{{ url_for('landing.static', filename='js/landing.js') }}"></script>
-{% endblock %}
+  <script src="{{ url_for('landing.static', filename='js/landing.js') }}" defer></script>
+</head>
+<body class="lx-landing font-sans antialiased">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="lp-flashes" role="status" aria-live="polite">{% for category, message in messages %}<p class="lp-flash" data-category="{{ category }}">{{ message }}</p>{% endfor %}</div>{% endif %}
+  {% endwith %}
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground">Skip to content</a>
+  {% include 'landing/partials/_header.html' %}
+  <main id="main">
+    {% include 'landing/partials/_hero.html' %}
+    {% include 'landing/partials/_features.html' %}
+    {% include 'landing/partials/_workflow.html' %}
+    {% include 'landing/partials/_preview.html' %}
+    {% include 'landing/partials/_about.html' %}
+    {% include 'landing/partials/_call-to-action.html' %}
+  </main>
+  {% include 'landing/partials/_footer.html' %}
+</body>
+</html>

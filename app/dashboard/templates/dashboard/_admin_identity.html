@@ -1,0 +1,12 @@
+{# Dashboard presentation only. Status, eligibility, copy, and destination remain backend-owned. #}
+{% set idv = idv_summary() %}
+{% if idv %}
+<section class="dashboard-identity" aria-label="Identity verification" data-idv-status="{{ idv.status }}" data-idv-can-start="{{ 'true' if idv.can_start else 'false' }}">
+  <span class="dashboard-identity-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/>{% if idv.status == 'verified' %}<path d="m8 12 3 3 5-6"/>{% else %}<path d="M12 8v5m0 3h.01"/>{% endif %}</svg></span>
+  <div class="dashboard-identity-copy">
+    <div class="dashboard-identity-title"><h2>Identity Verification</h2><span class="dashboard-identity-badge">{{ idv.ui.label|title }}</span></div>
+    <p>{{ idv.ui.headline }}</p>
+  </div>
+  <a class="dashboard-identity-action{% if idv.can_start %} is-primary{% endif %}" href="{{ url_for('identity.index') }}">{% if idv.status == 'verified' %}View Verification{% elif idv.can_start %}{{ idv.ui.start_label|title }}{% else %}View Status{% endif %}</a>
+</section>
+{% endif %}

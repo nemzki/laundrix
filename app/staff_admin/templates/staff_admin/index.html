@@ -1,62 +1,30 @@
 {% extends "core/app_shell.html" %}
-{% from "core/_icons.html" import icon %}
-{% from "core/_forms.html" import render_pagination %}
+{% block body_class %}{{ super() }} staff-management-page{% endblock %}
 {% block title %}Staff Management · Laundrix{% endblock %}
 {% block page_title %}Staff Management{% endblock %}
-{% block page_subtitle %}Create staff accounts, approve verified staff and manage access. Roles are never changed here.{% endblock %}
-{% block page_actions %}<a class="btn btn-primary" href="{{ url_for('staff_admin.new') }}">{{ icon('plus', 16) }}<span>Add staff</span></a>{% endblock %}
-
-{% block content %}
-<div class="grid grid-stats">
-  <div class="stat"><div class="stat-label">Total staff</div><div class="stat-value">{{ counts.total }}</div></div>
-  <div class="stat"><div class="stat-label">Active staff</div><div class="stat-value">{{ counts[statuses.ACTIVE] }}</div></div>
-  <div class="stat"><div class="stat-label">Pending verification</div><div class="stat-value">{{ counts[statuses.PENDING_VERIFICATION] }}</div></div>
-  <div class="stat"><div class="stat-label">Pending approval</div><div class="stat-value">{{ counts[statuses.PENDING_APPROVAL] }}</div></div>
-  <div class="stat"><div class="stat-label">Suspended / deactivated</div><div class="stat-value">{{ counts.suspended_deactivated }}</div></div>
-</div>
-
-<div class="tabs" role="tablist" aria-label="Filter by account status">
-  {% for key, label in filters %}
-    <a class="tab {% if status == key %}active{% endif %}" href="{{ url_for('staff_admin.index', status=key or None, q=term or None, sort=sort if sort != 'newest' else None) }}">
-      {{ label }} <span class="muted">{{ counts.total if not key else counts[key] }}</span>
-    </a>
-  {% endfor %}
-</div>
-
-<form class="search-bar" method="get">
-  {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
-  <input class="input" type="search" name="q" value="{{ term }}" placeholder="Search name or email" aria-label="Search staff">
-  <select class="input" name="sort" aria-label="Sort">
-    <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest first</option>
-    <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>Oldest first</option>
-    <option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option>
-    <option value="email" {% if sort == 'email' %}selected{% endif %}>Email</option>
-  </select>
-  <button class="btn btn-primary" type="submit">{{ icon('search', 16) }}<span>Search</span></button>
-  {% if term or status %}<a class="btn btn-outline" href="{{ url_for('staff_admin.index') }}">Clear</a>{% endif %}
-</form>
-
-<div class="card">
-  {% if rows %}
-  <div class="table-wrap"><table class="table">
-    <thead><tr><th>Staff</th><th>Email</th><th>Account status</th><th>Identity verification</th><th>Created</th><th>Last login</th><th></th></tr></thead>
-    <tbody>
-    {% for u, idv_label, idv_tone in rows %}
-      <tr>
-        <td><strong>{{ u.full_name or 'Unnamed' }}</strong></td>
-        <td>{{ u.email }}</td>
-        <td><span class="status status-{{ statuses.TONES[u.account_status] }}">{{ statuses.LABELS[u.account_status] }}</span></td>
-        <td><span class="pill {{ 'pill-on' if idv_tone == 'success' else ('pill-warn' if idv_tone == 'warn' else 'pill-off') }}">{{ idv_label }}</span></td>
-        <td>{{ u.created_at|localdt('%b %d, %Y') }}</td>
-        <td>{{ u.last_login_at|localdt('%b %d, %Y %I:%M %p') if u.last_login_at else 'Never' }}</td>
-        <td class="num"><a class="btn {{ 'btn-primary' if u.account_status == statuses.PENDING_APPROVAL else 'btn-outline' }} btn-sm" href="{{ url_for('staff_admin.detail', user_id=u.id) }}">{{ 'Review' if u.account_status == statuses.PENDING_APPROVAL else 'View' }}</a></td>
-      </tr>
-    {% endfor %}
-    </tbody></table></div>
-  {{ render_pagination(pagination, 'staff_admin.index', status=status or None, q=term or None, sort=sort if sort != 'newest' else None) }}
-  {% else %}
-    <div class="empty"><strong>{{ 'No staff match your filters' if term or status else 'No staff accounts yet' }}</strong>
-      {% if not (term or status) %}Add a staff member to generate their one-time enrollment link.{% endif %}</div>
-  {% endif %}
-</div>
+{% block page_subtitle %}Manage staff accounts, access, and verification.{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('core.static',filename='react-staff/staff.css') }}"><link rel="stylesheet" href="{{ url_for('core.static',filename='css/modules/staff-management.css') }}">{% endblock %}
+{% block page_actions %}
+  <div id="staff-action-react" class="lx-react lx-staff staff-action-host"></div>
+  <noscript><p class="staff-js-required" role="alert">Staff Management requires JavaScript to load.</p></noscript>
 {% endblock %}
+{% block content %}
+  <div id="laundrix-staff" class="lx-react lx-staff" data-ready="false">
+    <section class="staff-boot-skeleton" role="status" aria-label="Loading Staff Management">
+      <span class="sr-only">Loading Staff Management</span>
+      <div class="staff-panel">
+        <div class="staff-controls">
+          <div class="staff-boot-tabs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="staff-boot-filters"><span class="staff-boot-search"></span><span class="staff-boot-sort"></span></div>
+        </div>
+        <div class="staff-boot-table">
+          <div class="staff-boot-table-head"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          {% for _ in range(5) %}<div class="staff-boot-row"><i></i><i></i><i></i><i></i><i></i><i></i></div>{% endfor %}
+        </div>
+        <div class="staff-pagination"><span class="staff-boot-footer"></span><span class="staff-boot-footer staff-boot-footer-short"></span></div>
+      </div>
+    </section>
+  </div>
+  {% include 'staff_admin/_data.html' %}
+{% endblock %}
+{% block page_scripts %}<script defer src="{{ url_for('core.static',filename='js/staff-loader.js') }}"></script>{% endblock %}

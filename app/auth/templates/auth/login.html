@@ -1,45 +1,183 @@
 {% extends "core/base.html" %}
-{% block title %}Sign in · Laundrix{% endblock %}
+{% from "core/_brand.html" import brand_logo %}
+{% set active_role = (request.args.get('role') or 'admin')|lower %}
+{% if active_role not in ('admin', 'staff') %}{% set active_role = 'admin' %}{% endif %}
+{% block title %}Sign In · Laundrix{% endblock %}
 {% block head %}
   <link rel="stylesheet" href="{{ url_for('auth.static', filename='css/auth.css') }}">
 {% endblock %}
-{% block body_class %}centered{% endblock %}
+{% block body_class %}lx-auth{% endblock %}
 
 {% block body %}
-<main class="auth-card">
-  <a class="auth-brand" href="{{ url_for('landing.index') }}"><span>L</span>Laundrix</a>
-  <h1>Welcome back</h1>
-  <p class="muted">Sign in to manage orders, payments and your team.</p>
+<div class="lx-auth__shell">
+  <div class="lx-auth__brand">
+    {{ brand_logo('auth', href=url_for('landing.index'), show_text=False) }}
+  </div>
 
-  <a class="google-btn" id="googleBtn" href="{{ url_for('auth.google_login') }}">
-    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
-      <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/>
-      <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.5-4.1 7-10.2 7-17.6z"/>
-      <path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/>
-      <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/>
-    </svg>
-    <span>Continue with Google</span>
-  </a>
+  <main class="lx-auth__main">
+    <div class="lx-auth__form-wrap">
+      <h1>Sign In</h1>
+      <p class="lx-auth__lead">Welcome to Laundrix. Sign in to continue.</p>
 
-  <div class="auth-divider" role="separator" aria-label="or"><span>OR</span></div>
+      <div class="lx-segmented lx-auth__roles" role="tablist" aria-label="Sign-in role">
+        <button
+          class="lx-segmented__btn {% if active_role == 'admin' %}is-active{% endif %}"
+          type="button"
+          role="tab"
+          id="tab-admin"
+          aria-selected="{{ 'true' if active_role == 'admin' else 'false' }}"
+          aria-controls="panel-admin"
+          data-auth-role="admin"
+        >Admin</button>
+        <button
+          class="lx-segmented__btn {% if active_role == 'staff' %}is-active{% endif %}"
+          type="button"
+          role="tab"
+          id="tab-staff"
+          aria-selected="{{ 'true' if active_role == 'staff' else 'false' }}"
+          aria-controls="panel-staff"
+          data-auth-role="staff"
+        >Staff</button>
+      </div>
 
-  <form class="auth-form" method="post" action="{{ url_for('auth.login') }}" novalidate>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div
+        class="lx-auth__panel {% if active_role == 'admin' %}is-active{% endif %}"
+        id="panel-admin"
+        role="tabpanel"
+        aria-labelledby="tab-admin"
+        data-auth-panel="admin"
+        {% if active_role != 'admin' %}hidden{% endif %}
+      >
+        <form
+          class="lx-auth__form"
+          method="post"
+          action="{{ url_for('auth.login', role='admin') }}"
+          novalidate
+          data-auth-form="admin"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-    <label for="identifier">Username or email</label>
-    <input id="identifier" name="identifier" type="text" inputmode="email" autocomplete="username"
-           autocapitalize="none" spellcheck="false" maxlength="254" required value="{{ identifier or '' }}">
+          <div class="field">
+            <label for="admin-identifier">Email or Username</label>
+            <input
+              class="input lx-auth__input"
+              id="admin-identifier"
+              name="identifier"
+              type="text"
+              inputmode="email"
+              autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
+              maxlength="254"
+              required
+              placeholder="admin or you@example.com"
+              value="{% if active_role == 'admin' %}{{ identifier or '' }}{% endif %}"
+              {% if active_role != 'admin' %}disabled{% endif %}
+            >
+          </div>
 
-    <label for="password">Password</label>
-    <input id="password" name="password" type="password" autocomplete="current-password" maxlength="256" required>
+          <div class="field">
+            <label for="admin-password">Password</label>
+            <div class="lx-auth__password">
+              <input
+                class="input lx-auth__input"
+                id="admin-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                maxlength="256"
+                required
+                placeholder="Enter your password"
+                {% if active_role != 'admin' %}disabled{% endif %}
+              >
+              <button class="lx-auth__toggle" type="button" data-password-toggle="admin-password" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+          </div>
 
-    <button class="btn btn-primary btn-block" type="submit">Sign in</button>
-  </form>
+          <button class="btn btn-primary btn-block" type="submit" data-auth-submit>
+            <span data-auth-submit-label>Sign In</span>
+          </button>
+        </form>
+      </div>
 
-  <p class="fineprint">Access is limited to accounts authorized by your administrator.</p>
-</main>
+      <div
+        class="lx-auth__panel {% if active_role == 'staff' %}is-active{% endif %}"
+        id="panel-staff"
+        role="tabpanel"
+        aria-labelledby="tab-staff"
+        data-auth-panel="staff"
+        {% if active_role != 'staff' %}hidden{% endif %}
+      >
+        <form
+          class="lx-auth__form"
+          method="post"
+          action="{{ url_for('auth.login', role='staff') }}"
+          novalidate
+          data-auth-form="staff"
+        >
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="field">
+            <label for="staff-identifier">Email</label>
+            <input
+              class="input lx-auth__input"
+              id="staff-identifier"
+              name="identifier"
+              type="email"
+              inputmode="email"
+              autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
+              maxlength="254"
+              required
+              placeholder="you@example.com"
+              value="{% if active_role == 'staff' %}{{ identifier or '' }}{% endif %}"
+              {% if active_role != 'staff' %}disabled{% endif %}
+            >
+          </div>
+
+          <div class="field">
+            <label for="staff-password">Password</label>
+            <div class="lx-auth__password">
+              <input
+                class="input lx-auth__input"
+                id="staff-password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                maxlength="256"
+                required
+                placeholder="Enter your password"
+                {% if active_role != 'staff' %}disabled{% endif %}
+              >
+              <button class="lx-auth__toggle" type="button" data-password-toggle="staff-password" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-block" type="submit" data-auth-submit>
+            <span data-auth-submit-label>Sign In</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="lx-auth__divider" role="separator" aria-label="or"><span>or</span></div>
+
+      <a class="lx-auth__google" id="googleBtn" href="{{ url_for('auth.google_login') }}">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.5-4.1 7-10.2 7-17.6z"/>
+          <path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/>
+          <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/>
+        </svg>
+        <span>Continue with Google</span>
+      </a>
+
+      <p class="lx-auth__fineprint">Access is limited to accounts authorized by your administrator.</p>
+    </div>
+  </main>
+</div>
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('auth.static', filename='js/auth.js') }}"></script>
+  <script src="{{ url_for('auth.static', filename='js/auth.js') }}" defer></script>
 {% endblock %}

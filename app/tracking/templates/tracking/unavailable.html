@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Tracking unavailable | WASH UP!</title>
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/fonts.css') }}">
+    <link rel="stylesheet" href="{{ url_for('core.static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('core.static', filename='css/layouts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('tracking.static', filename='css/tracking.css') }}">
+</head>
+<body class="ui-root">
+    <a class="ui-skip" href="#main-content">Skip to content</a>
+  <main class="tracking-page" id="main-content" tabindex="-1">
+    <header class="tracking-header"><h1>WASH UP!</h1><p>Laundry Shop &middot; Inosluban, Lipa City</p></header>
+    <section class="tracking-card tracking-unavailable" aria-labelledby="tracking-error-heading">
+      <p class="eyebrow">ORDER TRACKING</p>
+      {% if temporary %}
+      <h2 id="tracking-error-heading">Tracking is temporarily unavailable</h2>
+      <p>We can't load the latest order information right now. Please try again in a minute.</p>
+      <a class="refresh-link" href="">Refresh status</a>
+      {% else %}
+      <h2 id="tracking-error-heading">We couldn't find this order</h2>
+      <p>This tracking link may be incomplete or incorrect.</p>
+      <ol class="recovery-steps">
+        <li>Scan the tracking QR code on your order stub again.</li>
+        <li>If you copied the link, make sure it includes every character.</li>
+      </ol>
+      {% endif %}
+      <p class="recovery-help">If you still need help, show your order stub or order reference to the shop staff so they can check the status.</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.new-order-tests.tsbuildinfo"
+  },
+  "include": ["playwright.new-order.config.ts", "tests/new-order/**/*.ts"]
+}

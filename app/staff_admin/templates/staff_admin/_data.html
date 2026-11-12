@@ -1,0 +1,5 @@
+{# Original paginated route context only; no extra database queries or new endpoints. #}
+{% set view=namespace(rows=[],filters=[]) %}
+{% for u,idv_label,idv_tone in rows %}{% set view.rows=view.rows+[dict(id=u.id,name=u.full_name or 'Unnamed',email=u.email,role=u.role,status=u.account_status,label=statuses.LABELS[u.account_status],identity=idv_label,identityTone=idv_tone,created=u.created_at|localdt,lastLogin=(u.last_login_at|localdt if u.last_login_at else 'Never'),detail=url_for('staff_admin.detail',user_id=u.id))] %}{% endfor %}
+{% for key,label in filters %}{% set view.filters=view.filters+[dict(value=key,label=('Inactive' if key=='deactivated' else label),count=(counts.total if not key else counts[key]))] %}{% endfor %}
+<script type="application/json" id="laundrix-staff-data">{{ dict(rows=view.rows,filters=view.filters,total=pagination.total,page=pagination.page,pages=pagination.pages,perPage=pagination.per_page,status=status,term=term,sort=sort,index=url_for('staff_admin.index'),create=url_for('staff_admin.new'),counts=counts)|tojson }}</script>

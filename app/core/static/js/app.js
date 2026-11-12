@@ -1,18 +1,16 @@
 /* Shared behaviour (CSP-safe: external file, no inline handlers). */
 (function () {
   "use strict";
-  var body = document.body;
-  var toggle = document.getElementById("nav-toggle");
-  var scrim = document.getElementById("scrim");
 
-  function setNav(open) {
-    body.classList.toggle("nav-open", open);
-    if (toggle) toggle.setAttribute("aria-expanded", String(open));
-    if (scrim) scrim.hidden = !open;
-  }
-  if (toggle) toggle.addEventListener("click", function () { setNav(!body.classList.contains("nav-open")); });
-  if (scrim) scrim.addEventListener("click", function () { setNav(false); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") setNav(false); });
+  // Close Bootstrap offcanvas after choosing a destination.
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest && e.target.closest("#appNavDrawer a.lx-nav__link");
+    if (!link) return;
+    var drawer = document.getElementById("appNavDrawer");
+    if (!drawer || typeof bootstrap === "undefined" || !bootstrap.Offcanvas) return;
+    var instance = bootstrap.Offcanvas.getInstance(drawer);
+    if (instance) instance.hide();
+  });
 
   // Confirmation dialog: <form data-confirm="Message" data-confirm-title="Title">
   var dlg = null;

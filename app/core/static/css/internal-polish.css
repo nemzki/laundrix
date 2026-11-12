@@ -1,0 +1,48 @@
+/* Opt-in internal pages only. No typography or control rules reach login, public,
+   verification, enrollment or printed documents. Keep module-specific layouts intact. */
+body.internal-ui .content { width:100%; max-width:none; padding:24px 32px 48px; }
+body.internal-ui .page-header > div { min-width:0; }
+body.internal-ui .page-actions { align-items:center; gap:8px; }
+body.internal-ui :is(.field > .input,.search-bar > .input) { min-height:38px; border-radius:8px; font-family:inherit; }
+body.internal-ui .field { min-width:0; }
+body.internal-ui .field > label { font-size:13px; line-height:20px; font-weight:500; }
+body.internal-ui .field > .input:not([aria-invalid="true"]):focus { outline:none; border-color:var(--lx-paint-blue, #3b82f6); box-shadow:0 0 0 2px rgb(59 130 246 / 15%); }
+body.internal-ui .btn > svg { flex-shrink:0; }
+body.internal-ui .search-bar { gap:8px; align-items:center; }
+body.internal-ui .search-bar > .input { min-width:0; max-width:100%; flex:1 1 160px; }
+body.internal-ui .grid > .card { min-width:0; }
+body.internal-ui .card .table { font-size:13px; }
+body.internal-ui .table th { color:var(--lx-paint-secondary, #334155); background:var(--lx-paint-subtle, #f8fafc); font-size:12px; line-height:18px; }
+body.internal-ui .table :is(th,td) { vertical-align:middle; }
+body.internal-ui .card :is(.hint,.field-error) { line-height:18px; }
+@media(max-width:767px) {
+ body.internal-ui .content { padding:20px 16px calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom,0px)); }
+ body.internal-ui .page-header { gap:12px; }
+ body.internal-ui .page-actions { max-width:100%; }
+ body.internal-ui .search-bar > .input { flex-basis:100%; }
+}
+
+/* The original 340px grid minimum overflowed 320px finance screens. */
+body.internal-ui.finance-report .grid-2 { grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr)); }
+body.internal-ui.finance-report .card :is(td,th) { overflow-wrap:anywhere; }
+body.internal-ui.finance-report .qr-panel { min-width:0; }
+@media(max-width:479px) { body.internal-ui.finance-report .qr-panel { flex-wrap:wrap; } }
+
+/* Explicit display casing, not text-transform: capitalize on data or customer names. */
+body.internal-ui .table th { text-transform:none; letter-spacing:normal; }
+body.internal-ui :is(.status-success,.pill-on):not([data-laundry-status]):not([data-payment-status]) { background:var(--lx-paint-green-bg, #d1fae5); color:var(--lx-paint-green-ink, #065f46); }
+
+/* One account-state palette for the Staff table/drawer and original account page. */
+body.internal-ui :is(.status,.staff-status)[data-account-status] { background:var(--lx-paint-muted, #f1f5f9); color:var(--lx-paint-secondary, #334155); border-color:var(--lx-paint-border, #e2e8f0); }
+body.internal-ui :is(.status,.staff-status)[data-account-status=active] { background:var(--lx-paint-green-bg, #ecfdf5); color:var(--lx-paint-green-ink, #065f46); border-color:var(--lx-paint-green-border, #a7f3d0); }
+body.internal-ui :is(.status,.staff-status)[data-account-status^=pending] { background:var(--lx-paint-amber-bg, #fffbeb); color:var(--lx-paint-amber-ink, #92400e); border-color:var(--lx-paint-amber-border, #fde68a); }
+body.internal-ui :is(.status,.staff-status):is([data-account-status=suspended],[data-account-status=rejected]) { background:var(--lx-paint-red-bg, #fef2f2); color:var(--lx-paint-red-ink, #991b1b); border-color:var(--lx-paint-red-border, #fecaca); }
+
+@media(min-width:768px) and (max-width:1023px) { body.internal-ui .content { padding:24px; } }
+
+/* Match the shared React button sizes without changing variants or click behavior. */
+body.internal-ui :is(.content,.modal,.offcanvas) .btn { min-height:36px; padding:6px 12px; border-radius:8px; font-size:13px; line-height:20px; font-weight:500; }
+body.internal-ui :is(.content,.modal,.offcanvas) .btn.btn-sm { min-height:32px; padding:4px 10px; font-size:12px; }
+body.internal-ui :is(.content,.modal,.offcanvas) .btn.btn-lg { min-height:40px; padding:8px 16px; font-size:14px; }
+body.internal-ui :is(.content,.modal,.offcanvas) .btn > .icon { width:16px; height:16px; flex-shrink:0; }
+body.internal-ui :is(.content,.modal,.offcanvas) .btn:focus-visible { outline:none; box-shadow:0 0 0 2px rgb(37 99 235 / 24%); }

@@ -46,12 +46,20 @@ def signed_in(client):
 def test_one_clean_login_page(app):
     c = app.test_client()
     page = c.get("/auth/login").get_data(as_text=True)
-    for text in ("Welcome back", "Continue with Google", "OR", "Username or email", "Password", "Sign in",
-                 "authorized by your administrator", 'name="identifier"', 'name="password"', 'name="csrf_token"'):
+    for text in ("Sign In", "Welcome to Laundrix. Sign in to continue.", "Continue with Google", "or",
+                 "Email or Username", "Password", "authorized by your administrator",
+                 'name="identifier"', 'name="password"', 'name="csrf_token"', "Admin", "Staff"):
         assert text in page, text
-    for gone in ("/staff/login", "/auth/admin", "Staff Portal", "Administrator sign-in"):
+    for gone in ("/staff/login", "/auth/admin", "Staff Portal", "Administrator sign-in", "Back to Home"):
         assert gone not in page, gone
-    assert "/staff/login" not in c.get("/").get_data(as_text=True)          # landing page no longer links to it either
+    assert "lx-logo--mark-only" in page
+    assert 'class="lx-logo__text"' not in page
+    landing = c.get("/").get_data(as_text=True)
+    assert "/staff/login" not in landing
+    assert "laundrix-mascot.png" in landing
+    assert "Does Laundrix automatically process GCash payments?" not in landing
+    assert "Built for Wash Up! Laundry Shop" in landing
+    assert 'href="/auth/login"' in landing
 
 
 def test_signed_in_users_are_sent_to_their_own_dashboard(app, make_user, client_for):

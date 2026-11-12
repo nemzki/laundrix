@@ -1,0 +1,6 @@
+{% macro avatar(name) -%}
+{% set words = name.split() %}<span class="cm-avatar" aria-hidden="true">{{ (words[0][0] ~ (words[-1][0] if words|length > 1 else ''))|upper if words else '' }}</span>
+{%- endmacro %}
+{% macro add_icon() -%}
+<svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="8" r="5"/><path d="M2 21a8 8 0 0 1 13.292-6M19 16v6M16 19h6"/></svg>
+{%- endmacro %}

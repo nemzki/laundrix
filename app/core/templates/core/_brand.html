@@ -1,0 +1,19 @@
+{# Reusable Laundrix mascot logo. Artwork file is never modified.
+   Variants: landing | auth | sidebar | mobile
+   Usage: {% from "core/_brand.html" import brand_logo %}{{ brand_logo('sidebar') }} #}
+{% macro brand_logo(variant='auth', href=None, show_text=True, alt='Laundrix') -%}
+{%- set classes = 'lx-logo lx-logo--' ~ variant -%}
+{%- if not show_text -%}{%- set classes = classes ~ ' lx-logo--mark-only' -%}{%- endif -%}
+{%- set mark = url_for('core.static', filename='images/mascot-original.svg') -%}
+{%- if href -%}
+<a class="{{ classes }}" href="{{ href }}">
+  <img class="lx-logo__mark" src="{{ mark }}" width="48" height="58" alt="{{ alt }}">
+  {% if show_text %}<span class="lx-logo__text">Laundrix</span>{% endif %}
+</a>
+{%- else -%}
+<span class="{{ classes }}">
+  <img class="lx-logo__mark" src="{{ mark }}" width="48" height="58" alt="{{ alt }}">
+  {% if show_text %}<span class="lx-logo__text">Laundrix</span>{% endif %}
+</span>
+{%- endif -%}
+{%- endmacro %}

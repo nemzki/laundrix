@@ -1,0 +1,18 @@
+{% from "core/_icons.html" import icon %}
+{% macro empty_state(title, icon_name='orders') -%}
+<div class="empty ui-empty" role="status">
+  <span class="lx-empty-icon" aria-hidden="true">{{ icon(icon_name, 24) }}</span>
+  <strong>{{ title }}</strong>
+  {% if caller is defined %}<div class="ui-empty-description">{{ caller() }}</div>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro search_field(id, value='', label='Search', placeholder='Search', name='q') -%}
+<div class="field">
+  <label for="{{ id }}">{{ label }}</label>
+  <div class="input-with-icon">
+    {{ icon('search', 16) }}
+    <input class="input" id="{{ id }}" type="search" name="{{ name }}" value="{{ value }}" placeholder="{{ placeholder }}" autocomplete="off">
+  </div>
+</div>
+{%- endmacro %}

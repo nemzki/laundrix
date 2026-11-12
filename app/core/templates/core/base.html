@@ -4,13 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Laundrix{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/fonts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/tokens.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='vendor/bootstrap/css/bootstrap.min.css') }}">
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/components.css') }}">
   {% block head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div class="flash-stack" role="status">
+      <div class="flash-stack" role="status" aria-live="polite">
         {% for category, message in messages %}
           <div class="flash flash-{{ category }}">{{ message }}</div>
         {% endfor %}
@@ -19,6 +23,7 @@
   {% endwith %}
 
   {% block body %}{% endblock %}
+  <script src="{{ url_for('core.static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>
