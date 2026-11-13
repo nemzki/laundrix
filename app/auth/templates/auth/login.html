@@ -158,6 +158,25 @@
             <span data-auth-submit-label>Sign In</span>
           </button>
         </form>
+
+              <div class="lx-auth__divider" role="separator" aria-label="or">
+          <span>or</span>
+        </div>
+
+        <button
+          class="lx-auth__face-login"
+          type="button"
+          data-face-login-trigger
+          disabled
+          aria-describedby="face-login-status"
+        >
+          Continue with Face Recognition
+        </button>
+
+        <p class="lx-auth__face-status" id="face-login-status">
+          Face Login setup is in progress.
+        </p>
+
       </div>
 
       <div class="lx-auth__divider" role="separator" aria-label="or"><span>or</span></div>
