@@ -201,7 +201,7 @@ class StandaloneBiometrics(unittest.TestCase):
             "vendor_data": "laundrix:42",
             "save_api_request": "false",
         })
-        self.assertEqual(kwargs["files"]["image"], (
+        self.assertEqual(kwargs["files"]["user_image"], (
             "staff-selfie.jpg", self.JPEG, "image/jpeg"
         ))
         self.assertNotIn("json", kwargs)
@@ -228,7 +228,7 @@ class StandaloneBiometrics(unittest.TestCase):
             "allow_multiple_faces": "false",
             "save_api_request": "false",
         })
-        self.assertEqual(kwargs["files"]["image"], (
+        self.assertEqual(kwargs["files"]["user_image"], (
             "capture.png", self.PNG, "image/png"
         ))
         self.assertEqual(result, report)
@@ -294,7 +294,7 @@ class StandaloneBiometrics(unittest.TestCase):
     def test_filename_path_is_reduced_to_basename(self):
         http = FakeHttp(FakeResponse(200, {"status": "Approved"}))
         provider(http).passive_liveness(self.JPEG, filename="../../private/capture.jpg")
-        self.assertEqual(http.calls[0][2]["files"]["image"][0], "capture.jpg")
+        self.assertEqual(http.calls[0][2]["files"]["user_image"][0], "capture.jpg")
 
     def test_invalid_provider_response_is_unavailable(self):
         for response in (FakeResponse(200, []), FakeResponse(200, bad_json=True)):
