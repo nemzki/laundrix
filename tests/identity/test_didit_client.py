@@ -197,7 +197,10 @@ class StandaloneBiometrics(unittest.TestCase):
             "POST", "https://verification.didit.me/v3/passive-liveness/"
         ))
         self.assertEqual(kwargs["headers"]["x-api-key"], KEY)
-        self.assertEqual(kwargs["data"], {"vendor_data": "laundrix:42"})
+        self.assertEqual(kwargs["data"], {
+            "vendor_data": "laundrix:42",
+            "save_api_request": "false",
+        })
         self.assertEqual(kwargs["files"]["image"], (
             "staff-selfie.jpg", self.JPEG, "image/jpeg"
         ))
@@ -223,6 +226,7 @@ class StandaloneBiometrics(unittest.TestCase):
             "vendor_data": "laundrix:42",
             "similarity_threshold": "90",
             "allow_multiple_faces": "false",
+            "save_api_request": "false",
         })
         self.assertEqual(kwargs["files"]["image"], (
             "capture.png", self.PNG, "image/png"
@@ -235,6 +239,7 @@ class StandaloneBiometrics(unittest.TestCase):
         self.assertEqual(http.calls[0][2]["data"], {
             "similarity_threshold": "70",
             "allow_multiple_faces": "false",
+            "save_api_request": "false",
         })
 
     def test_multipart_requests_do_not_retry(self):
