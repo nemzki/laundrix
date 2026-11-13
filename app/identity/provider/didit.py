@@ -222,7 +222,7 @@ class DiditProvider(IdentityProvider):
         its status and warnings; this method never grants access or stores images.
         """
         safe_name, content_type = self._prepare_face_image(image_bytes, filename)
-        form_data = {}
+        form_data = {"save_api_request": "false"}
         clean_vendor_data = self._validate_vendor_data(vendor_data)
         if clean_vendor_data is not None:
             form_data["vendor_data"] = clean_vendor_data
@@ -255,7 +255,10 @@ class DiditProvider(IdentityProvider):
         if not isinstance(allow_multiple_faces, bool):
             raise ValueError("allow_multiple_faces must be a boolean")
 
-        form_data = {"similarity_threshold": str(similarity_threshold)}
+        form_data = {
+            "similarity_threshold": str(similarity_threshold),
+            "save_api_request": "false",
+        }
         clean_vendor_data = self._validate_vendor_data(vendor_data)
         if clean_vendor_data is not None:
             form_data["vendor_data"] = clean_vendor_data
