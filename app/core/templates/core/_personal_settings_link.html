@@ -1,0 +1,4 @@
+{% from 'core/_icons.html' import icon %}
+{% macro personal_settings_link() -%}
+<a class="lx-personal-settings-link" href="{{ url_for('core.personal_settings') }}" title="Personal Settings" aria-label="Personal Settings" data-personal-settings-link{% if request.endpoint == 'core.personal_settings' %} aria-current="page"{% endif %}>{{ icon('settings',18) }}</a>
+{%- endmacro %}

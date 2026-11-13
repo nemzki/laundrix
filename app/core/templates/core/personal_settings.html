@@ -1,0 +1,71 @@
+{% extends 'core/app_shell.html' %}
+{% from 'core/_icons.html' import icon %}
+{% from 'core/_nav_shared.html' import user_initials %}
+{% block title %}Personal Settings | Laundrix{% endblock %}
+{% block page_title %}Personal Settings{% endblock %}
+{% block page_subtitle %}Your profile, identity verification, and appearance preferences.{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/personal-settings.css') }}">{% endblock %}
+{% block content %}
+<div class="personal-settings" data-personal-settings>
+  <section class="card ps-card" aria-labelledby="profile-heading">
+    <div class="ps-section-heading"><span class="ps-section-icon">{{ icon('users',20) }}</span><div><h2 id="profile-heading">My Profile</h2><p class="muted">Your account information.</p></div></div>
+    <form class="ps-profile-form" method="post" action="{{ url_for('core.update_profile') }}" enctype="multipart/form-data" novalidate data-profile-form data-saved-name="{{ current_user.full_name or '' }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if profile_errors.get('form') %}<p class="ps-error" role="alert">{{ profile_errors.form }}</p>{% endif %}
+      <div class="ps-profile-editor">
+        <div class="ps-avatar-editor">
+          <div data-avatar-original>{% if current_user.picture_url %}<img class="ps-avatar" src="{{ current_user.picture_url }}" alt="Current Profile Picture" width="72" height="72" referrerpolicy="no-referrer">{% else %}<span class="ps-avatar" aria-label="Default Profile Avatar">{{ user_initials(current_user) }}</span>{% endif %}</div>
+          <img class="ps-avatar" data-avatar-preview alt="Selected Profile Picture Preview" width="72" height="72" hidden>
+          <button type="button" class="ps-camera" data-select-picture title="Edit Profile Picture" aria-label="Edit Profile Picture"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></button>
+        </div>
+        <div class="ps-name-field"><label for="profile-name">Full Name</label><input class="input" id="profile-name" name="full_name" value="{{ profile_name }}" required minlength="2" maxlength="150" autocomplete="name" aria-describedby="profile-name-error"{% if profile_errors.get('full_name') %} aria-invalid="true"{% endif %}><p id="profile-name-error" class="ps-error"{% if profile_errors.get('full_name') %} role="alert"{% endif %}>{{ profile_errors.get('full_name', '') }}</p></div>
+      </div>
+      <div class="ps-picture-controls"><label for="profile-picture">Profile Picture</label><input id="profile-picture" name="profile_picture" type="file" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp" aria-describedby="profile-picture-help profile-picture-error"{% if profile_errors.get('profile_picture') %} aria-invalid="true"{% endif %}><p id="profile-picture-help" class="muted">PNG, JPEG, or WebP. Up to 1 MB; 32 to 2048 pixels per side.</p><p id="profile-picture-error" class="ps-error" role="status" data-picture-error>{{ profile_errors.get('profile_picture', '') }}</p>
+        {% if current_user.picture_url %}<label class="ps-remove"><input type="checkbox" name="remove_picture" data-remove-picture>Remove Picture and Use Default Avatar</label>{% endif %}
+      </div>
+      <div class="ps-actions"><button class="btn btn-primary" type="submit">Save Changes</button><a class="btn btn-outline" href="{{ url_for('core.personal_settings') }}" data-profile-cancel>Cancel</a><p class="muted ps-unsaved" data-profile-unsaved aria-live="polite">{% if profile_errors %}Review the highlighted fields. Select your picture again before saving.{% endif %}</p></div>
+    </form>
+    <dl class="ps-details ps-profile-details">
+      <div><dt>Full Name</dt><dd data-profile-name>{{ current_user.full_name or 'Not Provided' }}</dd></div>
+      <div><dt>Email Address</dt><dd data-profile-email>{{ current_user.email }}</dd></div>
+      <div><dt>Role</dt><dd>{{ 'Admin' if current_user.role == 'admin' else 'Staff' }}</dd></div>
+      <div><dt>Account Status</dt><dd>{{ account_labels.get(current_user.account_status, current_user.account_status)|title }}</dd></div>
+      {% if current_user.username %}<div><dt>Username</dt><dd>{{ current_user.username }}</dd></div>{% endif %}
+      {% if current_user.created_at %}<div><dt>Member Since</dt><dd>{{ current_user.created_at|localdt }}</dd></div>{% endif %}
+    </dl>
+  </section>
+  <div class="ps-preferences-grid">
+  {% set idv = idv_summary() %}
+  <section class="card ps-card" aria-labelledby="verification-heading"{% if idv %} data-idv-status="{{ idv.status }}" data-idv-can-start="{{ 'true' if idv.can_start else 'false' }}"{% endif %}>
+    <div class="ps-section-heading"><span class="ps-section-icon">{{ icon('check',20) }}</span><div><h2 id="verification-heading">Identity Verification</h2><p class="muted">Your current verification status and available actions.</p></div></div>
+    {% if idv %}
+      <div class="ps-verification"><span class="badge badge-{{ idv.ui.badge }}">{{ idv.ui.label|title }}</span><h3>{{ idv.ui.headline }}</h3><p>{{ idv.ui.body }}</p></div>
+      {% if idv.hint %}<p class="ps-feedback">{{ idv.hint }}</p>{% endif %}
+      {% if idv.blocked_message %}<p class="ps-feedback">{{ idv.blocked_message }}</p>{% endif %}
+      <div class="ps-actions">
+        {% if idv.can_start %}<a class="btn btn-primary" href="{{ url_for('identity.start') }}">{{ idv.ui.start_label|title }}</a>{% endif %}
+        {% if idv.can_refresh %}<form method="post" action="{{ url_for('identity.refresh') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline" type="submit">Check Status</button></form>{% endif %}
+        <a class="btn btn-outline" href="{{ url_for('identity.index') }}">View Verification Details</a>
+      </div>
+    {% else %}<p class="muted">Identity verification is not enabled for this installation.</p>{% endif %}
+  </section>
+  <section class="card ps-card" aria-labelledby="appearance-heading">
+    <div class="ps-section-heading"><span class="ps-section-icon">{{ icon('sun',20) }}</span><div><h2 id="appearance-heading">Appearance</h2><p class="muted">Choose a theme for all Laundrix pages. System follows your device.</p></div></div>
+    <div class="ps-themes" role="radiogroup" aria-label="Appearance" data-theme-preferences>
+      {% for value, label, symbol, description in [('light','Light','sun','A bright workspace.'),('dark','Dark','moon','A darker workspace.'),('system','System','monitor','Match your device settings.')] %}
+      <button type="button" role="radio" aria-checked="{{ 'true' if value == 'system' else 'false' }}" tabindex="{{ '0' if value == 'system' else '-1' }}" data-theme-option="{{ value }}">{{ icon(symbol,22) }}<strong>{{ label }}</strong><span>{{ description }}</span><span class="ps-theme-check" aria-hidden="true">{{ icon('check',16) }}</span></button>
+      {% endfor %}
+    </div>
+    <noscript><p class="muted">Enable JavaScript to change your theme.</p></noscript>
+  </section>
+  </div>
+  <section class="card ps-card ps-security" aria-labelledby="security-heading">
+    <div class="ps-section-heading"><span class="ps-section-icon">{{ icon('settings',20) }}</span><div><h2 id="security-heading">Account &amp; Security</h2><p class="muted">Sign-in activity and account access.</p></div></div>
+    <dl class="ps-details"><div><dt>Last Sign-In</dt><dd>{{ current_user.last_login_at|localdt if current_user.last_login_at else 'Not Recorded' }}</dd></div></dl>
+    <p class="muted">For changes to your sign-in credentials, contact your administrator.</p>
+    <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline" type="submit">{{ icon('logout',16) }}Logout</button></form>
+  </section>
+</div>
+{% endblock %}
+
+{% block page_scripts %}<script src="{{ url_for('core.static', filename='js/personal-settings.js') }}" defer></script>{% endblock %}

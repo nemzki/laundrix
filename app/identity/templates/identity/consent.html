@@ -1,23 +1,16 @@
-{% extends "core/base.html" %}
-{% block title %}Verify your identity · Laundrix{% endblock %}
-{% block head %}
-  <meta name="robots" content="noindex">
-  <link rel="stylesheet" href="{{ url_for('identity.static', filename='css/identity.css') }}">
-{% endblock %}
-
-{% block body %}
-<main class="idv-page">
-  <a class="idv-back" href="{{ url_for('identity.index') }}">← Back</a>
-
-  <section class="idv-panel">
-    <h1>Verify your identity</h1>
+{% extends 'identity/_page.html' %}
+{% block title %}Verify Your Identity &middot; Laundrix{% endblock %}
+{% block verification_content %}
+  <section class="idv-panel" aria-labelledby="consent-title">
+    <div class="idv-intro"><p class="idv-eyebrow">Identity Verification</p><h1 id="consent-title">Verify Your Identity</h1>
     <p class="muted">Please read this notice before you continue. It takes about two minutes.</p>
 
+    </div>
     <div class="idv-notice">
-      <h2>Why we ask</h2>
+      <h2>Why We Ask</h2>
       <p>Laundrix checks that the person using an account is who they say they are.</p>
 
-      <h2>What happens</h2>
+      <h2>What Happens</h2>
       <ol>
         <li>You're sent to a secure verification page run by our provider, <strong>Didit</strong>.</li>
         <li>You photograph a government-issued ID. The page checks that it looks genuine and reads it.</li>
@@ -26,7 +19,7 @@
         <li>You come back here and see your result.</li>
       </ol>
 
-      <h2>What we collect and keep</h2>
+      <h2>What We Collect and Keep</h2>
       <p>Your ID photos, selfie and face data are handled by the provider on its page. They are
          <strong>not</strong> stored on Laundrix servers. Laundrix keeps only: your result
          (verified, under review, or not verified), simple reason categories, the type of document
@@ -34,7 +27,7 @@
       <p>Because the provider processes this data for us, it may be handled outside your country.
          See the provider's privacy notice for how long it keeps data.</p>
 
-      <h2>Your choices and rights</h2>
+      <h2>Your Choices and Rights</h2>
       <p>Using this is your choice. If you'd rather not, or can't, tell your administrator and ask
          for an alternative. You may ask to see, correct or delete your information, withdraw your
          consent, and complain to the National Privacy Commission.
@@ -46,14 +39,13 @@
       </p>
     </div>
 
-    <form method="post" action="{{ url_for('identity.start') }}">
+    <form class="idv-consent-form" method="post" action="{{ url_for('identity.start') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label class="check">
         <input type="checkbox" name="consent" required>
         <span>I've read this notice and agree to my ID and face being checked as described.</span>
       </label>
-      <button class="btn btn-primary" type="submit">Continue to verification</button>
+      <button class="btn btn-primary" type="submit">Continue to Verification</button>
     </form>
   </section>
-</main>
 {% endblock %}

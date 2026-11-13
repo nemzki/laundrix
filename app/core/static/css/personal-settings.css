@@ -1,0 +1,67 @@
+/* Personal Settings uses the existing application content container and theme tokens. */
+.personal-settings{display:grid;gap:20px;min-width:0}
+.personal-settings .ps-card{padding:24px;display:grid;gap:20px;min-width:0;margin:0}
+.ps-section-heading{display:flex;align-items:flex-start;gap:12px}
+.ps-section-heading h2,.ps-section-heading p,.ps-profile p,.ps-verification h3,.ps-verification p{margin:0}
+.ps-section-heading p{margin-top:4px}
+.ps-section-icon{display:grid;place-items:center;flex-shrink:0;width:40px;height:40px;border-radius:10px;background:var(--lx-primary-soft);color:var(--lx-primary)}
+.ps-profile{display:flex;align-items:center;gap:14px;min-width:0}
+.ps-profile>div{min-width:0;overflow-wrap:anywhere}
+.ps-avatar{display:grid;place-items:center;flex-shrink:0;width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--lx-primary-soft);color:var(--lx-primary);font-size:20px;font-weight:600}
+.ps-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 32px;margin:0}
+.ps-details dt{font-size:13px;color:var(--lx-muted);font-weight:500;margin-bottom:4px}
+.ps-details dd{margin:0;overflow-wrap:anywhere;font-weight:500}
+.ps-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.ps-verification{display:grid;justify-items:start;gap:10px}
+.ps-verification p,.ps-feedback{color:var(--lx-muted);margin:0}
+.ps-themes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ps-themes button{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:20px;border:1px solid var(--lx-border);border-radius:12px;background:var(--lx-surface);color:var(--lx-text);text-align:left;font:inherit;cursor:pointer;min-width:0}
+.ps-themes button>svg{color:var(--lx-primary)}
+.ps-themes button>span:not(.ps-theme-check){font-size:13px;color:var(--lx-muted)}
+.ps-themes button:hover{background:var(--lx-primary-soft)}
+.ps-themes button[aria-checked=true]{border-color:var(--lx-primary);box-shadow:0 0 0 1px var(--lx-primary);background:var(--lx-primary-soft)}
+.ps-theme-check{position:absolute;right:12px;top:12px;color:var(--lx-primary);visibility:hidden}
+.ps-themes [aria-checked=true] .ps-theme-check{visibility:visible}
+.ps-themes button:focus-visible{outline:2px solid var(--lx-primary);outline-offset:4px}
+@media(max-width:600px){.personal-settings .ps-card{padding:18px}.ps-details{grid-template-columns:1fr;gap:16px}.ps-themes{grid-template-columns:1fr}.ps-themes button{padding:16px}}
+
+/* Keep the last Settings action above the Staff mobile navigation. */
+@media(max-width:960px){body.app:not(.admin-workspace) .personal-settings{padding-bottom:calc(var(--lx-bottom-nav-h) + env(safe-area-inset-bottom,0px))}}
+
+/* Compact profile editor and paired preference cards; shared page gutters stay unchanged. */
+.personal-settings{gap:16px}
+.personal-settings .ps-card{padding:20px;gap:16px}
+.ps-preferences-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;min-width:0;align-items:start}
+.ps-profile-form{display:grid;gap:12px}
+.ps-profile-editor{display:flex;align-items:center;gap:20px}
+.ps-avatar-editor{position:relative;flex-shrink:0;width:72px;height:72px}
+.ps-avatar-editor .ps-avatar{width:72px;height:72px}
+.ps-avatar-editor [hidden]{display:none!important}
+.ps-camera{position:absolute;right:-4px;bottom:-2px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--lx-surface);color:var(--lx-primary);border:1px solid var(--lx-border);cursor:pointer}
+.ps-name-field{display:grid;gap:6px;flex:1;min-width:0;max-width:520px}
+.ps-name-field>label,.ps-picture-controls>label:first-child{font-size:13px;font-weight:500}
+.ps-picture-controls{display:grid;gap:6px}
+.ps-picture-controls input[type=file]{max-width:100%;font:inherit;font-size:13px}
+.ps-picture-controls p{margin:0;font-size:12px}
+.ps-remove{display:flex;align-items:center;gap:8px;font-size:13px}
+.ps-error{color:var(--lx-danger);font-size:13px;margin:0}
+.ps-error:empty,.ps-unsaved:empty{display:none}
+.ps-unsaved{font-size:12px;margin:0}
+.ps-profile-details{border-top:1px solid var(--lx-border);padding-top:16px;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px}
+.ps-preferences-grid .ps-themes{grid-template-columns:1fr;gap:8px}
+.ps-preferences-grid .ps-themes button{display:grid;grid-template-columns:24px 1fr;align-items:center;gap:4px 10px;padding:12px 36px 12px 14px}
+.ps-preferences-grid .ps-themes button>svg{grid-row:span 2}
+.ps-preferences-grid .ps-themes button>span:not(.ps-theme-check){grid-column:2}
+.ps-security .ps-details{display:block}
+.ps-security .ps-details>div{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline}
+.ps-security p{margin:0}
+.ps-camera:focus-visible,.ps-picture-controls input:focus-visible{outline:2px solid var(--lx-primary);outline-offset:3px}
+@media(max-width:1023px){.ps-preferences-grid{grid-template-columns:1fr}.ps-profile-details{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.personal-settings .ps-card{padding:18px}.ps-profile-details{grid-template-columns:1fr}.ps-profile-editor{align-items:flex-start;gap:14px}.ps-name-field{flex:1}.ps-name-field .input{min-width:0;width:100%}}
+
+.personal-settings .ps-card{grid-template-columns:minmax(0,1fr)}
+.ps-profile-form,.ps-picture-controls{min-width:0}
+.ps-picture-controls input[type=file]{width:100%;min-width:0}
+
+.ps-picture-controls input[type=file]::file-selector-button{border:1px solid var(--lx-border);border-radius:6px;padding:6px 10px;margin-right:8px;background:var(--lx-surface);color:var(--lx-text);font:inherit;cursor:pointer}
+@media(min-width:601px){.ps-preferences-grid .ps-themes{grid-template-columns:repeat(3,minmax(0,1fr))}.ps-preferences-grid .ps-themes button{display:flex;flex-direction:column;align-items:flex-start;padding:14px;gap:8px}.ps-preferences-grid .ps-themes button>svg{grid-row:auto}.ps-preferences-grid .ps-themes button>span:not(.ps-theme-check){grid-column:auto}}

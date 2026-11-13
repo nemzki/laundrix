@@ -1,0 +1,15 @@
+{% extends 'core/base.html' %}
+{% from 'core/_brand.html' import brand_logo %}
+{% from 'core/_icons.html' import icon %}
+{% block head %}
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="{{ url_for('identity.static', filename='css/verification.css') }}">
+{% endblock %}
+{% block body_class %}idv-screen{% endblock %}
+{% block body %}
+<main class="idv-page" id="main">
+  <header class="idv-page-header">{{ brand_logo('landing', href=url_for('core.personal_settings') if current_user.is_operational else url_for('identity.index')) }}<span>Account Security</span></header>
+  {% if current_user.is_operational %}<a class="idv-back" href="{{ url_for('core.personal_settings') }}">{{ icon('arrow-left',16) }}Back to Personal Settings</a>{% else %}<p class="muted">Personal Settings becomes available after verification and account approval.</p>{% endif %}
+  {% block verification_content %}{% endblock %}
+</main>
+{% endblock %}

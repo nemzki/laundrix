@@ -10,8 +10,8 @@ def test_approved_landing_sections_and_real_authentication_links(anon_client):
     html = response.get_data(as_text=True)
     for section in ('home', 'features', 'how-it-works', 'preview', 'about'):
         assert f'id="{section}"' in html
-    for text in ('Laundry Management,', 'Made Simple.', 'Built for Wash Up! Laundry Shop',
-                 'demonstration only', 'demo records', 'Authorized Admin and Staff access'):
+    for text in ('Laundry Management,', 'Made <span class="hero-simple">Simple.', 'Built Around the Way Wash Up! Runs Its Day.',
+                 'illustrative records', 'A Day at the Counter', 'Authorized Admin and Staff access'):
         assert text in html
     assert html.count('data-sign-in=""') == 3
     assert html.count('href="/auth/login"') == 3
@@ -21,7 +21,8 @@ def test_approved_landing_sections_and_real_authentication_links(anon_client):
     assert 'Original Laundrix design' in html
     assert 'style=' not in html
     assert '/_next/' not in html and '/react/' not in html
-    assert '/theme.js' not in html and '/theme.css' not in html
+    assert '/core/static/js/theme.js' in html
+    assert '/core/static/css/theme.css' in html
 
 
 def test_all_workflow_and_preview_states_are_server_rendered(anon_client):

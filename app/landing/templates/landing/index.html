@@ -8,8 +8,11 @@
   <title>Laundrix — Laundry Management, Made Simple</title>
   <link rel="icon" href="{{ url_for('core.static', filename='images/mascot-original.svg') }}" type="image/svg+xml">
   <link rel="preload" href="{{ url_for('landing.static', filename='fonts/07c7676b89ed2778-s.p.45535valc9rzk.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('landing.static', filename='css/v0-landing.css') }}">
   <link rel="stylesheet" href="{{ url_for('landing.static', filename='css/landing.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/theme.css') }}">
+  <script src="{{ url_for('core.static', filename='js/theme.js') }}"></script>
   <script src="{{ url_for('landing.static', filename='js/landing.js') }}" defer></script>
 </head>
 <body class="lx-landing font-sans antialiased">

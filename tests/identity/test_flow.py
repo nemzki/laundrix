@@ -97,7 +97,7 @@ def test_successful_verification_and_no_personal_data_is_stored(client, user, ap
     assert r.status_code == 200
     v = latest(user.id)
     assert v.status == "verified" and v.decided_at and v.document_type == "Passport"
-    assert "Your identity is verified" in page(client)
+    assert "Your Identity Is Verified" in page(client)
 
     # privacy: nothing identifying was persisted anywhere
     stored = repr([getattr(v, c.name) for c in v.__table__.columns])
@@ -121,21 +121,21 @@ def test_declined_outcomes_reject_with_a_generic_hint_and_hide_internal_codes(cl
     body = page(client)
     assert str(escape(CATEGORY_HINTS[category])) in body
     assert code not in body                      # raw internal codes never reach the user
-    assert "Not verified" in body                # the status badge for a rejection
+    assert "Not Verified" in body                # the status badge for a rejection
 
 
 def test_poor_image_quality_resubmission_means_action_required_not_rejected(client, user):
     v = started(client, user)
     post_webhook(client, webhook_body(v, "Resubmitted"))
     assert latest(user.id).status == "action_required"
-    assert "Action needed" in page(client)
+    assert "Action Needed" in page(client)
 
 
 def test_manual_review_then_approval(client, user):
     v = started(client, user)
     post_webhook(client, webhook_body(v, "In Review", created_at=int(time.time())))
     assert latest(user.id).status == "pending_review"
-    assert "reviewing" in page(client)
+    assert "Reviewing" in page(client)
     post_webhook(client, webhook_body(v, "Approved", created_at=int(time.time()) + 5))
     assert latest(user.id).status == "verified"
 
@@ -185,7 +185,7 @@ def test_provider_failure_is_an_error_status_never_a_rejection(client, user, pro
     v = latest(user.id)
     assert v.status == "error" and v.error_code == error.code and v.provider_session_id is None
     body = page(client)
-    assert "Something went wrong on our side" in body and "Try again" in body
+    assert "Something Went Wrong On Our Side" in body and "Try Again" in body
     assert services.attempts_in_window(user) == 0          # does not burn the user's retries
 
     provider.create_error = None                           # provider recovers
@@ -350,7 +350,7 @@ def test_users_cannot_see_or_touch_each_others_records(app, make_user, provider)
     assert ca.get(f"/identity/attempt/{va.public_id}").status_code == 200
     assert cb.get(f"/identity/attempt/{va.public_id}").status_code == 404   # not even "forbidden"
 
-    assert "Start verification" in page(cb)                                  # bob sees his own state
+    assert "Start Verification" in page(cb)                                  # bob sees his own state
     cb.post("/identity/refresh")                                             # nothing of bob's to poll
     assert provider.calls["decision"] == 0
     assert latest(alice.id).status == "in_progress"

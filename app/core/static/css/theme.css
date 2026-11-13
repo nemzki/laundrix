@@ -1,4 +1,4 @@
-/* Internal shells only load this file. Light colors and all layout geometry remain module-owned. */
+/* Shared screen palette. Light colors and all layout geometry remain module-owned. */
 .lx-theme-picker { position: relative; flex: 0 0 auto; margin-left: auto; }
 .lx-theme-trigger { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 6px; border: 1px solid var(--lx-border); border-radius: 8px; background: transparent; color: var(--lx-muted); }
 .lx-theme-trigger:hover { background: var(--lx-primary-soft); color: var(--lx-primary); }
@@ -59,7 +59,7 @@
     --bs-secondary-bg: #253248; --bs-tertiary-bg: #182235;
     --bs-link-color: #93c5fd; --bs-link-hover-color: #bfdbfe;
   }
-  html[data-lx-theme=dark] .lx-react { --muted: #253248; }
+  html[data-lx-theme=dark] .lx-react { --muted: var(--lx-paint-muted); }
   html[data-lx-theme=dark] body { background: var(--lx-bg); color: var(--lx-text); }
   html[data-lx-theme=dark] body.app :is(.lx-sidebar, .lx-nav-drawer, .lx-bottom-nav) { background: #111827; color: var(--lx-text); border-color: var(--lx-border); }
   html[data-lx-theme=dark] body.app :is(.admin-topbar, .app-topbar) { background: var(--lx-surface); color: var(--lx-text); }
@@ -70,6 +70,9 @@
   html[data-lx-theme=dark] .lx-react :is(.bg-white, .bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-100) { background-color: var(--lx-surface); }
   html[data-lx-theme=dark] .lx-react :is(.text-slate-500, .text-slate-600, .text-gray-500) { color: var(--lx-muted); }
   html[data-lx-theme=dark] .lx-react :is(.text-slate-700, .text-slate-800, .text-slate-900) { color: var(--lx-text); }
+  html[data-lx-theme=dark] .lx-react :is(.text-red-600, .text-red-700, .text-red-800) { color: var(--lx-danger); }
+  html[data-lx-theme=dark] .lx-react .bg-red-50 { background-color: var(--lx-danger-soft); }
+  html[data-lx-theme=dark] .lx-react .border-red-200 { border-color: var(--lx-paint-red-border); }
   html[data-lx-theme=dark] .lx-react [data-slot=badge][data-variant=services] { background: var(--lx-paint-blue-bg); color: var(--lx-paint-blue-ink); border-color: var(--lx-paint-blue-border) !important; }
   html[data-lx-theme=dark] .lx-react [data-slot=badge][data-variant=packages] { background: var(--lx-paint-purple-bg); color: var(--lx-paint-purple-ink); border-color: var(--lx-paint-purple-border) !important; }
   html[data-lx-theme=dark] .lx-react [data-slot=badge][data-variant=addons] { background: var(--lx-paint-teal-bg); color: var(--lx-paint-teal-ink); border-color: var(--lx-paint-teal-border) !important; }
@@ -105,3 +108,23 @@
   html[data-lx-theme] { color-scheme: light; --bs-body-bg: #fff; --bs-body-color: #000; --bs-border-color: #ddd; }
   html[data-lx-theme] body { background: #fff !important; color: #000 !important; }
 }
+
+/* Authentication uses the same palette; layout and original Light colors stay intact. */
+@media screen {
+  html[data-lx-theme=light] { color-scheme: light; }
+  html[data-lx-theme=dark] .lx-auth__roles,
+  html[data-lx-theme=dark] .lx-auth .lx-auth__input { background:var(--lx-paint-muted); }
+  html[data-lx-theme=dark] .lx-auth__roles .lx-segmented__btn.is-active,
+  html[data-lx-theme=dark] .lx-auth .lx-auth__input:focus,
+  html[data-lx-theme=dark] :is(.lx-auth__google, .google-btn, .auth-form input) { background:var(--lx-surface);color:var(--lx-text);border-color:var(--lx-border); }
+  html[data-lx-theme=dark] :is(.lx-auth__google, .google-btn):hover { background:var(--lx-paint-muted);color:var(--lx-text); }
+  html[data-lx-theme=dark] .lx-auth__toggle { color:var(--lx-paint-blue-ink); }
+  html[data-lx-theme=dark] .lx-auth__toggle:hover { background:var(--lx-primary-soft); }
+  html[data-lx-theme=dark] .wizard-card input { background:var(--lx-surface);color:var(--lx-text); }
+  html[data-lx-theme=dark] .lx-auth__input[aria-invalid=true] { border-color:var(--lx-danger); }
+}
+
+/* Profile action stays beside the original avatar/name/role in every internal shell. */
+.lx-personal-settings-link{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;margin-left:auto;padding:6px;border:1px solid var(--lx-border);border-radius:8px;background:transparent;color:var(--lx-muted);text-decoration:none}
+.lx-personal-settings-link:hover,.lx-personal-settings-link[aria-current=page]{background:var(--lx-primary-soft);color:var(--lx-primary)}
+.lx-personal-settings-link:focus-visible{outline:2px solid var(--lx-primary);outline-offset:3px}

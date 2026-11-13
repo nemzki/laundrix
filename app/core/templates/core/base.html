@@ -1,8 +1,10 @@
+{% set shared_theme = request.blueprint not in ['identity', 'staff_auth'] or request.endpoint in ['staff_auth.login', 'identity.index', 'identity.attempt', 'identity.start'] %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if shared_theme %}<script src="{{ url_for('core.static', filename='js/theme.js') }}"></script>{% endif %}
   <title>{% block title %}Laundrix{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/fonts.css') }}">
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/tokens.css') }}">
@@ -10,6 +12,7 @@
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/base.css') }}">
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/components.css') }}">
   {% block head %}{% endblock %}
+  {% if shared_theme %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/theme.css') }}">{% endif %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
   {% with messages = get_flashed_messages(with_categories=true) %}

@@ -10,7 +10,7 @@ from app.models import IdentityVerification
 
 
 @pytest.mark.parametrize("status", tuple(STATUS_COPY))
-def test_admin_banner_preserves_backend_status_and_eligibility(app, admin_client, admin, status):
+def test_settings_replaces_admin_banner_without_changing_status_or_eligibility(app, admin_client, admin, status):
     if status != "not_started":
         db.session.add(IdentityVerification(
             user_id=admin.id, provider="didit", environment="sandbox", purpose="kyc", status=status,
@@ -18,8 +18,8 @@ def test_admin_banner_preserves_backend_status_and_eligibility(app, admin_client
         db.session.commit()
     expected = services.summary_for(admin)
     original_count = db.session.scalar(db.select(db.func.count(IdentityVerification.id)))
-    html = admin_client.get("/dashboard/admin").get_data(as_text=True)
-    banner = re.search(r'<section class="dashboard-identity".*?</section>', html, re.S).group()
+    html = admin_client.get("/settings").get_data(as_text=True)
+    banner = re.search(r'<section class="card ps-card" aria-labelledby="verification-heading".*?</section>', html, re.S).group()
     assert f'data-idv-status="{status}"' in banner
     assert STATUS_COPY[status]["label"].title() in banner
     assert f'data-idv-can-start="{str(expected["can_start"]).lower()}"' in banner
@@ -27,7 +27,11 @@ def test_admin_banner_preserves_backend_status_and_eligibility(app, admin_client
     if expected["can_start"]:
         assert STATUS_COPY[status]["start_label"].title() in banner
     else:
-        assert "View Verification" in banner if status == "verified" else "View Status" in banner
+        assert "View Verification Details" in banner
+    for url in ("/dashboard/admin", "/dashboard/admin?ui=jinja"):
+        dashboard = admin_client.get(url).get_data(as_text=True)
+        assert 'class="dashboard-identity"' not in dashboard
+        assert 'aria-label="Identity verification"' not in dashboard
     assert admin_client.get("/identity/").status_code == 200
     assert db.session.scalar(db.select(db.func.count(IdentityVerification.id))) == original_count
     assert services.summary_for(admin)["status"] == status

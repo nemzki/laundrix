@@ -40,8 +40,10 @@ def authorize_google_user(userinfo: dict):
 
     user.google_sub = sub
     user.email = email
-    user.full_name = userinfo.get("name") or user.full_name
-    user.picture_url = userinfo.get("picture") or user.picture_url
+    user.full_name = user.full_name or userinfo.get("name")
+    # Existing profile values are user-owned; None alone means never initialized.
+    if user.picture_url is None:
+        user.picture_url = userinfo.get("picture")
     user.last_login_at = datetime.now(timezone.utc).replace(tzinfo=None)
     db.session.commit()
     return user, None

@@ -31,5 +31,140 @@ html:not(.lp-enhanced) .reveal { opacity:1; transform:none; }
 .lp-progress-3 { transform:scaleX(1); }
 .lp-flashes { position:fixed; top:76px; right:16px; z-index:60; max-width:min(360px,calc(100vw - 32px)); }
 .lp-flash { margin-bottom:8px; padding:12px 16px; border:1px solid var(--border); border-radius:12px; background:var(--card); box-shadow:0 4px 20px #0f27471a; font-size:14px; }
-.lp-flash[data-category=error] { border-color:#fecaca; color:#991b1b; }
-.lp-flash[data-category=success] { border-color:#a7f3d0; color:#065f46; }
+.lp-flash[data-category=error] { border-color:var(--lx-paint-red-border,#fecaca); color:var(--lx-paint-red-ink,#991b1b); }
+.lp-flash[data-category=success] { border-color:var(--lx-paint-green-border,#a7f3d0); color:var(--lx-paint-green-ink,#065f46); }
+/* Screenshot-led landing hero. All overrides are local to the standalone landing. */
+:root:has(.lx-landing){--background:#f5f8ff;--foreground:#111c40;--primary:#3475f8;--muted-foreground:#5b6b8d;--border:#ccd9f3}
+.landing-header{background:var(--background);border-color:var(--border)}
+.landing-header>div:first-child{max-width:1224px;height:70px;gap:24px;padding-inline:32px}
+.landing-header nav[aria-label=Main]{margin-left:auto}
+.landing-header nav a{border-radius:24px;padding:11px 15px}
+.landing-header nav a:hover,.landing-header nav a[aria-current=location]{background:var(--primary);color:white}
+.landing-header [data-sign-in]{border-radius:30px;min-height:42px;padding-inline:24px;box-shadow:0 8px 22px #3475f830}
+.landing-header .lx-logo__text{font-size:22px;letter-spacing:-1px}
+.landing-theme{display:grid;place-items:center;width:42px;height:42px;flex-shrink:0;border:1px solid var(--border);border-radius:50%;background:var(--card);color:var(--foreground);cursor:pointer}
+.landing-theme svg{width:21px;height:21px}
+.ticket-hero{overflow:hidden;border-bottom:1px solid var(--border);background:radial-gradient(circle,#dce6fc 1px,transparent 1px) right top/26px 26px,var(--background)}
+.ticket-hero__inner{max-width:1224px;margin:auto;padding:62px 32px 94px;display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center;min-height:714px}
+.ticket-hero__copy{position:relative;z-index:1}
+.shop-badge{display:inline-flex;align-items:center;gap:10px;padding:9px 13px;background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:0 2px 4px #111c4008;font:13px/18px monospace;color:var(--muted-foreground);margin:0 0 30px}
+.shop-badge>span{width:11px;height:11px;border:1px solid var(--border);border-radius:50%;background:var(--background)}
+.shop-badge strong{color:var(--primary);font-weight:600}
+.ticket-hero h1{font-size:84px;line-height:1.045;letter-spacing:-6px;font-weight:800;margin:0 0 32px;max-width:580px;text-wrap:initial}
+.hero-simple{position:relative;display:inline-block;color:var(--primary);white-space:nowrap}
+.hero-simple svg{position:absolute;width:80%;height:20px;left:0;bottom:-15px;fill:none;stroke:currentColor;stroke-width:5;stroke-linecap:round}
+.hero-description{max-width:510px;font-size:20px;line-height:30px;color:var(--muted-foreground);margin:0 0 30px}
+.hero-actions{display:flex;gap:12px;margin-bottom:30px;flex-wrap:wrap}
+.hero-button{display:inline-flex;gap:14px;align-items:center;justify-content:center;padding:14px 26px;border:1px solid var(--border);border-radius:30px;color:var(--foreground);font-size:16px;font-weight:600;min-height:52px}
+.hero-button--primary{background:var(--primary);border-color:var(--primary);color:white;box-shadow:0 9px 22px #3475f82b}
+.hero-button:hover{filter:brightness(.96)}
+.hero-button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7}
+.hero-benefits{display:flex;gap:22px;flex-wrap:wrap;color:var(--muted-foreground);font-size:14px;list-style:none;padding:0;margin:0}
+.hero-benefits li{display:flex;gap:8px;align-items:center;white-space:nowrap}
+.hero-benefits svg{width:16px;height:16px;fill:none;stroke:#078457;stroke-width:1.8;flex-shrink:0}
+.ticket-scene{position:relative;min-width:0;width:calc(100% + 26px);aspect-ratio:600/560;align-self:center;margin-top:10px}
+.ticket-orbit{position:absolute;inset:0 6% 5%;border:1px solid var(--border);border-radius:50%}
+.ticket-orbit:after{content:'';position:absolute;inset:13%;border:1px dashed var(--border);border-radius:50%}
+.clotheslines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;stroke:#7b87a2;stroke-width:2}
+.clotheslines circle{stroke:var(--border);stroke-width:1;fill:var(--background)}
+.claim-tickets{position:absolute;inset:13% 11% 10% 7%;display:grid;grid-template-columns:1fr 1fr;gap:42px 28px}
+.claim-ticket{position:relative;display:flex;flex-direction:column;min-width:0;text-align:left;background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:11px;box-shadow:0 22px 36px #18243f18,0 2px 4px #18243f0c;cursor:pointer;transform:rotate(-2deg);transition:transform .25s,box-shadow .25s;padding:18px 14px 13px}
+.claim-ticket:nth-child(2){transform:rotate(1deg)}
+.claim-ticket:nth-child(3){transform:rotate(1deg);left:-8px}
+.claim-ticket:nth-child(4){transform:rotate(-.5deg);left:-8px}
+.claim-ticket:hover{transform:translateY(-4px) rotate(0);box-shadow:0 25px 40px #18243f25}
+.claim-ticket:focus-visible,.hero-button:focus-visible,.landing-theme:focus-visible{outline:3px solid var(--primary);outline-offset:5px}
+.claim-ticket__top{display:flex;justify-content:space-between;font:10px/18px monospace;letter-spacing:1px;color:var(--muted-foreground)}
+.claim-ticket__number{font:700 20px/32px monospace;letter-spacing:-1px;padding-bottom:12px}
+.claim-ticket__details{position:relative;margin:0 -14px;padding:12px 14px 10px;border-top:2px dashed var(--border);font-size:12px;line-height:25px}
+.claim-ticket__details:before,.claim-ticket__details:after{content:'';position:absolute;width:10px;height:12px;top:-24px;background:var(--background);border:1px solid var(--border);border-radius:50%}
+.claim-ticket__details:before{left:-6px}.claim-ticket__details:after{right:-6px}
+.claim-ticket__details>span{display:flex;justify-content:space-between;gap:4px}
+.claim-ticket__details>span>span{color:var(--muted-foreground)}
+.claim-ticket__details strong{font-weight:600;white-space:nowrap}
+.claim-stamp{align-self:flex-start;border:2px solid currentColor;border-radius:5px;padding:3px 9px;font:600 12px/18px monospace;letter-spacing:1px;transform:rotate(-5deg);color:#75829d;margin-top:auto}
+[data-demo-status=washing] .claim-stamp{color:#4b85ff}[data-demo-status=ready] .claim-stamp{color:#ff604f}[data-demo-status=released] .claim-stamp{color:#168460}
+.clothespin{position:absolute;width:12px;height:30px;border-radius:4px 4px 6px 6px;background:linear-gradient(90deg,#e5b452,#f6d78d 50%,#e5b452);box-shadow:0 2px 4px #0003;left:48%;top:-16px}
+.clothespin:after{content:'';position:absolute;width:2px;height:12px;top:4px;left:5px;background:#b48b40}
+#ticket-hint{position:absolute;top:97%;width:100%;text-align:center;font:11px/20px monospace;letter-spacing:1px;color:var(--muted-foreground)}
+#ticket-hint span{display:block;font-size:10px;letter-spacing:.3px}
+@media(min-width:1280px){.ticket-hero__inner{grid-template-columns:560px 1fr}}
+@media(max-width:1100px){.ticket-hero h1{font-size:68px;letter-spacing:-4px}.hero-benefits{gap:12px}.claim-tickets{gap:30px 20px;inset:12% 8% 10% 5%}.claim-ticket{padding:12px 10px}.claim-ticket__details{margin-inline:-10px;padding-inline:10px}.claim-ticket__number{font-size:18px;padding-bottom:5px}.claim-ticket__details{line-height:22px;font-size:11px}.claim-stamp{font-size:10px;padding:1px 6px}.ticket-hero__inner{min-height:650px}}
+@media(max-width:900px){.ticket-hero__inner{grid-template-columns:1fr;gap:40px;padding:44px 24px 70px}.ticket-hero__copy{max-width:620px}.ticket-hero h1{max-width:600px;font-size:72px}.ticket-scene{width:100%;max-width:580px;justify-self:center}.claim-ticket{padding:18px 14px 13px}.claim-ticket__details{margin-inline:-14px;padding:12px 14px 10px;font-size:12px;line-height:25px}.claim-ticket__number{font-size:20px;padding-bottom:12px}.claim-stamp{font-size:12px;padding:3px 9px}}
+@media(max-width:600px){.landing-header>div:first-child{padding-inline:16px;gap:8px}.landing-header .lx-logo__text{font-size:19px}.landing-header [data-sign-in]{padding-inline:16px;min-height:38px}.landing-theme{width:36px;height:36px}.ticket-hero__inner{padding:36px 20px 66px;gap:34px}.ticket-hero h1{font-size:clamp(42px,10.4vw,62px);letter-spacing:-2.8px;line-height:1.08;margin-bottom:32px}.shop-badge{font-size:11px;gap:7px;margin-bottom:26px}.hero-description{font-size:17px;line-height:27px}.hero-button{padding:12px 19px;font-size:14px;min-height:48px}.hero-benefits{font-size:12px;gap:12px}.claim-tickets{gap:28px 18px;inset:13% 5% 8%}.claim-ticket{padding:10px 8px 8px;border-radius:8px}.claim-ticket__top{font-size:7px;letter-spacing:.6px;line-height:14px}.claim-ticket__number{font-size:15px;line-height:25px;padding-bottom:7px}.claim-ticket__details{margin-inline:-8px;padding:6px 8px;font-size:9px;line-height:19px}.claim-stamp{font-size:9px;line-height:13px;padding:2px 5px;letter-spacing:.5px}.clothespin{width:9px;height:22px;top:-13px}.clothespin:after{left:4px;height:9px}.claim-ticket:nth-child(n){left:0}#ticket-hint{font-size:9px;letter-spacing:0;top:100%}#ticket-hint span{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.claim-ticket{transition:none}}
+.ticket-hero{background-image:linear-gradient(90deg,var(--background) 10%,transparent 70%),radial-gradient(circle,#dce6fc 1px,transparent 1px)}
+.ticket-hero__inner{padding-top:55px}
+.ticket-scene{width:100%}
+.claim-tickets{inset-inline:10%}
+@media(max-width:900px){.ticket-hero__inner{padding-top:44px}}
+@media(max-width:600px){.ticket-hero__inner{padding-top:36px}.claim-tickets{inset-inline:5%}}
+@media(max-width:360px){.landing-header>div:first-child{padding-inline:12px;gap:6px}.landing-header .lx-logo{gap:5px}.landing-header .lx-logo__mark{width:24px;height:30px}.landing-header .lx-logo__text{font-size:17px}.landing-header [data-sign-in]{padding-inline:10px;font-size:12px;gap:5px}.landing-theme{width:32px;height:32px}.landing-header [data-mobile-toggle]{width:30px;height:32px}.landing-header>div>div{gap:5px}}
+.ticket-hero{background-size:100% 100%,26px 26px;background-repeat:no-repeat,repeat}
+
+/* About: scoped receipt illustration and feature tags. */
+.about-tags{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:4px 0 0}
+.about-tags li{border:1px solid var(--border);border-radius:999px;background:var(--card);padding:7px 12px;font-size:12px;color:var(--foreground)}
+.counter-receipt{position:relative;width:100%;max-width:440px;margin:0 auto 14px;padding:30px 28px;background:var(--card);color:var(--foreground);border:1px solid var(--border);box-shadow:0 18px 40px #18243f18;font-family:monospace}
+.counter-receipt:after{content:'';position:absolute;left:-1px;right:-1px;top:100%;height:12px;background:linear-gradient(135deg,var(--card) 25%,transparent 25%) -6px 0/12px 12px,linear-gradient(225deg,var(--card) 25%,transparent 25%) -6px 0/12px 12px}
+.counter-receipt__header{text-align:center;padding-bottom:22px;border-bottom:2px dashed var(--border)}
+.counter-receipt__header>p:first-child{font-size:11px;letter-spacing:2px;color:var(--primary)}
+.counter-receipt__header h3{font-size:22px;font-weight:700;margin:12px 0}
+.counter-receipt__header>p:last-child{font-size:12px;line-height:1.7;color:var(--muted-foreground)}
+.counter-receipt__steps{list-style:none;padding:0;margin:0}
+.counter-receipt__steps li{display:flex;align-items:baseline;gap:18px;padding:20px 0;border-bottom:1px dashed var(--border)}
+.counter-receipt__steps li>span{font-size:12px;color:var(--primary)}
+.counter-receipt__steps h4{font-size:15px;font-weight:700;margin-bottom:6px}
+.counter-receipt__steps p{font-size:12px;line-height:1.8;color:var(--muted-foreground)}
+.counter-receipt__footer{text-align:center;font-size:10px;letter-spacing:1px;padding-top:22px;color:var(--muted-foreground)}
+@media(max-width:400px){.counter-receipt{padding:24px 20px}.counter-receipt__steps li{gap:12px}}
+
+@media(max-width:400px){.ticket-scene{min-height:350px}}
+
+/* Full-viewport landing with content-driven height on smaller screens. */
+html:has(.lx-landing){min-height:100%;scroll-padding-top:86px}
+.lx-landing{width:100%;min-height:100vh;min-height:100svh;margin:0}
+.lx-landing main,.lx-landing main>section,.lx-landing>footer{width:100%;min-width:0}
+.ticket-hero__inner{min-height:calc(100vh - 71px);min-height:calc(100svh - 71px)}
+.ticket-hero__inner>*{min-width:0}
+.ticket-scene{min-height:420px;margin-bottom:28px}
+#ticket-hint{top:100%;padding-top:8px;letter-spacing:.3px}
+.lx-landing #about .grid>*,.counter-receipt__steps li>div{min-width:0}
+.about-tags li{max-width:100%;overflow-wrap:anywhere}
+@media(min-width:901px) and (max-width:1279px){
+  .ticket-hero h1{font-size:clamp(52px,5.9vw,72px);letter-spacing:-3px}
+}
+@media(min-width:768px) and (max-width:1000px){
+  .landing-header>div:first-child{padding-inline:20px;gap:12px}
+  .landing-header nav a{padding:10px 9px}
+  .landing-header [data-sign-in]{padding-inline:16px}
+  .landing-header .lx-logo__text{font-size:20px}
+}
+@media(max-width:600px){
+  .ticket-hero__inner{padding-bottom:54px}
+  .ticket-scene{min-height:350px}
+  #ticket-hint{font-size:10px;line-height:18px}
+}
+
+/* Let the ticket rows determine their height so labels never overlap. */
+.ticket-scene{display:flex;flex-direction:column;justify-content:center;padding-top:30px}
+.claim-tickets{position:relative;inset:auto;margin-inline:10%}
+#ticket-hint{position:relative;top:auto;margin:28px 0 0;padding-top:0}
+@media(max-width:600px){.claim-tickets{margin-inline:5%}}
+
+/* Landing maps to the shared theme palette without changing its Light design. */
+.landing-header .lx-theme-trigger{width:42px;height:42px;border-radius:50%;background:var(--card);color:var(--foreground);border-color:var(--border)}
+.landing-header .lx-theme-menu{top:calc(100% + 8px);bottom:auto;font-family:inherit}
+@media(max-width:600px){.landing-header .lx-theme-trigger{width:36px;height:36px}}
+@media(max-width:360px){.landing-header .lx-theme-trigger{width:32px;height:32px}}
+@media screen{
+  html[data-lx-theme=dark] .lx-landing{--muted:var(--lx-paint-subtle);--brand:var(--lx-primary)}
+  html[data-lx-theme=dark] .ticket-hero{background-image:linear-gradient(90deg,var(--lx-bg) 10%,transparent 70%),radial-gradient(circle,var(--lx-border) 1px,transparent 1px)}
+  html[data-lx-theme=dark] .claim-stamp{color:var(--lx-muted)}
+  html[data-lx-theme=dark] [data-demo-status=washing] .claim-stamp{color:var(--lx-paint-blue-ink)}
+  html[data-lx-theme=dark] [data-demo-status=ready] .claim-stamp{color:var(--lx-paint-orange-ink)}
+  html[data-lx-theme=dark] [data-demo-status=released] .claim-stamp{color:var(--lx-paint-green-ink)}
+  html[data-lx-theme=dark] .hero-benefits svg{stroke:var(--lx-success)}
+  html[data-lx-theme=dark] .clotheslines{stroke:var(--lx-muted)}
+  html[data-lx-theme=dark] .lx-landing section[aria-labelledby=cta-heading] .bg-foreground{background-color:var(--lx-primary-soft);--background:var(--lx-text);color:var(--lx-text)}
+}

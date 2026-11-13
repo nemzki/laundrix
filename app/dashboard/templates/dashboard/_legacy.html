@@ -11,7 +11,7 @@
 {% block page_actions %}<a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus', 16) }}<span>New order</span></a>{% endblock %}
 
 {% block content %}
-{% if config.IDV_ENABLED %}{% include "identity/_status_card.html" %}{% endif %}
+{% if config.IDV_ENABLED and not admin_area %}{% include "identity/_status_card.html" %}{% endif %}
 
 {% if admin_area %}
 <section class="lx-dash" aria-label="Admin dashboard">

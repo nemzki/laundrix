@@ -11,6 +11,7 @@
   function sync() {
     document.querySelectorAll('[data-theme-option]').forEach(function (option) {
       option.setAttribute('aria-checked', String(option.dataset.themeOption === preference));
+      if (option.closest('[data-theme-preferences]')) option.tabIndex = option.dataset.themeOption === preference ? 0 : -1;
     });
   }
   function apply() {
@@ -18,6 +19,8 @@
     root.dataset.lxTheme = resolved;
     root.dataset.themePreference = preference;
     root.dataset.bsTheme = resolved;
+    // The landing export uses class-based dark variants; React uses the data attribute.
+    root.classList.toggle('dark', resolved === 'dark');
     sync();
     window.dispatchEvent(new CustomEvent('laundrix:themechange', { detail: { preference: preference, resolved: resolved } }));
   }
@@ -33,6 +36,10 @@
     resolved: function () { return root.dataset.lxTheme; }
   };
   apply();
+  // Back/forward cache restores an existing document; re-read changes made on other pages.
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) { var stored = read(); preference = valid(stored) ? stored : 'system'; apply(); }
+  });
   media.addEventListener('change', function () { if (preference === 'system') apply(); });
   window.addEventListener('storage', function (event) {
     if (event.key === key || event.key === null) { preference = valid(event.newValue) ? event.newValue : 'system'; apply(); }
@@ -52,6 +59,8 @@
     (last ? items[items.length - 1] : picker.querySelector('[aria-checked="true"]')).focus();
   }
   document.addEventListener('click', function (event) {
+    var choice = event.target.closest('[data-theme-preferences] [data-theme-option]');
+    if (choice) { choose(choice.dataset.themeOption); return; }
     var picker = event.target.closest('[data-theme-picker]');
     if (!picker) { document.querySelectorAll('[data-theme-picker]').forEach(function (item) { close(item, false); }); return; }
     var trigger = event.target.closest('[data-theme-trigger]');
@@ -60,6 +69,16 @@
     if (option) { choose(option.dataset.themeOption); close(picker, true); }
   });
   document.addEventListener('keydown', function (event) {
+    var preferences = event.target.closest('[data-theme-preferences]');
+    if (preferences && ['ArrowRight','ArrowLeft','ArrowDown','ArrowUp','Home','End'].indexOf(event.key) !== -1) {
+      event.preventDefault();
+      var options = Array.from(preferences.querySelectorAll('[data-theme-option]'));
+      var current = options.indexOf(document.activeElement);
+      var selected = event.key === 'Home' ? 0 : event.key === 'End' ? options.length - 1 : (current + (event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1) + options.length) % options.length;
+      choose(options[selected].dataset.themeOption);
+      options[selected].focus();
+      return;
+    }
     var picker = event.target.closest('[data-theme-picker]');
     if (!picker) return;
     var menu = picker.querySelector('[data-theme-menu]');

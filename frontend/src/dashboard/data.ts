@@ -12,7 +12,7 @@ const schema = z.object({
   recent: z.array(z.object({ reference: z.string(), customer: z.string(), total: z.string(), status: z.string(), value: z.string(), tone: z.enum(['info', 'warn', 'progress', 'ready', 'neutral', 'success']), url })),
   popular: z.array(z.object({ name: z.string(), count: z.number().int().nonnegative() })),
   navigation: z.array(z.object({ label: z.string(), items: z.array(z.object({ label: z.string(), url, icon, active: z.boolean() })) })),
-  urls: z.object({ home: url, newOrder: url, orders: url, customers: url, logout: url, fallback: url, brand: url }),
+  urls: z.object({ home: url, newOrder: url, orders: url, customers: url, logout: url, fallback: url, brand: url, settings: url }),
 })
 export type DashboardData = z.infer<typeof schema>
 export type DashboardIcon = z.infer<typeof icon>

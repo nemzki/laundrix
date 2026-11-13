@@ -7,7 +7,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@prototype/components/ui/button'
 import { TooltipProvider } from '@prototype/components/ui/tooltip'
 import { useSidebar } from '@prototype/components/ui/sidebar'
-import { ThemeSelector } from '@/components/theme-selector'
 import type { DashboardData, DashboardIcon } from './data'
 
 const icons = { dashboard: LayoutDashboard, plus: Plus, orders: ClipboardList, wallet: Wallet, users: Users,
@@ -18,7 +17,7 @@ function Account({ data }: { data: DashboardData }) {
   return <div className="dashboard-account"><div className="dashboard-user">
     {data.user.picture ? <img src={data.user.picture} alt="" width={36} height={36} referrerPolicy="no-referrer" /> : <span className="dashboard-avatar" aria-hidden="true">{data.user.initials}</span>}
     <div><strong>{data.user.name}</strong><span>{data.user.label}</span></div>
-    <ThemeSelector />
+    <a className="lx-personal-settings-link" href={data.urls.settings} title="Personal Settings" aria-label="Personal Settings" data-personal-settings-link><Settings size={18} aria-hidden="true" /></a>
   </div><form method="post" action={data.urls.logout}><input type="hidden" name="csrf_token" value={data.csrf} />
     <Button type="submit" variant="outline" className="dashboard-logout"><LogOut aria-hidden="true" />Logout</Button>
   </form></div>
@@ -60,7 +59,6 @@ export function Dashboard({ data, identity, onReady }: { data: DashboardData; id
       <div className="dashboard-heading"><div><h1>{data.title}</h1><p>{data.description}</p></div>
         <Button className="dashboard-primary" nativeButton={false} render={<a href={data.urls.newOrder} />}><Plus aria-hidden="true" />New Order</Button>
       </div>
-      {data.role === 'admin' && <IdentitySlot element={identity} />}
       {groups.map(group => <section className="dashboard-group" key={group} aria-label={group}><h2>{group}</h2>
         <div className={`dashboard-metrics${group === 'Order Overview' ? ' dashboard-metrics-two' : ''}`}>
           {data.metrics.filter(metric => metric.group === group).map(metric => {

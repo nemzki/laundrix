@@ -26,6 +26,7 @@ class BrowserConfig(TestingConfig):
     IDV_ENABLED = False  # No external identity provider requests in browser tests.
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     PAYMENT_UPLOAD_DIR = _payment_uploads.name
+    PROFILE_AVATAR_DIR = str(Path(_payment_uploads.name) / 'profile-avatars')
     SMS_ENABLED = False
 
 

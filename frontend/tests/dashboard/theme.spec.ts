@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test'
 
 async function login(page: Page, role: 'admin' | 'staff' = 'admin') {
   await page.goto('/auth/login', { waitUntil: 'domcontentloaded' })
-  await expect(page.locator('html')).not.toHaveAttribute('data-lx-theme')
+  await expect(page.locator('html')).toHaveAttribute('data-theme-preference', /light|dark|system/)
   if (role === 'staff') await page.getByRole('tab', { name: 'Staff', exact: true }).click()
   await page.locator(`#${role}-identifier`).fill(role === 'admin' ? 'browseradmin' : 'staff@example.test')
   await page.locator(`#${role}-password`).fill('Browser-Test-Password!42')
@@ -12,8 +12,15 @@ async function login(page: Page, role: 'admin' | 'staff' = 'admin') {
 }
 const picker = (page: Page) => page.locator('[data-theme-picker]').filter({ visible: true }).first()
 async function choose(page: Page, value: 'light' | 'dark' | 'system') {
-  await picker(page).locator('[data-theme-trigger]').click()
-  await picker(page).locator(`[data-theme-option=${value}]`).click()
+  const original = page.url()
+  if (new URL(original).pathname === '/') {
+    await picker(page).locator('[data-theme-trigger]').click()
+    await picker(page).locator(`[data-theme-option=${value}]`).click()
+  } else {
+    await page.goto('/settings', { waitUntil: 'domcontentloaded' })
+    await page.locator(`[data-theme-preferences] [data-theme-option=${value}]`).click()
+    if (new URL(original).pathname !== '/settings') await page.goto(original, { waitUntil: 'domcontentloaded' })
+  }
   await expect(page.locator('html')).toHaveAttribute('data-theme-preference', value)
 }
 async function darkSurface(page: Page, selector: string) {
@@ -27,13 +34,14 @@ test('system default, live OS changes, explicit preference, persistence, keyboar
   await login(page)
   await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'dark')
   await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'system')
-  const trigger = picker(page).getByRole('button', { name: 'Change Theme' })
-  await expect(trigger).toHaveAttribute('title', 'Change Theme')
-  await trigger.focus(); await page.keyboard.press('ArrowDown')
-  await expect(picker(page).getByRole('menuitemradio', { name: 'System' })).toBeFocused()
-  await page.keyboard.press('Home'); await page.keyboard.press('Enter')
+  const gear = page.getByRole('link', { name: 'Personal Settings', exact: true }).filter({ visible: true }).first()
+  await expect(gear).toHaveAttribute('title', 'Personal Settings')
+  await gear.focus(); await page.keyboard.press('Enter')
+  const appearance = page.locator('[data-theme-preferences]')
+  await appearance.locator('[data-theme-option=system]').focus()
+  await page.keyboard.press('Home')
   await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'light')
-  await expect(trigger).toBeFocused()
+  await expect(appearance.locator('[data-theme-option=light]')).toBeFocused()
   await page.emulateMedia({ colorScheme: 'light' })
   await choose(page, 'dark')
   await page.reload()
@@ -45,10 +53,8 @@ test('system default, live OS changes, explicit preference, persistence, keyboar
   await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'light')
   await page.emulateMedia({ colorScheme: 'dark' })
   await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'dark')
-  await picker(page).locator('[data-theme-trigger]').click()
-  await expect(picker(page).getByRole('menuitemradio', { name: 'System' })).toHaveAttribute('aria-checked', 'true')
-  await page.keyboard.press('Escape')
-  await expect(picker(page).locator('[data-theme-menu]')).toBeHidden()
+  await page.goto('/settings', { waitUntil: 'domcontentloaded' })
+  await expect(page.locator('[data-theme-preferences] [data-theme-option=system]')).toHaveAttribute('aria-checked', 'true')
   const other = await context.newPage()
   await other.goto('/orders/', { waitUntil: 'domcontentloaded' })
   await choose(other, 'light')
@@ -66,9 +72,9 @@ for (const role of ['admin', 'staff'] as const) for (const width of [320, 768, 1
     await darkSurface(page, '.dashboard-card')
     if (width === 320) await page.getByRole('button', { name: 'More', exact: true }).click()
     await choose(page, 'dark')
-    await expect(picker(page).locator('[data-theme-trigger]')).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.locator('[data-theme-picker]')).toHaveCount(0)
     const routes = role === 'admin'
-      ? ['/dashboard/?ui=jinja', '/orders/new', '/orders/', '/orders/customers', '/admin/services/', '/admin/staff/', '/payments/outstanding', '/payments/', '/payments/summary', '/payments/settings']
+      ? ['/dashboard/?ui=jinja', '/orders/new', '/orders/', '/orders/customers', '/admin/services/', '/admin/staff/', '/admin/staff/new', '/payments/outstanding', '/payments/', '/payments/summary', '/payments/settings']
       : ['/dashboard/?ui=jinja', '/orders/new', '/orders/', '/payments/outstanding']
     for (const route of routes) {
       expect((await page.goto(route, { waitUntil: 'domcontentloaded' }))?.status(), route).toBe(200)
@@ -131,7 +137,7 @@ test('server dashboard has prepaint theme and selector before React loads', asyn
   await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'light')
 })
 
-test('stored theme does not style public login, landing, or printed stub', async ({ page, browser }) => {
+test('stored theme applies to public pages while the printable stub stays isolated', async ({ page, browser }) => {
   test.setTimeout(60000)
   await login(page)
   await choose(page, 'dark')
@@ -142,10 +148,128 @@ test('stored theme does not style public login, landing, or printed stub', async
   await expect(page.locator('script[src$="/theme.js"]')).toHaveCount(0)
   const publicPage = await browser.newPage()
   await publicPage.addInitScript(() => localStorage.setItem('laundrix-theme', 'dark'))
-  for (const url of ['/', '/auth/login']) {
+  for (const url of ['/', '/auth/login', '/staff/login']) {
     await publicPage.goto('http://127.0.0.1:8771' + url, { waitUntil: 'domcontentloaded' })
-    await expect(publicPage.locator('html')).not.toHaveAttribute('data-lx-theme')
-    await expect(publicPage.locator('link[href$="/theme.css"]')).toHaveCount(0)
+    await expect(publicPage.locator('html')).toHaveAttribute('data-lx-theme', 'dark')
+    await expect(publicPage.locator('link[href$="/theme.css"]')).toHaveCount(1)
+    expect(await publicPage.locator('body').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(15, 23, 42)')
   }
   await publicPage.close()
+})
+
+for (const role of ['admin', 'staff'] as const) {
+  test(`landing preference survives login, navigation, refresh and logout: ${role}`, async ({ page }) => {
+    test.setTimeout(90000)
+    await page.emulateMedia({ colorScheme: 'light' })
+    // Record the resolved state as soon as the body exists, before React mounts.
+    await page.addInitScript(() => {
+      const observer = new MutationObserver(() => {
+        if (!document.body) return
+        document.documentElement.dataset.themeAtBody = document.documentElement.dataset.lxTheme || 'missing'
+        observer.disconnect()
+      })
+      observer.observe(document, { childList: true, subtree: true })
+    })
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await choose(page, 'dark')
+    await page.locator('[data-sign-in]').first().click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme-at-body', 'dark')
+    await expect(page.locator('.lx-auth__input').first()).toHaveCSS('background-color', 'rgb(37, 50, 72)')
+    await login(page, role)
+    await expect(page.locator('html')).toHaveAttribute('data-theme-at-body', 'dark')
+    for (const route of ['/orders/', '/payments/outstanding', '/dashboard/']) {
+      await page.goto(route, { waitUntil: 'domcontentloaded' })
+      await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'dark')
+      await expect(page.locator('html')).toHaveAttribute('data-theme-at-body', 'dark')
+    }
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'dark')
+    await page.getByRole('button', { name: 'Logout', exact: true }).filter({ visible: true }).first().click()
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'dark')
+    await choose(page, 'light')
+    await page.locator('[data-sign-in]').first().click()
+    await expect(page.locator('html')).toHaveAttribute('data-theme-at-body', 'light')
+    await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(255, 255, 255)')
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await choose(page, 'system')
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'dark')
+    await page.emulateMedia({ colorScheme: 'light' })
+    await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'light')
+    await page.locator('[data-sign-in]').first().click()
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'dark')
+    await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'system')
+  })
+}
+
+test('explicit Light restores all Admin modules even when the OS is Dark', async ({ page }) => {
+  test.setTimeout(90000)
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await login(page)
+  await choose(page, 'light')
+  for (const route of ['/dashboard/', '/dashboard/?ui=jinja', '/orders/new', '/orders/', '/orders/customers', '/admin/services/', '/admin/staff/', '/admin/staff/new', '/payments/outstanding', '/payments/', '/payments/summary', '/payments/settings']) {
+    await page.goto(route, { waitUntil: 'domcontentloaded' })
+    await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'light')
+    await expect(page.locator('html')).not.toHaveClass(/dark/)
+    expect(await page.locator('body').evaluate(el => getComputedStyle(el).getPropertyValue('--lx-paint-surface').trim())).toBe('')
+    expect(await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor)).not.toBe('rgb(15, 23, 42)')
+  }
+})
+
+for (const width of [320, 1440]) {
+  test(`shared public palette and login form readability at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 })
+    await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' })
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'system')
+    await expect(page.locator('html')).toHaveClass(/dark/)
+    await page.locator('#about').scrollIntoViewIfNeeded()
+    await darkSurface(page, '.counter-receipt')
+    await page.getByRole('button', { name: 'Change Theme', exact: true }).click()
+    await darkSurface(page, '.lx-theme-menu')
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#cta-heading')).toHaveCSS('color', 'rgb(241, 245, 249)')
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }))
+    await page.screenshot({ path: `test-results/theme-sync/landing-dark-${width}.png`, fullPage: true })
+    for (const url of ['/auth/login', '/staff/login']) {
+      await page.goto(url, { waitUntil: 'domcontentloaded' })
+      await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'dark')
+      await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(15, 23, 42)')
+      const input = page.locator('input[type=password]').first()
+      await expect(input).toHaveCSS('color', 'rgb(241, 245, 249)')
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      await page.screenshot({ path: `test-results/theme-sync/login-${url.includes('/auth/') ? 'unified' : 'legacy'}-dark-${width}.png`, fullPage: true })
+    }
+  })
+}
+
+test('catalog select portals, real validation errors and staff dropdowns share dark tokens', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await login(page)
+  await page.goto('/admin/services/', { waitUntil: 'domcontentloaded' })
+  await expect(page.locator('#laundrix-catalog')).toHaveAttribute('data-ready', 'true')
+  await page.locator('#catalog-action-react').getByRole('button').click()
+  await darkSurface(page, '.catalog-dialog')
+  const dialog = page.locator('.catalog-dialog')
+  await dialog.getByLabel('Service Name', { exact: true }).fill('Theme validation check')
+  await dialog.getByLabel('Code', { exact: true }).fill('theme_validation_check')
+  await dialog.getByLabel('Price', { exact: true }).fill('12.50')
+  await dialog.getByLabel('Pricing Unit', { exact: true }).click()
+  await darkSurface(page, '[role=listbox]')
+  await page.getByRole('option', { name: 'Per Piece', exact: true }).click()
+  await dialog.getByRole('textbox', { name: 'Category', exact: true }).fill('Theme check')
+  await dialog.locator('summary').click()
+  await dialog.getByLabel('Image Path (Optional)', { exact: true }).fill('https://invalid.example/image.png')
+  await dialog.getByRole('button', { name: 'Add Service', exact: true }).click()
+  const validation = dialog.getByRole('alert').first()
+  await expect(validation).toContainText('local path')
+  await expect(validation).toHaveCSS('color', 'rgb(252, 165, 165)')
+  await page.keyboard.press('Escape')
+  await page.goto('/admin/staff/', { waitUntil: 'domcontentloaded' })
+  await expect(page.locator('#laundrix-staff')).toHaveAttribute('data-ready', 'true')
+  await page.locator('[data-staff-row]').first().getByRole('button', { name: /Actions for/ }).click()
+  await darkSurface(page, '.staff-menu')
+  await page.keyboard.press('Escape')
 })

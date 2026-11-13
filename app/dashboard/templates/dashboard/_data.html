@@ -51,5 +51,5 @@
   metrics=view.metrics, recent=view.recent, popular=view.popular, navigation=view.groups,
   urls=dict(home=url_for('dashboard.index'), newOrder=url_for('orders.new_order'), orders=url_for('orders.index'),
     customers=url_for('orders.customers') if admin_area else url_for('payments.outstanding'),
-    logout=url_for('auth.logout'), fallback=url_for(request.endpoint, ui='jinja'),
+    settings=url_for('core.personal_settings'), logout=url_for('auth.logout'), fallback=url_for(request.endpoint, ui='jinja'),
     brand=url_for('core.static', filename='images/mascot-original.svg')), csrf=csrf_token()) %}

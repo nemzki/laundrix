@@ -122,3 +122,16 @@
     reveals.forEach(function (element) { observer.observe(element); });
   } else reveals.forEach(function (element) { element.dataset.visible = 'true'; });
 })();
+
+/* Decorative demo only: no requests, order identifiers or application state. */
+(function () {
+  'use strict';
+  var statuses = ['received', 'washing', 'ready', 'released'];
+  document.querySelectorAll('[data-demo-status]').forEach(function (ticket) {
+    ticket.addEventListener('click', function () {
+      var next = statuses[(statuses.indexOf(ticket.dataset.demoStatus) + 1) % statuses.length];
+      ticket.dataset.demoStatus = next;
+      ticket.querySelector('.claim-stamp').textContent = next.toUpperCase();
+    });
+  });
+})();
