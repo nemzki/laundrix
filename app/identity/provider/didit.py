@@ -6,8 +6,8 @@ Documented behaviour this relies on:
   url, status, ...}. `vendor_data` makes it idempotent: an unfinished session for the same
   vendor_data is returned again instead of creating a duplicate.
 * GET /v3/session/{session_id}/decision/ -> {status, ...plural per-feature arrays}.
-* POST /v3/passive-liveness/ accepts multipart image (+ optional vendor_data).
-* POST /v3/face-search/ accepts multipart image (+ optional search controls).
+* POST /v3/passive-liveness/ accepts multipart user_image (+ optional vendor_data).
+* POST /v3/face-search/ accepts multipart user_image (+ optional search controls).
 * Auth failures are HTTP 403 (not 401); request rejections are 4xx; unknown session is 404.
 
 Standalone biometric POSTs are not retried: repeating a provider call after a network
@@ -230,7 +230,7 @@ class DiditProvider(IdentityProvider):
             "POST",
             "/v3/passive-liveness/",
             form_data=form_data,
-            files={"image": (safe_name, image_bytes, content_type)},
+            files={"user_image": (safe_name, image_bytes, content_type)},
         )
 
     def face_search(
@@ -267,7 +267,7 @@ class DiditProvider(IdentityProvider):
             "POST",
             "/v3/face-search/",
             form_data=form_data,
-            files={"image": (safe_name, image_bytes, content_type)},
+            files={"user_image": (safe_name, image_bytes, content_type)},
         )
 
     def get_decision(self, session_id: str) -> Decision:
