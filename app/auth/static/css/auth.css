@@ -192,6 +192,35 @@
   pointer-events: none;
 }
 
+.lx-auth__face-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 46px;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--lx-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--lx-navy);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lx-auth__face-login:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lx-auth__face-status {
+  margin: 0.65rem 0 0;
+  color: var(--lx-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
 .lx-auth__fineprint {
   margin: 1.35rem 0 0;
   font-size: 0.82rem;
