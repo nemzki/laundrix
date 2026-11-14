@@ -17,6 +17,7 @@ from flask import has_request_context, request
 from sqlalchemy import case, func
 from sqlalchemy.exc import IntegrityError
 
+from app.audit.services import audit_payment_event
 from app.extensions import db
 from app.models import (
     Order, Payment, PaymentArrangement, PaymentEvent, PaymentKind, PaymentMethod,
@@ -64,12 +65,15 @@ def _method_by_code(code):
 
 
 # ----------------------------------------------------------------------------- audit
-def log_event(action, user=None, order=None, payment=None, detail=None):
+def log_event(action, user=None, order=None, payment=None, detail=None, old=None, new=None):
+    """Record a payment event. It is also written to the central Audit Logs, in the same
+    transaction as the change it describes (`old`/`new` = changed values for the audit row)."""
     ip = request.remote_addr if has_request_context() else None
     db.session.add(PaymentEvent(
         action=action, actor_id=getattr(user, "id", None), order=order, payment=payment,
         detail=(detail or "")[:500] or None, ip=(ip or None),
     ))
+    audit_payment_event(action, user, order=order, payment=payment, detail=detail, old=old, new=new)
 
 
 # ----------------------------------------------------------------------------- ledger maths
@@ -230,10 +234,12 @@ def legacy_plan(total) -> PaymentPlan:
     return PaymentPlan(total=money(total), arrangement=PaymentArrangement.PAY_LATER)
 
 
-def add_payment_rows(order, entries, user, key_base=None):
-    """Add ledger rows for `order` to the session. The caller owns the transaction (no commit here)."""
+def add_payment_rows(order, entries, user, key_base=None, balance_before=None):
+    """Add ledger rows for `order` to the session. The caller owns the transaction (no commit here).
+    `balance_before` (default: the order total) only feeds the audit record's balance figures."""
     now = utcnow()
     rows = []
+    balance = money(Decimal(order.total if balance_before is None else balance_before))
     for e in entries:
         row = Payment(
             order=order, kind=PaymentKind.PAYMENT, method_id=e.method.id,
@@ -243,8 +249,12 @@ def add_payment_rows(order, entries, user, key_base=None):
         )
         db.session.add(row)
         rows.append(row)
+        after = money(balance - row.amount)
         log_event("payment_recorded", user, order=order, payment=row,
-                  detail=f"{peso(row.amount)} via {row.method_label}")
+                  detail=f"{peso(row.amount)} via {row.method_label}",
+                  old={"balance": balance},
+                  new={"amount": row.amount, "method": row.method_label, "balance": after})
+        balance = after
     return rows
 
 
@@ -294,7 +304,7 @@ def record_payments(order_id, raw_entries, user, idempotency_key=None):
         return [], plan.errors, False
 
     try:
-        rows = add_payment_rows(order, plan.entries, user, key)
+        rows = add_payment_rows(order, plan.entries, user, key, balance_before=balance)
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
@@ -336,7 +346,9 @@ def reverse_payment(payment_id, reason, user):
         )
         db.session.add(row)
         log_event("payment_reversed", user, order=order, payment=row,
-                  detail=f"Reversed {peso(original.amount)} {original.method_label} (payment #{original.id}): {reason}")
+                  detail=f"Reversed {peso(original.amount)} {original.method_label} (payment #{original.id}): {reason}",
+                  old={"payment_id": original.id, "amount": original.amount},
+                  new={"reversal_amount": row.amount, "method": row.method_label, "reason": reason})
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
@@ -376,11 +388,16 @@ def update_settings(data, user):
         return None, errors
     settings = get_settings()
     changed = [k for k, v in values.items() if getattr(settings, k) != v]
+    flags = [k for k in changed if k in ("partial_enabled", "pay_later_enabled", "show_qr_on_stub")]
+    old_flags = {k: getattr(settings, k) for k in flags}
     for k, v in values.items():
         setattr(settings, k, v)
     settings.updated_by_id = user.id
     if changed:
-        log_event("settings_updated", user, detail="Changed: " + ", ".join(sorted(changed)))
+        # Switches are stored as before/after; free-text fields (account name/number, notices) are
+        # listed by name only, so account details never get copied into the audit trail.
+        log_event("settings_updated", user, detail="Changed: " + ", ".join(sorted(changed)),
+                  old=old_flags or None, new={k: values[k] for k in flags} or None)
     db.session.commit()
     return settings, {}
 

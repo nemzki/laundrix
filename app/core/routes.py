@@ -3,15 +3,32 @@ from flask import abort, flash, make_response, redirect, render_template, reques
 from flask_login import current_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.audit import queries as audit_queries
+from app.audit import services as audit
 from app.core import bp, profile_avatars
 from app.core.decorators import role_required
 from app.extensions import db, limiter
 from app.models import AccountStatus, Role
 
 
+def _audit_context():
+    """Data for the Audit Logs card. Admins only: for everyone else nothing is queried or rendered."""
+    if current_user.role != Role.ADMIN:
+        return None
+    filters = audit_queries.parse_filters(request.args)
+    pagination = db.paginate(
+        audit_queries.build_query(filters), page=audit_queries.page_number(request.args),
+        per_page=audit_queries.PAGE_SIZE, error_out=False)
+    return {
+        'f': filters, 'pagination': pagination, 'entries': pagination.items,
+        'action_labels': audit.AuditAction.LABELS, 'action_tones': audit.AuditAction.TONES,
+        'module_labels': audit.AuditModule.LABELS, 'diff_rows': audit_queries.diff_rows,
+    }
+
+
 def _settings(status=200, **context):
     response = make_response(render_template(
-        'core/personal_settings.html', account_labels=AccountStatus.LABELS,
+        'core/personal_settings.html', account_labels=AccountStatus.LABELS, audit=_audit_context(),
         profile_errors=context.get('profile_errors', {}),
         profile_name=context.get('profile_name', current_user.full_name or ''),
     ), status)
@@ -55,12 +72,22 @@ def update_profile():
             if error:
                 return _settings(422, profile_errors={'profile_picture': error}, profile_name=raw_name)
         old_file = profile_avatars.stored_name(current_user.picture_url)
+        old_name = current_user.full_name
         current_user.full_name = name
         if new_file:
             current_user.picture_url = url_for('core.profile_avatar', filename=new_file)
         elif remove:
             # Empty string deliberately retains the initials fallback across future Google logins.
             current_user.picture_url = ''
+        old_vals, new_vals = audit.changes(
+            {'full_name': old_name}, {'full_name': name})
+        if new_file or remove:
+            old_vals = {**(old_vals or {}), 'profile_picture': 'set' if old_file else 'default'}
+            new_vals = {**(new_vals or {}), 'profile_picture': 'removed' if remove else 'replaced'}
+        if new_vals:
+            audit.record(audit.AuditAction.UPDATE, audit.AuditModule.ACCOUNTS,
+                         'Updated own profile', resource_id=current_user.id,
+                         resource_label=f'Account: {name}', old=old_vals, new=new_vals)
         db.session.commit()
     except (OSError, SQLAlchemyError):
         db.session.rollback()

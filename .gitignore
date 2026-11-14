@@ -44,3 +44,4 @@ backups/
 Thumbs.db
 
 laundrix_backup.sql
+*.sql
