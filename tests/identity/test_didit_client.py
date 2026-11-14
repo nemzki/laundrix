@@ -215,32 +215,33 @@ class StandaloneBiometrics(unittest.TestCase):
             self.PNG,
             filename="capture.png",
             vendor_data="laundrix:42",
-            similarity_threshold=90,
-            allow_multiple_faces=False,
         )
+
         method, url, kwargs = http.calls[0]
         self.assertEqual((method, url), (
             "POST", "https://verification.didit.me/v3/face-search/"
         ))
         self.assertEqual(kwargs["data"], {
-            "vendor_data": "laundrix:42",
-            "similarity_threshold": "90",
-            "allow_multiple_faces": "false",
+            "search_type": "most_similar",
             "save_api_request": "false",
+            "vendor_data": "laundrix:42",
         })
         self.assertEqual(kwargs["files"]["user_image"], (
             "capture.png", self.PNG, "image/png"
         ))
         self.assertEqual(result, report)
 
-    def test_face_search_defaults_threshold_and_multiple_face_policy(self):
+    def test_face_search_uses_documented_defaults(self):
         http = FakeHttp(FakeResponse(200, {"total_matches": 0, "matches": []}))
         provider(http).face_search(self.JPEG)
+
         self.assertEqual(http.calls[0][2]["data"], {
-            "similarity_threshold": "70",
-            "allow_multiple_faces": "false",
+            "search_type": "most_similar",
             "save_api_request": "false",
         })
+        self.assertEqual(http.calls[0][2]["files"]["user_image"], (
+            "capture.jpg", self.JPEG, "image/jpeg"
+        ))
 
     def test_multipart_requests_do_not_retry(self):
         http = FakeHttp(requests.Timeout())
@@ -271,16 +272,6 @@ class StandaloneBiometrics(unittest.TestCase):
                     client.passive_liveness(image, filename=filename)
         self.assertEqual(http.calls, [])
 
-    def test_rejects_invalid_face_search_options_before_network(self):
-        http = FakeHttp()
-        client = provider(http)
-        for threshold in (-1, 101, 90.5, True, "90"):
-            with self.subTest(threshold=threshold):
-                with self.assertRaises(ValueError):
-                    client.face_search(self.JPEG, similarity_threshold=threshold)
-        with self.assertRaises(ValueError):
-            client.face_search(self.JPEG, allow_multiple_faces="false")
-        self.assertEqual(http.calls, [])
 
     def test_rejects_invalid_vendor_data_before_network(self):
         http = FakeHttp()

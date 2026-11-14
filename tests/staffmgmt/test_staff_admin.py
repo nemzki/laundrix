@@ -23,7 +23,7 @@ S = AccountStatus
 
 # ----------------------------------------------------------------------------- helpers
 def make_staff(email="sam@example.com", status=S.ACTIVE, verified=True, active=True, name="Sam Cruz"):
-    user, _sid, token = create_staff(email, name, account_status=status)
+    user, token = create_staff(email, name, account_status=status)
     user.staff_credential.password_hash = generate_password_hash(STAFF_PASSWORD)
     user.is_active = active
     if verified:

@@ -14,7 +14,7 @@ from tests.staffmgmt.conftest import app
 
 
 def make_verified_staff():
-    user, _sid, _token = create_staff(
+    user, _token = create_staff(
         "face@example.com",
         "Face Test",
     )

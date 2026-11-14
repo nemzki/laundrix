@@ -84,18 +84,22 @@
   }
 
   function initGoogle() {
-    var btn = document.getElementById("googleBtn");
-    if (!btn) return;
-    btn.addEventListener("click", function () {
-      btn.classList.add("is-loading");
-      var span = btn.querySelector("span");
-      if (span) span.textContent = "Redirecting to Google…";
+    var buttons = document.querySelectorAll("[data-google-btn]");
+    if (!buttons.length) return;
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        btn.classList.add("is-loading");
+        var span = btn.querySelector("span");
+        if (span) span.textContent = "Redirecting to Google…";
+      });
     });
     window.addEventListener("pageshow", function (event) {
       if (!event.persisted) return;
-      btn.classList.remove("is-loading");
-      var span = btn.querySelector("span");
-      if (span) span.textContent = "Continue with Google";
+      buttons.forEach(function (btn) {
+        btn.classList.remove("is-loading");
+        var span = btn.querySelector("span");
+        if (span) span.textContent = "Continue with Google";
+      });
       document.querySelectorAll("[data-auth-form]").forEach(function (form) {
         form.dataset.submitting = "";
         var submit = form.querySelector("[data-auth-submit]");

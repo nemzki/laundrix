@@ -101,38 +101,16 @@ flask --app run db downgrade 4b1d2288b22d   # drops ONLY identity_verification_e
 This permanently deletes verification records: back up first. To switch the feature off *without* touching
 the database, set `IDV_ENABLED=false` (every `/identity/*` route then returns 404).
 
-### 3.3 Staff sign-in: the Biometric Authentication workflow
+### 3.3 Staff sign-in: Face Login (Didit Face Search)
 
-Staff sign in with **email → Staff ID → live selfie**. The selfie is checked by Didit's
-**Biometric Authentication** product, which compares a returning person's live face with the portrait it
-stored during their ID verification. No document is re-scanned and Laundrix keeps no face data.
-
-1. Didit Console → *Workflows → Create workflow* → choose the **Biometric Authentication** type
-   (Didit's docs call it `BIOMETRIC_AUTHENTICATION`). Copy its **Workflow ID**.
-2. Put it in `.env` as `DIDIT_BIOMETRIC_WORKFLOW_ID` (the ID-verification workflow stays in `DIDIT_WORKFLOW_ID`).
-3. The webhook destination you already created is reused.
-
-How the pieces fit:
-
-* **Onboarding (once):** `create-staff` prints a Staff ID and a single-use link. The person opens the link,
-  confirms their Staff ID, agrees to the notice, then completes the normal Didit ID verification
-  (ID photo + liveness + face match). That is what creates the stored portrait.
-* **Every sign-in:** Laundrix starts a Biometric Authentication session using the *same* person reference
-  (`vendor_data = laundrix:<user_id>`), so Didit knows which stored portrait to compare against.
-* **Fails closed:** if `IDV_ENABLED` is false or `DIDIT_BIOMETRIC_WORKFLOW_ID` is missing, `/staff/*` shows
-  "unavailable" (HTTP 503). It never falls back to a weaker sign-in.
-
-**Cost:** Didit's product page lists Biometric Authentication at about **$0.10 per authentication** (vendor-stated).
-I could not confirm whether any free allowance covers it, so check your Didit balance/pricing. Each staff sign-in is
-one authentication; e.g. 5 staff × 26 working days ≈ 130 sign-ins ≈ $13/month at that price.
-`IDV_BIOMETRIC_MAX_PER_HOUR` (default 6) stops someone who has stolen a Staff ID from running up your bill.
-
-**Trade-off:** this adds one redirect to Didit's page per sign-in. Sessions last `SESSION_LIFETIME_MINUTES`
-(default 8 hours), so a normal shift is one selfie.
+Staff can sign in with email + password, Google, or **Face Login**. Face Login scans the person live in the
+browser, checks passive liveness, then searches Didit's face index of verified staff and signs in the match.
+There is no Staff ID. The full setup, calibration and troubleshooting steps are in
+[`face_login_guide.md`](face_login_guide.md).
 
 ### 3.4 Moving existing staff off AWS Rekognition (one time)
 
-Their Staff IDs stay valid; only the face step changes.
+(Staff IDs have since been retired; see `face_login_guide.md`.)
 
 ```
 flask --app run db upgrade                       # adds identity_verifications.purpose, drops the 3 Rekognition columns
@@ -161,9 +139,8 @@ package is no longer required. Use your actual collection ID and region if you c
 | `flask --app run idv-status EMAIL` | show a user's attempts and statuses |
 | `flask --app run idv-reconcile` | poll Didit for attempts whose webhook may have been missed (cron every ~10 min) |
 | `flask --app run idv-purge [--days N] [--dry-run]` | retention clean-up (ID records by `--days`; sign-in face checks after `IDV_BIOMETRIC_RETENTION_DAYS`) |
-| `flask --app run create-staff EMAIL --name "…"` | new staff: prints a Staff ID (once) and a single-use onboarding link |
-| `flask --app run new-enroll-link EMAIL` | new onboarding/re-verification link (keeps the Staff ID) |
-| `flask --app run reset-staff EMAIL` | lost Staff ID: new ID, clears lockout (identity verification kept) |
+| `flask --app run create-staff EMAIL --name "…"` | new staff: prints a single-use onboarding link |
+| `flask --app run new-enroll-link EMAIL` | new onboarding/re-verification link |
 | `flask --app run staff-status EMAIL` | verified? locked? link pending? last sign-in |
 | `flask --app run deactivate-staff EMAIL` | offboarding (then delete their data in the Didit console) |
 

@@ -1,28 +1,24 @@
 """Business logic for the staff portal.
 
-Staff sign-in uses email and password.
-Didit identity verification is performed during enrollment, not every login.
-Laundrix stores password and legacy Staff ID hashes, but no face data.
+Staff sign in with email + password, Google, or Face Login (Didit Face Search).
+Didit identity verification is performed once, during enrollment.
+Laundrix stores password hashes, but no face data and no Staff ID.
 """
 import hashlib
 import re
 import secrets
-import time
 from datetime import timedelta
 
-from flask import current_app, request, session
+from flask import current_app, request
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db
 from app.models import AccountStatus, AuthEvent, Role, StaffCredential, User
 from app.models.staff_credential import utcnow
 
-WIZARD_KEY = "staff_login"
 ENROLL_KEY = "staff_enroll"
 EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]+\.[^@\s]+$")
 
-LOCKED_MSG = "Too many failed attempts. This account is temporarily locked. Try again later."
-GENERIC_FAIL = "We couldn't verify those details. Please check and try again."
 
 
 # ---- normalisation / tokens ---------------------------------------------------------------
@@ -34,21 +30,8 @@ def valid_email(value: str) -> bool:
     return bool(EMAIL_RE.match(value))
 
 
-def normalize_staff_id(value) -> str:
-    return re.sub(r"\s+", "", value or "").upper()[:64]
-
-
-def mask_email(email: str) -> str:
-    name, _, domain = email.partition("@")
-    return f"{name[:1]}{'*' * max(len(name) - 1, 2)}@{domain}"
-
-
 def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
-
-
-def generate_staff_id() -> str:
-    return f"LX-{secrets.randbelow(10**8):08d}"
 
 
 _dummy = None
@@ -58,7 +41,7 @@ def dummy_hash() -> str:
     """Used for unknown emails so response time doesn't reveal whether an account exists."""
     global _dummy
     if _dummy is None:
-        _dummy = generate_password_hash("not-a-real-staff-id")
+        _dummy = generate_password_hash("not-a-real-password")
     return _dummy
 
 
@@ -76,21 +59,13 @@ def _new_token_fields():
     return token, hash_token(token), utcnow() + timedelta(hours=hours)
 
 
-def _checked_staff_id(staff_id):
-    staff_id = normalize_staff_id(staff_id) if staff_id else generate_staff_id()
-    if len(staff_id) < 6:
-        raise ValueError("Staff ID must be at least 6 characters.")
-    return staff_id
-
-
-def create_staff(email: str, full_name=None, staff_id=None, account_status=None):
+def create_staff(email: str, full_name=None, account_status=None):
     email = normalize_email(email)
     if not valid_email(email):
         raise ValueError("Invalid email address.")
     if db.session.execute(db.select(User).filter_by(email=email)).scalar_one_or_none():
         raise ValueError("A user with this email already exists.")
 
-    staff_id = _checked_staff_id(staff_id)
     token, token_hash, expires = _new_token_fields()
     if account_status is not None and account_status not in AccountStatus.ALL:
         raise ValueError("Unknown account status.")
@@ -98,29 +73,18 @@ def create_staff(email: str, full_name=None, staff_id=None, account_status=None)
     if account_status is not None:           # Staff Management starts accounts at pending_verification
         user.account_status = account_status
     user.staff_credential = StaffCredential(
-        staff_id_hash=generate_password_hash(staff_id),
         enroll_token_hash=token_hash,
         enroll_token_expires_at=expires,
     )
     db.session.add(user)
     db.session.commit()
-    return user, staff_id, token
+    return user, token
 
 
 def _credential_or_error(user: User) -> StaffCredential:
     if user.staff_credential is None:
         raise ValueError("This user is not a staff member.")
     return user.staff_credential
-
-
-def reset_staff_id(user: User, staff_id=None) -> str:
-    """Lost Staff ID: issue a new one and clear any lockout. Their verified identity is unaffected."""
-    cred = _credential_or_error(user)
-    staff_id = _checked_staff_id(staff_id)
-    cred.staff_id_hash = generate_password_hash(staff_id)
-    cred.failed_attempts, cred.locked_until = 0, None
-    db.session.commit()
-    return staff_id
 
 
 def new_enroll_link(user: User) -> str:
@@ -172,37 +136,6 @@ def register_success(cred: StaffCredential):
     db.session.commit()
 
 
-# ---- login wizard state (server-side, in the signed session) -------------------------------
-def start_wizard(user, email: str):
-    window = current_app.config["STAFF_LOGIN_WINDOW_SECONDS"]
-    eligible = user is not None and user.role == Role.STAFF and user.is_active
-    session[WIZARD_KEY] = {
-        "uid": user.id if eligible else None,
-        "email": email,
-        "stage": "id",
-        "exp": time.time() + window,
-        "fails": 0,
-        "vid": None,      # id of the Didit face-check attempt in flight
-        "t0": 0.0,        # when that attempt started (a stale approval can't be reused)
-        "polls": 0,
-    }
-
-
-def get_wizard(stage: str):
-    wiz = session.get(WIZARD_KEY)
-    if not wiz or wiz.get("exp", 0) < time.time() or wiz.get("stage") != stage:
-        return None
-    return wiz
-
-
-def save_wizard(wiz: dict):
-    session[WIZARD_KEY] = wiz  # reassign so Flask notices the change
-
-
-def clear_wizard():
-    session.pop(WIZARD_KEY, None)
-
-
 # ---- enrollment tokens ----------------------------------------------------------------------
 def find_credential_by_token(token: str):
     """A valid link = an unexpired token on an active account. (An already-verified person may be
@@ -219,11 +152,6 @@ def find_credential_by_token(token: str):
         return None
     return cred
 
-
-def verify_staff_id(cred, entered: str) -> bool:
-    stored = cred.staff_id_hash if cred else dummy_hash()
-    ok = check_password_hash(stored, entered)
-    return bool(ok and cred)
 
 def verify_staff_password(cred, entered: str) -> bool:
     """Verify a staff password without revealing whether an account exists."""

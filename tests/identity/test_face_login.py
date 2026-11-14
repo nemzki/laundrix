@@ -38,8 +38,6 @@ def test_face_search_runs_only_after_approved_passive_liveness(monkeypatch):
         call.face_search(
             image,
             filename="capture.jpg",
-            similarity_threshold=90,
-            allow_multiple_faces=False,
         ),
     ]
     resolve_identity.assert_called_once_with({"matches": []})

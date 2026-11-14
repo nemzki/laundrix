@@ -53,7 +53,11 @@ def _init_extensions(app):
         content_security_policy=CSP,
         frame_options="DENY",
         referrer_policy="strict-origin-when-cross-origin",
-        permissions_policy={"camera": "()", "microphone": "()", "geolocation": "()"},
+        permissions_policy={
+            "camera": "(self)",
+            "microphone": "()",
+            "geolocation": "()",
+        },
     )
 
     oauth.init_app(app)

@@ -24,7 +24,7 @@ from app.extensions import db, limiter, oauth
 from app.models import Role
 from app.core.audit import record_event
 from app.identity.face_login import authenticate_with_face
-from app.identity.provider.base import ProviderError
+from app.identity.provider.base import FaceNotDetected, ProviderError
 from app.models.staff_credential import utcnow
 
 MAX_FACE_LOGIN_IMAGE_BYTES = 1400 * 1024
@@ -105,6 +105,8 @@ def face_login():
 
     image_bytes = image_file.read(MAX_FACE_LOGIN_IMAGE_BYTES + 1)
 
+    current_app.logger.info("Face Login image received: %d bytes", len(image_bytes))
+
     if not image_bytes:
         return response("The captured image is empty.", 400)
 
@@ -115,6 +117,11 @@ def face_login():
         user = authenticate_with_face(
             image_bytes,
             filename=filename,
+        )
+    except FaceNotDetected:
+        return response(
+            "We couldn't see a clear face. Face the camera in good light and try again.",
+            422,
         )
     except (ProviderError, NotImplementedError, RuntimeError) as exc:
         # Do not log provider messages, biometric data, or raw reports.
@@ -131,7 +138,8 @@ def face_login():
 
     if user is None:
         return response(
-            "Face verification failed. Please try again or use another sign-in method.",
+            "We couldn't recognise your face. Look straight at the camera in good light, "
+            "or use another sign-in method.",
             401,
         )
 
@@ -162,15 +170,10 @@ def face_login():
             500,
         )
 
-        return response(
-            "Unable to complete sign-in. Please try again.",
-            500,
-        )
-
     return jsonify({
         "ok": True,
         "message": "Face Login successful.",
-        "redirect_url": url_for("dashboard.staff_dashboard"),
+        "redirect_url": url_for(_dashboard_endpoint(user) or "dashboard.staff_dashboard"),
     }), 200
 
 

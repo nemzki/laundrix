@@ -334,3 +334,163 @@ body.lx-auth .flash-stack {
   .lx-auth__form-wrap { width: 100%; }
   .lx-auth__form-wrap h1 { font-size: 1.65rem; }
 }
+
+
+/* Face Login camera */
+.lx-auth__camera {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--lx-border);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.lx-auth__camera[hidden] {
+  display: none !important;
+}
+
+.lx-auth__camera-preview {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #101827;
+  aspect-ratio: 4 / 3;
+}
+
+.lx-auth__camera-preview video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.lx-auth__camera-message {
+  min-height: 2.5rem;
+  margin: 0.85rem 0;
+  color: var(--lx-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.lx-auth__camera-actions {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.lx-auth__camera-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lx-auth__camera-cancel {
+  min-height: 42px;
+  border: 1px solid var(--lx-border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--lx-text);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lx-auth__camera-cancel:hover {
+  background: var(--lx-surface, #f5f7fb);
+}
+
+.lx-auth__camera button:focus-visible,
+.lx-auth__face-login:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.3);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .lx-auth__camera {
+    padding: 0.75rem;
+  }
+}
+
+.lx-auth__face-camera {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color, #dce3ed);
+  border-radius: 12px;
+}
+
+.lx-auth__face-camera video {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  margin: 1rem auto;
+  border-radius: 10px;
+  background: #111;
+}
+
+.lx-auth__face-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* ---- Live face scanner ------------------------------------------------------------------- */
+.lx-scan { text-align: center; }
+.lx-scan__title { margin: 0; font-weight: 700; color: var(--lx-navy, #0f2a4a); }
+.lx-scan__stage {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 4 / 3;
+  margin: 0.85rem auto 0.6rem;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #0b1220;
+}
+.lx-scan__stage video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  margin: 0; max-width: none; border-radius: 0;
+  object-fit: cover;
+  transform: scaleX(-1);              /* mirror preview only; the captured frame is not mirrored */
+}
+.lx-scan__oval {
+  position: absolute; left: 50%; top: 50%;
+  width: 46%; height: 78%;
+  transform: translate(-50%, -50%);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  box-shadow: 0 0 0 999px rgba(5, 10, 20, 0.45);
+  transition: border-color 0.2s ease;
+}
+.lx-scan__beam {
+  position: absolute; left: 27%; right: 27%; top: 12%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+  opacity: 0;
+}
+.lx-scan__stage[data-state="scanning"] .lx-scan__beam,
+.lx-scan__stage[data-state="locked"] .lx-scan__beam,
+.lx-scan__stage[data-state="verifying"] .lx-scan__beam {
+  opacity: 1;
+  animation: lx-scan-sweep 1.8s ease-in-out infinite alternate;
+}
+.lx-scan__stage[data-state="locked"] .lx-scan__oval { border-color: #22c55e; }
+.lx-scan__stage[data-state="verifying"] .lx-scan__oval { border-color: #38bdf8; }
+.lx-scan__stage[data-state="success"] .lx-scan__oval { border-color: #22c55e; }
+.lx-scan__stage[data-state="failed"] .lx-scan__oval { border-color: #ef4444; }
+@keyframes lx-scan-sweep { from { top: 12%; } to { top: 86%; } }
+.lx-scan__progress {
+  height: 4px; max-width: 380px; margin: 0 auto 0.5rem;
+  border-radius: 999px; background: rgba(148, 163, 184, 0.3); overflow: hidden;
+}
+.lx-scan__progress span {
+  display: block; height: 100%; width: 0;
+  background: #22c55e; transition: width 0.25s ease;
+}
+.lx-scan__message { margin: 0; min-height: 1.4em; font-size: 0.88rem; color: var(--lx-muted, #64748b); }
+.lx-scan .lx-auth__face-actions { justify-content: center; }
+@media (prefers-reduced-motion: reduce) {
+  .lx-scan__beam { animation: none !important; }
+}
