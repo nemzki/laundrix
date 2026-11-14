@@ -1,14 +1,14 @@
 """retire the Staff ID: make staff_credentials.staff_id_hash nullable
 
 Revision ID: b5d1e8c3a7f2
-Revises: a9c4e2d7b1f5
+Revises: f2b7d4c9a1e3
 Create Date: 2026-11-14
 """
 from alembic import op
 import sqlalchemy as sa
 
 revision = 'b5d1e8c3a7f2'
-down_revision = 'a9c4e2d7b1f5'
+down_revision = 'f2b7d4c9a1e3'
 branch_labels = None
 depends_on = None
 

@@ -27,7 +27,7 @@ IDENTITY_TABLES = {"identity_verifications", "identity_verification_events"}
 # The revisions between CHAIN and these (orders/payments) never touch those tables, and the order
 # tracking migration is MySQL-only, so they are not replayed on SQLite here. The guard test
 # test_skipped_revisions_do_not_touch_the_compared_tables enforces that assumption.
-LATER_REVISIONS_ON_COMPARED_TABLES = ["e7b3c9a4d1f6"]
+LATER_REVISIONS_ON_COMPARED_TABLES = ["e7b3c9a4d1f6", "b5d1e8c3a7f2"]
 FACE_COLUMNS = {"face_id", "face_enrolled_at", "biometric_consent_at"}
 
 

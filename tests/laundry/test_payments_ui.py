@@ -35,9 +35,9 @@ def pay_settings():
 # ----------------------------------------------------------------------------- wizard payment step
 def test_wizard_contains_the_payment_step_driven_by_the_database(staff_client, pay):
     html = page(staff_client, "/orders/new")
-    for text in ("Full Payment", "Partial Payment", "Pay Later", "Cash", "GCash", "Confirm and generate stub", "Amount due"):
+    for text in ("Full Payment", "Partial Payment", "Pay Later", "Cash", "GCash", "Confirm Order", "Amount due"):
         assert text in html
-    assert 'data-step="5"' in html and 'data-step="6"' in html and "style=" not in html
+    assert 'data-step="4"' in html and 'data-step="5"' in html and "style=" not in html   # payment, then review
     t1 = re.search(r'data-token="([^"]+)"', html).group(1)
     t2 = re.search(r'data-token="([^"]+)"', page(staff_client, "/orders/new")).group(1)
     assert len(t1) >= 16 and t1 != t2                                  # a fresh one-time token per page load
@@ -54,11 +54,14 @@ def test_wizard_follows_admin_settings(staff_client, pay):
     html = page(staff_client, "/orders/new")
     assert "Partial Payment" not in html and "Pay Later" not in html and "Full Payment" in html
     assert "Shop GCash Name" in html and "0917 555 0000" in html and "Balances are due on pickup." in html
-    assert "/payments/qr" in html                                       # placeholder or uploaded QR, never invented
+    assert "/payments/qr" not in html                                   # no QR is shown until one is uploaded: never invented
+    s.qr_filename = "qr-" + "a" * 32 + ".png"
+    db.session.commit()
+    assert "/payments/qr" in page(staff_client, "/orders/new")           # the configured GCash QR is offered
 
 
 def test_wizard_warns_when_no_methods_are_configured(staff_client, catalog):
-    assert "No payment methods are configured" in page(staff_client, "/orders/new")
+    assert "No payment methods are available" in page(staff_client, "/orders/new")
 
 
 # ----------------------------------------------------------------------------- server-side preview
@@ -90,7 +93,7 @@ def test_quote_rejects_invalid_payments_and_ignores_browser_totals(staff_client,
 def test_confirmation_page_guides_print_then_receipt(staff_client, pay):
     order = order_from(place(staff_client, PARTIAL_CASH))
     html = page(staff_client, f"/orders/{order.reference}/confirmation")
-    for text in ("1. Print the order stub", "2. Confirm laundry received", "Partially Paid", "Open printable stub"):
+    for text in ("Order Created", "Print Stub", "Confirm Laundry Received", "Laundry Received", "Open Full Order", "\u20b1100.00"):
         assert text in html
     assert f"/orders/{order.reference}/confirm-received" in html
     r = staff_client.post(f"/orders/{order.reference}/confirm-received", follow_redirects=True)
@@ -109,7 +112,7 @@ def test_stub_shows_payment_but_nothing_internal(staff_client, pay):
     order = order_from(place(staff_client, PARTIAL_GCASH, notes="Fold neatly"))
     stub = page(staff_client, f"/orders/{order.reference}/stub")
     for text in ("Amount received", "\u20b160.00", "Remaining balance", "\u20b1100.00", "Partially Paid", "Paid by GCash",
-                 "Served by", "Staff", "Pay the balance at pickup.", "Thank you, come again", "Fold neatly", "Scan to Track"):
+                 "Served by", "Staff", "Pay the balance at pickup.", "Thank you, come again", "Fold neatly", "Scan this QR code to check your order status."):
         assert text in stub, text
     for secret in ("GC-SECRET-1", "staff@example.com"):      # references and staff accounts are never printed
         assert secret not in stub, secret
@@ -184,7 +187,7 @@ def test_legacy_order_page_explains_untracked_payments(staff_client, pay):
 def test_orders_list_shows_payment_and_receipt_state(staff_client, pay):
     order_from(place(staff_client, PARTIAL_CASH))
     html = page(staff_client, "/orders/")
-    assert "Partially Paid" in html and "Balance \u20b1100.00" in html and "Awaiting receipt" in html
+    assert "Partially Paid" in html and "Awaiting receipt" in html     # the balance itself is shown on the order page
 
 
 # ----------------------------------------------------------------------------- payments pages

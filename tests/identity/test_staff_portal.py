@@ -319,8 +319,9 @@ def test_staff_google_login_can_be_switched_off(app):
     user, error = authorize_google_user({"sub": "g-1", "email": "sam@example.com", "email_verified": True})
     assert user is None and "Staff Portal" in error
 
-def test_staff_can_use_google_login_by_default(app):
+def test_staff_can_use_google_login_when_enabled(app):
     create_staff("sam@example.com", "Sam")
+    app.config["STAFF_GOOGLE_LOGIN_ALLOWED"] = True      # the test fixtures switch it off by default
 
     user, error = authorize_google_user({
         "sub": "g-1",

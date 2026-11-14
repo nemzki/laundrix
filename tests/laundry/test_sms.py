@@ -559,7 +559,7 @@ def test_the_order_page_shows_the_sms_card_without_the_full_number(staff_client,
     order = ready_order(staff_client, consent=True, contact="09171234567")
     for client in (staff_client, admin_client):
         page = client.get(f"/orders/{order.reference}").get_data(as_text=True)
-        for text in ("SMS notification", "Queued", "+63917\u2022\u2022\u20224567", "msg_card_1", "Customer consent", "Refresh status"):
+        for text in ("SMS Notification", "Queued", "+63917\u2022\u2022\u20224567", "msg_card_1", "Customer consent", "Refresh status"):
             assert text in page, text
         assert "+639171234567" not in page                                           # the full E.164 number is never shown
         assert "Retry SMS" not in page and "Delivered" not in page

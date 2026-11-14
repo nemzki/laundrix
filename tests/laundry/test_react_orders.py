@@ -1,57 +1,49 @@
-"""The React island must preserve Flask's authorized, formatted order view."""
-import json
+"""The Manage Orders page is server-rendered (the React island was retired), and must keep showing
+only the authorized, formatted order view. Same coverage as before, aimed at the current page."""
 import re
+
+from markupsafe import escape
 
 from tests.laundry.test_orders import order_by, place, ref_from
 
 
-def _view(response):
-    match = re.search(r'<script type="application/json" id="laundrix-orders-data">(.*?)</script>',
-                      response.get_data(as_text=True), re.S)
-    assert match, "Admin response must include the escaped React view model"
-    return json.loads(match.group(1))
-
-
-def test_react_view_matches_existing_order_summary(admin_client, catalog):
+def test_orders_list_matches_the_existing_order_summary(admin_client, catalog):
     reference = ref_from(place(admin_client))
-    response = admin_client.get('/orders/')
-    data = _view(response)
+    html = admin_client.get('/orders/').get_data(as_text=True)
     order = order_by(reference)
-    row = next(row for row in data['orders'] if row['reference'] == reference)
-    assert row['customer'] == order.customer_name
-    assert row['contact'] == order.customer_contact
-    assert row['total'] == f"₱{order.total:,.2f}"
-    assert row['detailUrl'] == f'/orders/{reference}'
-    assert row['stubUrl'] == f'/orders/{reference}/stub'
-    assert row['awaiting'] == (not order.received_at)
-    assert 'tracking_token' not in row and 'qr_code' not in row
-    assert 'data-orders-jinja' in response.get_data(as_text=True)
+    row = re.search(r'<tr data-ref="%s".*?</tr>' % re.escape(reference), html, re.S).group(0)
+    assert str(escape(order.customer_name)) in row
+    assert order.customer_contact in row
+    assert f'href="/orders/{reference}"' in row                               # link to the order page
+    # Scoped to this order's row: the page also holds a hidden summary-dialog placeholder with the same words.
+    assert ('Awaiting receipt' in row) == (not order.received_at)
+    assert 'tracking_token' not in html and 'qr_code' not in html
+    assert 'laundrix-orders-data' not in html and 'react/orders.js' not in html
 
 
-def test_react_view_escapes_customer_content(admin_client, catalog):
+def test_orders_list_escapes_customer_content(admin_client, catalog):
     name = '</script><img src=x onerror=alert(1)>'
     ref_from(place(admin_client, customer={'new': {'full_name': name, 'contact_number': '09171234567'}}))
-    response = admin_client.get('/orders/')
-    assert _view(response)['orders'][0]['customer'] == name
-    assert name not in response.get_data(as_text=True)
+    html = admin_client.get('/orders/').get_data(as_text=True)
+    assert name not in html
+    assert str(escape(name)) in html
 
 
-def test_jinja_override_and_staff_keep_existing_page(admin_client, staff_client):
-    for response in [admin_client.get('/orders/?ui=jinja'), staff_client.get('/orders/')]:
+def test_admin_and_staff_get_the_same_manage_orders_page(admin_client, staff_client):
+    for response in [admin_client.get('/orders/'), staff_client.get('/orders/')]:
         html = response.get_data(as_text=True)
         assert response.status_code == 200
+        assert 'data-manage-orders' in html and 'data-orders-results' in html
         assert 'laundrix-orders-data' not in html
-        assert 'react/orders.js' not in html
-        assert 'data-orders-filters' in html
 
 
-def test_react_search_uses_existing_server_query(admin_client, catalog):
+def test_search_uses_the_server_query(admin_client, catalog):
     reference = ref_from(place(admin_client))
-    data = _view(admin_client.get('/orders/?q=' + reference))
-    assert data['term'] == reference and data['total'] == 1
-    assert data['orders'][0]['reference'] == reference
-    assert all('q=' in row['url'] for row in data['filters'])
-    assert _view(admin_client.get('/orders/?q=definitely-missing'))['orders'] == []
+    html = admin_client.get('/orders/?q=' + reference).get_data(as_text=True)
+    assert reference in html and 'data-total="1"' in html
+    assert f'q={reference}' in html                                           # filter tabs keep the search term
+    missing = admin_client.get('/orders/?q=definitely-missing').get_data(as_text=True)
+    assert 'No orders match your filters.' in missing and 'data-total="0"' in missing
 
 
 def test_react_assets_are_served_by_existing_flask_static_route(admin_client):
@@ -64,10 +56,7 @@ def test_react_assets_are_served_by_existing_flask_static_route(admin_client):
 def test_first_paint_is_the_final_seven_column_listing(admin_client, catalog):
     reference = ref_from(place(admin_client))
     html = admin_client.get('/orders/').get_data(as_text=True)
-    server = html.split('<div id="laundrix-react-orders"', 1)[1].split('<div data-orders-jinja', 1)[0]
-    assert 'data-renderer="server"' in server
-    assert reference in server
-    headings = re.findall(r'<th\b[^>]*>(.*?)</th>', server)
+    table = html.split('<table class="mo-table">', 1)[1].split('</table>', 1)[0]
+    assert reference in table
+    headings = re.findall(r'<th\b[^>]*>(.*?)</th>', table)
     assert headings == ['Order Reference', 'Customer', 'Contact Number', 'Date Created', 'Laundry Status', 'Payment Status', 'Action']
-    assert '<div data-orders-jinja hidden>' in html
-    assert _view(admin_client.get('/orders/'))['orders'][0]['total'] == '₱160.00'

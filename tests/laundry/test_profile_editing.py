@@ -56,15 +56,17 @@ def test_invalid_names_do_not_write(admin_client, admin, name):
     assert not list(profile_avatars.directory().glob('*'))
 
 
+# Short explicit ids: pytest would otherwise build the id from the 1 MB payload, and on Windows
+# pytest stores the id in an environment variable, which is limited to 32,767 characters.
 @pytest.mark.parametrize('data,filename', [
-    (b'<svg onload=alert(1) />','photo.png'),
-    (b'not an image','photo.jpg'),
-    (image_bytes(), 'photo.svg'),
-    (image_bytes(), 'photo.jpg'),
-    (b'', 'photo.png'),
-    (b'x'*(1024*1024+1), 'photo.png'),
-    (image_bytes(size=(20,20)), 'tiny.png'),
-    (image_bytes(size=(2049,32)), 'huge.png'),
+    pytest.param(b'<svg onload=alert(1) />', 'photo.png', id='svg-markup-as-png'),
+    pytest.param(b'not an image', 'photo.jpg', id='not-an-image'),
+    pytest.param(image_bytes(), 'photo.svg', id='svg-extension'),
+    pytest.param(image_bytes(), 'photo.jpg', id='png-bytes-as-jpg'),
+    pytest.param(b'', 'photo.png', id='empty-file'),
+    pytest.param(b'x'*(1024*1024+1), 'photo.png', id='over-1mb'),
+    pytest.param(image_bytes(size=(20,20)), 'tiny.png', id='too-small'),
+    pytest.param(image_bytes(size=(2049,32)), 'huge.png', id='too-wide'),
 ])
 def test_invalid_images_do_not_change_profile(admin_client, admin, data, filename):
     before = (admin.full_name, admin.picture_url)

@@ -203,6 +203,8 @@ class TestingConfig(BaseConfig):
     DIDIT_WEBHOOK_SECRET = "test-webhook-secret"
     DIDIT_ENVIRONMENT = "sandbox"
     SMS_ENABLED = False                 # tests never contact the SMS provider, whatever .env says
+    FACE_LOGIN_MIN_SIMILARITY = 90.0    # pinned so a developer's .env calibration can't change test outcomes
+    FACE_LOGIN_MIN_MARGIN = 5.0
     UNISMS_API_SECRET_KEY = None
 
     @classmethod
