@@ -60,8 +60,11 @@ class BaseConfig:
     # Read by app/auth/credentials.py; default on so username/email + password works locally.
     ADMIN_PASSWORD_LOGIN_ENABLED = _bool("ADMIN_PASSWORD_LOGIN_ENABLED", True)
 
-    # --- Staff portal (email + Staff ID + face check by Didit Biometric Authentication) ---
-    STAFF_GOOGLE_LOGIN_ALLOWED = _bool("STAFF_GOOGLE_LOGIN_ALLOWED", False)
+    # --- Staff portal (email + password, Google, or Face Login against Didit-verified staff) ---
+    STAFF_GOOGLE_LOGIN_ALLOWED = _bool("STAFF_GOOGLE_LOGIN_ALLOWED", True)
+    # Face Login matching (Didit Face Search, 0-100). Calibrate from the diagnostic log lines.
+    FACE_LOGIN_MIN_SIMILARITY = float(os.getenv("FACE_LOGIN_MIN_SIMILARITY", "90"))
+    FACE_LOGIN_MIN_MARGIN = float(os.getenv("FACE_LOGIN_MIN_MARGIN", "5"))
     STAFF_MAX_FAILED_ATTEMPTS = int(os.getenv("STAFF_MAX_FAILED_ATTEMPTS", "5"))
     STAFF_LOCKOUT_MINUTES = int(os.getenv("STAFF_LOCKOUT_MINUTES", "15"))
     STAFF_LOGIN_WINDOW_SECONDS = int(os.getenv("STAFF_LOGIN_WINDOW_SECONDS", "600"))

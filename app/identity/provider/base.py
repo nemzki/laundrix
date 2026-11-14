@@ -35,6 +35,12 @@ class ProviderRejectedRequest(ProviderError):
     code = "provider_rejected_request"
 
 
+class FaceNotDetected(ProviderRejectedRequest):
+    """Didit answered 400 because the submitted image has no detectable face.
+    This is a bad capture, not a provider outage and not a failed identity match."""
+    code = "face_not_detected"
+
+
 class SessionNotFound(ProviderError):
     code = "session_not_found"
 
@@ -77,6 +83,7 @@ class IdentityProvider(ABC):
         implementation; callers should treat NotImplementedError as unsupported.
         """
         raise NotImplementedError("Standalone passive liveness is not supported")
+
 
     def face_search(
         self,

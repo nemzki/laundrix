@@ -131,7 +131,7 @@ def create_staff_account(full_name, email, actor):
     if len(name) < 2 or len(name) > 150:
         raise ActionError("Enter the staff member's full name (2 to 150 characters).")
     try:
-        user, _staff_id, token = staff_services.create_staff(
+        user, token = staff_services.create_staff(
             email, name, account_status=AccountStatus.PENDING_VERIFICATION)
     except ValueError as exc:
         raise ActionError(str(exc))

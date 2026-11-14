@@ -25,26 +25,23 @@ def register_staff_commands(app):
     @app.cli.command("create-staff")
     @click.argument("email")
     @click.option("--name", default=None, help="Full name")
-    @click.option("--staff-id", default=None, help="Custom Staff ID (default: auto-generated)")
-    def create_staff(email, name, staff_id):
-        """Create a staff account: prints a Staff ID (once) and a one-time enrollment link."""
+    def create_staff(email, name):
+        """Create a staff account and print a one-time Didit enrollment link."""
         try:
-            user, sid, token = services.create_staff(email, name, staff_id)
+            user, token = services.create_staff(email, name)
         except ValueError as exc:
             click.secho(str(exc), fg="red")
             raise SystemExit(1)
         click.secho(f"\nStaff: {user.email}", bold=True)
-        click.echo(f"  Staff ID (shown ONCE):        {sid}")
         _print_link(app, token)
-        click.secho("\nSend the Staff ID and the link through DIFFERENT channels.", fg="yellow")
+        click.secho("\nSend the link to the staff member. They set a password, then verify with Didit.", fg="yellow")
 
     @app.cli.command("new-enroll-link")
     @click.argument("email")
     def new_enroll_link(email):
         """New one-time link so the person can (re)verify their identity with Didit.
 
-        Keeps their existing Staff ID. Use it to move staff over from the old AWS face system,
-        or when a verification has expired."""
+        Use it when a verification has expired or the person must re-verify their face."""
         user = _find_staff(email)
         try:
             token = services.new_enroll_link(user)
@@ -53,20 +50,6 @@ def register_staff_commands(app):
             raise SystemExit(1)
         click.secho(f"\nStaff: {user.email}", bold=True)
         _print_link(app, token)
-
-    @app.cli.command("reset-staff")
-    @click.argument("email")
-    @click.option("--staff-id", default=None)
-    def reset_staff(email, staff_id):
-        """Lost Staff ID: issue a NEW one and clear any lockout (identity verification is kept)."""
-        user = _find_staff(email)
-        try:
-            sid = services.reset_staff_id(user, staff_id)
-        except ValueError as exc:
-            click.secho(str(exc), fg="red")
-            raise SystemExit(1)
-        click.secho(f"\nStaff: {user.email}", bold=True)
-        click.echo(f"  New Staff ID (shown ONCE):    {sid}")
 
     @app.cli.command("staff-status")
     @click.argument("email")
@@ -82,7 +65,7 @@ def register_staff_commands(app):
     @app.cli.command("set-staff-password")
     @click.argument("email")
     def set_staff_password(email):
-        """Set a staff password without changing Staff ID or Didit records."""
+        """Set a staff password without changing Didit records."""
         user = _find_staff(email)
 
         if not user.is_active:

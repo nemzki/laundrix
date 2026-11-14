@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 import requests
 
 from app.identity.provider.base import (
-    Decision, IdentityProvider, ProviderAuthError, ProviderError, ProviderRateLimited,
+    Decision, FaceNotDetected, IdentityProvider, ProviderAuthError, ProviderError, ProviderRateLimited,
     ProviderRejectedRequest, ProviderUnavailable, SessionNotFound, VerificationSession,
 )
 
@@ -101,6 +101,8 @@ class DiditProvider(IdentityProvider):
     ):
         url = self._base + path
         headers = {"x-api-key": self._api_key, "Accept": "application/json"}
+        if files is not None:
+            headers["Connection"] = "close"  # never reuse a possibly-dead keep-alive connection for uploads
         attempt = 0
         while True:
             try:
@@ -123,7 +125,7 @@ class DiditProvider(IdentityProvider):
                     attempt += 1
                     self._sleep(0.4 * attempt)
                     continue
-                log.warning("Didit %s %s failed: %s", method, path.split("?")[0], type(exc).__name__)
+                log.warning("Didit %s %s failed: %s: %s", method, path.split("?")[0], type(exc).__name__, str(exc)[:300])
                 raise ProviderUnavailable(type(exc).__name__) from exc
 
             status = resp.status_code
@@ -148,8 +150,30 @@ class DiditProvider(IdentityProvider):
                 raise ProviderAuthError("Didit rejected the API key or permissions")
             if status == 404 and not_found_is_session:
                 raise SessionNotFound("unknown session")
-            # Other 4xx (incl. 400 for no credits / invalid workflow): our request, not the user's ID.
-            log.error("Didit %s %s -> HTTP %s", method, path.split("?")[0], status)
+            # Other 4xx: provider rejected the request, not the user's identity.
+            error_code = "unknown"
+            no_face = False
+            try:
+                error_data = resp.json()
+                if isinstance(error_data, dict):
+                    candidate = error_data.get("code")
+                    if isinstance(candidate, str) and candidate.isascii():
+                        error_code = candidate[:80]
+                    # Face endpoints answer 400 {"error": "No face detected in the image"}.
+                    message = error_data.get("error")
+                    no_face = status == 400 and isinstance(message, str) and "no face" in message.lower()
+            except (ValueError, TypeError):
+                pass
+
+            log.error(
+                "Didit %s %s -> HTTP %s (provider_code=%s)",
+                method,
+                path.split("?")[0],
+                status,
+                error_code,
+            )
+            if no_face:
+                raise FaceNotDetected("no face detected")
             raise ProviderRejectedRequest(f"HTTP {status}")
 
     # ------------------------------------------------------------------ operations
@@ -233,42 +257,37 @@ class DiditProvider(IdentityProvider):
             files={"user_image": (safe_name, image_bytes, content_type)},
         )
 
+
     def face_search(
         self,
         image_bytes: bytes,
         *,
         filename: str = "capture.jpg",
         vendor_data: Optional[str] = None,
-        similarity_threshold: int = 70,
-        allow_multiple_faces: bool = False,
     ) -> dict:
-        """Search Didit's enrolled face population using one reference image.
-
-        Returns the provider's JSON report unchanged. The caller must reject
-        ambiguous/weak matches and independently authorize the resolved account.
-        """
+        """Search Didit's enrolled face population using one reference image."""
         safe_name, content_type = self._prepare_face_image(image_bytes, filename)
-        if isinstance(similarity_threshold, bool) or not isinstance(similarity_threshold, int):
-            raise ValueError("similarity_threshold must be an integer from 0 to 100")
-        if not 0 <= similarity_threshold <= 100:
-            raise ValueError("similarity_threshold must be an integer from 0 to 100")
-        if not isinstance(allow_multiple_faces, bool):
-            raise ValueError("allow_multiple_faces must be a boolean")
 
         form_data = {
-            "similarity_threshold": str(similarity_threshold),
+            "search_type": "most_similar",
             "save_api_request": "false",
         }
+
         clean_vendor_data = self._validate_vendor_data(vendor_data)
         if clean_vendor_data is not None:
             form_data["vendor_data"] = clean_vendor_data
-        form_data["allow_multiple_faces"] = "true" if allow_multiple_faces else "false"
+
         return self._request(
             "POST",
             "/v3/face-search/",
             form_data=form_data,
-            files={"user_image": (safe_name, image_bytes, content_type)},
+            # Didit's documented multipart field is `user_image` (not `image`).
+            files={
+                "user_image": (safe_name, image_bytes, content_type)
+            },
         )
+
+
 
     def get_decision(self, session_id: str) -> Decision:
         try:

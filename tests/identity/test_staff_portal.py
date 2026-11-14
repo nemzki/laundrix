@@ -49,7 +49,7 @@ def credential(user_id):
 @pytest.fixture()
 def staff(app):
     """An enrolled staff member with a password and approved ID verification."""
-    user, staff_id, _token = create_staff("sam@example.com", "Sam Cruz")
+    user, _token = create_staff("sam@example.com", "Sam Cruz")
 
     cred = credential(user.id)
     cred.password_hash = generate_password_hash("CorrectPassword123!")
@@ -66,7 +66,7 @@ def staff(app):
     ))
     db.session.commit()
 
-    return user, staff_id
+    return user, None
 
 def sign_in(client, user, password="CorrectPassword123!"):
     return client.post(
@@ -106,10 +106,10 @@ def test_enrollment_is_unavailable_without_didit_configuration(override):
     assert c.get("/staff/enroll/anything").status_code == 503
 
 
-def test_no_camera_permission_is_requested_any_more(app):
+def test_camera_permission_is_limited_to_same_origin(app):
     r = app.test_client().get("/staff/login")
     assert r.status_code == 200
-    assert "camera=()" in r.headers.get("Permissions-Policy", "").replace(" ", "")
+    assert "camera=(self)" in r.headers.get("Permissions-Policy", "").replace(" ", "")
     assert "media-src" not in r.headers.get("Content-Security-Policy", "")
 
 
@@ -120,7 +120,7 @@ def test_no_face_data_columns_remain_in_the_models():
 
 # ============================================================ onboarding through Didit
 def test_full_enrollment_then_sign_in_end_to_end(app, provider):
-    user, _staff_id, token = create_staff("new@example.com", "New Person")
+    user, token = create_staff("new@example.com", "New Person")
     ref = f"laundrix:{user.id}"
 
     c = app.test_client()
@@ -173,7 +173,7 @@ def test_full_enrollment_then_sign_in_end_to_end(app, provider):
 
 
 def test_enrollment_needs_a_valid_password_and_consent(app, provider):
-    user, _staff_id, token = create_staff("a@example.com")
+    user, token = create_staff("a@example.com")
     c = app.test_client()
 
     # Missing consent must prevent enrollment from starting.
@@ -206,7 +206,7 @@ def test_enrollment_needs_a_valid_password_and_consent(app, provider):
 
 
 def test_enrollment_rejection_is_retryable_with_the_same_link(app, provider):
-    user, _staff_id, token = create_staff("a@example.com")
+    user, token = create_staff("a@example.com")
     c = app.test_client()
 
     r = c.post(f"/staff/enroll/{token}", data={
@@ -240,19 +240,9 @@ def test_an_admin_issued_link_lets_an_already_verified_person_reverify(app, prov
     user, staff_id = staff
     token = __import__("app.staff_auth.services", fromlist=["x"]).new_enroll_link(user)
     c = app.test_client()
-    c.post(f"/staff/enroll/{token}", data={"staff_id": staff_id, "consent": "on"})
+    c.post(f"/staff/enroll/{token}", data={"consent": "on"})
     r = c.post("/staff/enroll/start")
     assert r.status_code == 302 and provider.calls["create"] == 1   # not blocked as "already verified"
-
-
-def test_unenrolled_staff_stop_at_step_two(app, provider):
-    user, staff_id, _ = create_staff("late@example.com")
-    c = app.test_client()
-    c.post("/staff/login", data={"email": user.email})
-    r = c.post("/staff/verify-id", data={"staff_id": staff_id})
-    assert r.status_code == 302 and r.headers["Location"].endswith("/staff/login")
-    assert provider.calls["create"] == 0 and not signed_in(c)
-
 
 
 # ============================================================ sign-in: email and password
@@ -308,7 +298,7 @@ def test_deactivated_staff_cannot_sign_in(app, staff):
 
 
 def test_unenrolled_staff_cannot_sign_in(app):
-    user, _staff_id, _token = create_staff("late@example.com")
+    user, _token = create_staff("late@example.com")
 
     # This account has no password and no verified ID.
     c = app.test_client()
@@ -323,14 +313,14 @@ def test_unenrolled_staff_cannot_sign_in(app):
 
 # ============================================================ separation from ID verification
 
-def test_staff_cannot_use_google_login_by_default(app):
+def test_staff_google_login_can_be_switched_off(app):
     create_staff("sam@example.com", "Sam")
+    app.config["STAFF_GOOGLE_LOGIN_ALLOWED"] = False
     user, error = authorize_google_user({"sub": "g-1", "email": "sam@example.com", "email_verified": True})
     assert user is None and "Staff Portal" in error
 
-def test_staff_can_use_google_login_when_enabled(app):
+def test_staff_can_use_google_login_by_default(app):
     create_staff("sam@example.com", "Sam")
-    app.config["STAFF_GOOGLE_LOGIN_ALLOWED"] = True
 
     user, error = authorize_google_user({
         "sub": "g-1",
@@ -368,12 +358,12 @@ def test_sign_in_face_check_records_expire_but_a_current_id_verification_stays(a
 def test_cli_commands_and_the_old_face_commands_are_gone(app):
     runner = app.test_cli_runner()
     r = runner.invoke(args=["create-staff", "cli@example.com", "--name", "Cli Person"])
-    assert r.exit_code == 0 and "Staff ID" in r.output and "/staff/enroll/" in r.output
+    assert r.exit_code == 0 and "Staff ID" not in r.output and "/staff/enroll/" in r.output
     assert "AWS" not in r.output and "Rekognition" not in r.output
 
     assert "verified=False" in runner.invoke(args=["staff-status", "cli@example.com"]).output
     assert "/staff/enroll/" in runner.invoke(args=["new-enroll-link", "cli@example.com"]).output
-    assert "New Staff ID" in runner.invoke(args=["reset-staff", "cli@example.com"]).output
+    assert runner.invoke(args=["reset-staff", "cli@example.com"]).exit_code == 2     # Staff IDs are retired
 
     r = runner.invoke(args=["deactivate-staff", "cli@example.com"])
     assert "Didit" in r.output

@@ -22,7 +22,7 @@ def make_admin(make_user, username="admin", email="admin@laundrix.invalid", **ex
 
 
 def make_staff(email="sam@example.com", status=S.ACTIVE, verified=True, active=True, password=STAFF_PASSWORD):
-    user, _sid, _tok = create_staff(email, "Sam Cruz", account_status=status)
+    user, _tok = create_staff(email, "Sam Cruz", account_status=status)
     user.staff_credential.password_hash = generate_password_hash(password)
     user.is_active = active
     if verified:
@@ -254,8 +254,9 @@ def test_google_still_resolves_only_existing_authorized_accounts(app, make_user)
     assert db.session.scalar(db.select(db.func.count(User.id))) == before            # nobody is ever created
 
 
-def test_google_never_creates_or_promotes_staff_and_still_blocks_staff_by_default(app, make_user):
+def test_google_never_creates_or_promotes_staff_and_can_block_staff_when_switched_off(app, make_user):
     staff = make_staff()
+    app.config["STAFF_GOOGLE_LOGIN_ALLOWED"] = False
     user, error = google_auth.authorize_google_user({"sub": "g-3", "email": "sam@example.com", "email_verified": True})
     assert user is None and "Staff Portal" in error
     assert db.session.get(User, staff.id).role == Role.STAFF

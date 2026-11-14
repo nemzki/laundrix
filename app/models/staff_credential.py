@@ -8,7 +8,9 @@ def utcnow():
 
 
 class StaffCredential(db.Model):
-    """Staff-portal credentials: a hashed Staff ID, lockout state and a one-time enrollment link.
+    """Staff-portal credentials: password hash, lockout state and a one-time enrollment link.
+
+    `staff_id_hash` is a retired column (Staff IDs are no longer used); it is nullable and unused.
 
     Face data is NOT stored here or anywhere in Laundrix: the face check is done by Didit, which
     holds the reference portrait. Whether someone is "enrolled" is derived from their identity
@@ -19,7 +21,7 @@ class StaffCredential(db.Model):
     user_id = db.Column(
         db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False
     )
-    staff_id_hash = db.Column(db.String(255), nullable=False)
+    staff_id_hash = db.Column(db.String(255), nullable=True)  # retired, unused
     password_hash = db.Column(db.String(255), nullable=True)
     enroll_token_hash = db.Column(db.String(64), unique=True)  # sha256 of the one-time link token
     enroll_token_expires_at = db.Column(db.DateTime)

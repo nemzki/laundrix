@@ -233,6 +233,25 @@ def test_rejects_multiple_matches(app, enrolled_staff):
 
     assert resolve_face_search_identity(report) is None
 
+def test_accepts_one_qualifying_match_among_multiple_candidates(
+    app, enrolled_staff
+):
+    from app.identity.face_search import resolve_face_search_identity
+
+    report = make_report(enrolled_staff.id, score=95.0)
+
+    report["face_search"]["matches"].append({
+        "vendor_data": "laundrix:999999",
+        "similarity_percentage": 75.0,
+        "status": "Approved",
+        "is_blocklisted": False,
+    })
+    report["face_search"]["total_matches"] = 2
+
+    result = resolve_face_search_identity(report)
+
+    assert result is not None
+    assert result.id == enrolled_staff.id
 
 @pytest.mark.parametrize("report", [
     None,
@@ -323,3 +342,42 @@ def test_rejects_conflicting_top_level_status(
     report["status"] = "Declined"
 
     assert resolve_face_search_identity(report) is None
+
+def test_same_person_matched_by_several_sessions_is_accepted(app, enrolled_staff):
+    from app.identity.face_search import resolve_face_search_identity
+
+    report = make_report(enrolled_staff.id, score=93.0)
+    report["face_search"]["matches"].append({
+        "vendor_data": f"laundrix:{enrolled_staff.id}",
+        "similarity_percentage": 91.0,
+        "status": "Approved",
+        "is_blocklisted": False,
+    })
+    report["face_search"]["total_matches"] = 2
+
+    result = resolve_face_search_identity(report)
+    assert result is not None and result.id == enrolled_staff.id
+
+
+def test_declined_session_of_another_user_does_not_block_login(app, enrolled_staff):
+    from app.identity.face_search import resolve_face_search_identity
+
+    report = make_report(enrolled_staff.id, score=93.0)
+    report["face_search"]["matches"].append({
+        "vendor_data": "laundrix:999999",
+        "similarity_percentage": 92.0,
+        "status": "Declined",
+        "is_blocklisted": False,
+    })
+    report["face_search"]["total_matches"] = 2
+
+    assert resolve_face_search_identity(report).id == enrolled_staff.id
+
+
+def test_threshold_and_margin_are_configurable(app, enrolled_staff):
+    from app.identity.face_search import resolve_face_search_identity
+
+    report = make_report(enrolled_staff.id, score=82.0)
+    assert resolve_face_search_identity(report) is None
+    app.config["FACE_LOGIN_MIN_SIMILARITY"] = 80.0
+    assert resolve_face_search_identity(report).id == enrolled_staff.id
