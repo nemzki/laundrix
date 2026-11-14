@@ -45,3 +45,4 @@ Thumbs.db
 
 laundrix_backup.sql
 *.sql
+!scripts/create_database.sql
