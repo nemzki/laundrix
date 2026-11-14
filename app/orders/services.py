@@ -7,6 +7,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
+from app.audit import services as audit
 from app.core.timeutil import local_date_code, local_today_bounds_utc
 from app.extensions import db
 from app.models import (
@@ -16,6 +17,11 @@ from app.models.staff_credential import utcnow
 from app.orders.pricing import GENERAL, build_quote
 from app.sms import services as sms_services
 from app.payments import services as payment_services
+
+def _customer_audit_view(customer):
+    """What an audit record may keep about a customer: the name and a MASKED contact number."""
+    return {"name": customer.full_name, "contact_number": customer.contact_number}
+
 
 _REF_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"  # no 0/O/1/I confusion on printed stubs
 MAX_NOTES = 500
@@ -111,10 +117,23 @@ def save_directory_customer(raw, user, customer=None):
         customer = Customer(created_by_id=user.id)
         db.session.add(customer)
     # Update this record only. Historical order name/contact snapshots are immutable here.
+    is_new = customer.id is None
+    before = {} if is_new else _customer_audit_view(customer)
     customer.full_name = values["full_name"]
     customer.contact_number = values["contact_number"]
     customer.contact_normalized = values["contact_normalized"]
     try:
+        if is_new:
+            db.session.flush()
+            audit.record(audit.AuditAction.CREATE, audit.AuditModule.CUSTOMERS,
+                         f"Created customer {customer.full_name}", actor=user, resource_id=customer.id,
+                         resource_label=f"Customer {customer.full_name}", new=_customer_audit_view(customer))
+        else:
+            old_c, new_c = audit.changes(before, _customer_audit_view(customer))
+            if new_c:
+                audit.record(audit.AuditAction.UPDATE, audit.AuditModule.CUSTOMERS,
+                             f"Updated customer {customer.full_name}", actor=user, resource_id=customer.id,
+                             resource_label=f"Customer {customer.full_name}", old=old_c, new=new_c)
         db.session.commit()
     except IntegrityError:
         db.session.rollback()
@@ -228,6 +247,10 @@ def create_order(payload, user):
             if customer is None:
                 db.session.add(cust)
                 db.session.flush()
+                audit.record(audit.AuditAction.CREATE, audit.AuditModule.CUSTOMERS,
+                             f"Added customer {cust.full_name} while creating an order",
+                             actor=user, resource_id=cust.id, resource_label=f"Customer {cust.full_name}",
+                             new=_customer_audit_view(cust))
             order = Order(
                 reference=_new_reference(), customer_id=cust.id,
                 customer_name=cust.full_name, customer_contact=cust.contact_number,
@@ -255,6 +278,12 @@ def create_order(payload, user):
             ))
             db.session.add(order)
             payment_services.add_payment_rows(order, plan.entries, user, token)
+            audit.record(audit.AuditAction.CREATE, audit.AuditModule.ORDERS,
+                         f"Created order {order.reference}",
+                         actor=user, resource_id=order.reference, resource_label=f"Order {order.reference}",
+                         new={"items": len(quote.lines), "total": quote.total,
+                              "payment_arrangement": plan.arrangement, "amount_received": plan.received,
+                              "balance": plan.balance})
             db.session.commit()
             return order, {}, []
         except IntegrityError as exc:
@@ -315,6 +344,12 @@ def change_status(order_id: int, new_status: str, user, note: str = None):
             changed_by_id=user.id, note=note,
         ))
         order.status = new_status
+        audit.record(audit.AuditAction.STATUS_CHANGE, audit.AuditModule.ORDERS,
+                     f"Order {order.reference}: {OrderStatus.LABELS.get(previous, previous)} to "
+                     f"{OrderStatus.LABELS.get(new_status, new_status)}",
+                     actor=user, resource_id=order.reference, resource_label=f"Order {order.reference}",
+                     old={"status": OrderStatus.LABELS.get(previous, previous)},
+                     new={"status": OrderStatus.LABELS.get(new_status, new_status), "note": note})
         if new_status == OrderStatus.READY and previous != OrderStatus.READY:
             # One row per order (unique constraint): a later return to Ready finds it and adds nothing.
             sms_services.create_ready_notification(order)
@@ -347,6 +382,10 @@ def confirm_received(order_id: int, user):
             from_status=order.status, to_status=order.status, changed_by_id=user.id,
             note="Laundry received by the shop",
         ))
+        audit.record(audit.AuditAction.UPDATE, audit.AuditModule.ORDERS,
+                     f"Order {order.reference}: laundry confirmed as received",
+                     actor=user, resource_id=order.reference, resource_label=f"Order {order.reference}",
+                     old={"laundry_received": False}, new={"laundry_received": True})
         db.session.commit()
     except Exception:
         db.session.rollback()

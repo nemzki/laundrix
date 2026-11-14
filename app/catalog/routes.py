@@ -1,6 +1,7 @@
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
+from app.audit import services as audit
 from app.catalog import bp, forms
 from app.extensions import db
 from app.models import (
@@ -29,6 +30,49 @@ def _apply(obj, data):
         setattr(obj, key, value)
 
 
+# ---- audit trail (saved in the same transaction as the catalog change) ----------------------
+# Only business fields are listed; image paths and icons are cosmetic and left out.
+SERVICE_FIELDS = ("name", "category", "description", "price", "pricing_unit", "is_active")
+PACKAGE_FIELDS = ("name", "category", "description", "size_label", "measure_type", "min_value",
+                  "max_value", "price", "covers_codes", "is_active")
+ADDON_FIELDS = ("name", "description", "price", "is_chargeable", "allow_customer_supplied", "is_active")
+
+
+def _audit_label(kind, obj):
+    return f"{kind.capitalize()}: {getattr(obj, 'display_name', None) or obj.name}"
+
+
+def _audit_created(kind, obj, fields):
+    db.session.flush()                                   # assigns obj.id for the audit record
+    audit.record(audit.AuditAction.CREATE, audit.AuditModule.SERVICES,
+                 f"Created {kind} {getattr(obj, 'display_name', None) or obj.name}",
+                 resource_id=obj.id, resource_label=_audit_label(kind, obj),
+                 new=audit.snapshot(obj, fields))
+
+
+def _audit_edited(kind, obj, before, fields):
+    old, new = audit.changes(before, audit.snapshot(obj, fields))
+    if not new:
+        return
+    name = getattr(obj, "display_name", None) or obj.name
+    if "price" in new:
+        action = audit.AuditAction.PRICE_CHANGE
+        text = f"Changed price of {kind} {name} from \u20b1{old['price']} to \u20b1{new['price']}"
+    else:
+        action, text = audit.AuditAction.UPDATE, f"Updated {kind} {name}"
+    audit.record(action, audit.AuditModule.SERVICES, text, resource_id=obj.id,
+                 resource_label=_audit_label(kind, obj), old=old, new=new)
+
+
+def _audit_toggled(kind, obj):
+    on = bool(obj.is_active)
+    audit.record(audit.AuditAction.REACTIVATE if on else audit.AuditAction.DEACTIVATE,
+                 audit.AuditModule.SERVICES,
+                 f"{'Activated' if on else 'Deactivated'} {kind} {getattr(obj, 'display_name', None) or obj.name}",
+                 resource_id=obj.id, resource_label=_audit_label(kind, obj),
+                 old={"is_active": not on}, new={"is_active": on})
+
+
 @bp.route("/")
 def index():
     tab = request.args.get("tab", "services")
@@ -54,7 +98,9 @@ def service_new():
     if request.method == "POST":
         data, errors = forms.parse_service(request.form)
         if not errors:
-            db.session.add(Service(**data))
+            obj = Service(**data)
+            db.session.add(obj)
+            _audit_created("service", obj, SERVICE_FIELDS)
             db.session.commit()
             flash("Service created.", "success")
             return redirect(url_for("catalog.index", tab="services"))
@@ -70,7 +116,9 @@ def service_edit(pk):
     if request.method == "POST":
         data, errors = forms.parse_service(request.form, existing=obj)
         if not errors:
+            before = audit.snapshot(obj, SERVICE_FIELDS)
             _apply(obj, data)
+            _audit_edited("service", obj, before, SERVICE_FIELDS)
             db.session.commit()
             flash("Service updated. Existing orders keep the price they were charged.", "success")
             return redirect(url_for("catalog.index", tab="services"))
@@ -88,6 +136,7 @@ def service_edit(pk):
 def service_toggle(pk):
     obj = _get_or_404(Service, pk)
     obj.is_active = not obj.is_active
+    _audit_toggled("service", obj)
     db.session.commit()
     flash(f"{obj.name} {'activated' if obj.is_active else 'deactivated'}.", "success")
     return redirect(url_for("catalog.index", tab="services"))
@@ -100,7 +149,9 @@ def package_new():
     if request.method == "POST":
         data, errors = forms.parse_package(request.form)
         if not errors:
-            db.session.add(ServicePackage(**data))
+            obj = ServicePackage(**data)
+            db.session.add(obj)
+            _audit_created("package", obj, PACKAGE_FIELDS)
             db.session.commit()
             flash("Package created.", "success")
             return redirect(url_for("catalog.index", tab="packages"))
@@ -119,7 +170,9 @@ def package_edit(pk):
     if request.method == "POST":
         data, errors = forms.parse_package(request.form, existing=obj)
         if not errors:
+            before = audit.snapshot(obj, PACKAGE_FIELDS)
             _apply(obj, data)
+            _audit_edited("package", obj, before, PACKAGE_FIELDS)
             db.session.commit()
             flash("Package updated. Existing orders keep the price they were charged.", "success")
             return redirect(url_for("catalog.index", tab="packages"))
@@ -141,6 +194,7 @@ def package_edit(pk):
 def package_toggle(pk):
     obj = _get_or_404(ServicePackage, pk)
     obj.is_active = not obj.is_active
+    _audit_toggled("package", obj)
     db.session.commit()
     flash(f"{obj.display_name} {'activated' if obj.is_active else 'deactivated'}.", "success")
     return redirect(url_for("catalog.index", tab="packages"))
@@ -152,7 +206,9 @@ def addon_new():
     if request.method == "POST":
         data, errors = forms.parse_addon(request.form)
         if not errors:
-            db.session.add(ServiceAddon(**data))
+            obj = ServiceAddon(**data)
+            db.session.add(obj)
+            _audit_created("extra", obj, ADDON_FIELDS)
             db.session.commit()
             flash("Extra created.", "success")
             return redirect(url_for("catalog.index", tab="addons"))
@@ -168,7 +224,9 @@ def addon_edit(pk):
     if request.method == "POST":
         data, errors = forms.parse_addon(request.form, existing=obj)
         if not errors:
+            before = audit.snapshot(obj, ADDON_FIELDS)
             _apply(obj, data)
+            _audit_edited("extra", obj, before, ADDON_FIELDS)
             db.session.commit()
             flash("Extra updated. Existing orders keep the price they were charged.", "success")
             return redirect(url_for("catalog.index", tab="addons"))
@@ -188,6 +246,7 @@ def addon_edit(pk):
 def addon_toggle(pk):
     obj = _get_or_404(ServiceAddon, pk)
     obj.is_active = not obj.is_active
+    _audit_toggled("extra", obj)
     db.session.commit()
     flash(f"{obj.name} {'activated' if obj.is_active else 'deactivated'}.", "success")
     return redirect(url_for("catalog.index", tab="addons"))

@@ -137,6 +137,7 @@ def face_login():
         return response("The captured image could not be processed.", 400)
 
     if user is None:
+        record_event("face_login_failed", success=False, commit=True)
         return response(
             "We couldn't recognise your face. Look straight at the camera in good light, "
             "or use another sign-in method.",
@@ -206,6 +207,7 @@ def callback():
             "Sign-in denied for %s",
             userinfo.get("email"),
         )
+        record_event("google_login_failed", success=False, email=userinfo.get("email"), commit=True)
         flash(error, "error")
         return redirect(url_for("auth.login"))
 
@@ -230,6 +232,7 @@ def callback():
         user.email,
         user.role,
     )
+    record_event("google_login_success", actor=user, target=user, commit=True)
 
     return redirect(url_for(endpoint))
 
@@ -237,6 +240,13 @@ def callback():
 @bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
+    # Signing out must always work, so a failure to write this one record is logged, not raised.
+    try:
+        record_event("logout", actor=current_user._get_current_object(),
+                     target=current_user._get_current_object(), commit=True)
+    except Exception as exc:  # noqa: BLE001 - never trap a signed-in person in their session
+        db.session.rollback()
+        current_app.logger.error("Logout audit record failed (%s)", type(exc).__name__)
     logout_user()
     session.clear()
 

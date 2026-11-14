@@ -12,6 +12,7 @@ from datetime import timedelta
 from flask import current_app, request
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from app.audit.services import audit_auth_event
 from app.extensions import db
 from app.models import AccountStatus, AuthEvent, Role, StaffCredential, User
 from app.models.staff_credential import utcnow
@@ -115,6 +116,7 @@ def log_event(event: str, success: bool, user=None, email=None):
         ip=(request.remote_addr or "")[:45],
         user_agent=(request.user_agent.string or "")[:255],
     ))
+    audit_auth_event(event, success=success, actor=user, target=user, email=email)
     db.session.commit()
 
 

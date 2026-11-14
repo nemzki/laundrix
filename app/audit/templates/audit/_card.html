@@ -1,0 +1,80 @@
+{# Admin-only "Audit Logs" card for Personal Settings. `audit` comes from app.core.routes._audit_context(). #}
+{% from 'core/_icons.html' import icon %}
+{% macro show(value) -%}
+{%- if value is none -%}&mdash;{%- elif value is sameas true -%}Yes{%- elif value is sameas false -%}No{%- else -%}{{ value }}{%- endif -%}
+{%- endmacro %}
+{% set f = audit.f %}{% set pg = audit.pagination %}
+<section class="card ps-card audit-card" id="audit-logs" aria-labelledby="audit-heading">
+  <div class="ps-section-heading"><span class="ps-section-icon">{{ icon('receipt',20) }}</span><div><h2 id="audit-heading">Audit Logs</h2><p class="muted">Recent actions by staff and admins, newest first. Read-only.</p></div></div>
+
+  <details class="audit-filters"{% if f.active or f.notices %} open{% endif %}>
+    <summary>Filters{% if f.active %} <span class="audit-badge">On</span>{% endif %}</summary>
+    <form method="get" action="{{ url_for('core.personal_settings', _anchor='audit-logs') }}" aria-label="Filter audit logs">
+      <div class="field audit-filters__wide"><label for="audit-q">Staff / Admin name</label>
+        <input id="audit-q" class="input" type="search" name="q" value="{{ f.q }}" maxlength="100" autocomplete="off"></div>
+      <div class="field"><label for="audit-action">Action</label>
+        <select id="audit-action" class="input" name="action"><option value="">All actions</option>
+          {% for value, label in audit.action_labels.items() %}<option value="{{ value }}" {% if f.action == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="audit-module">Module</label>
+        <select id="audit-module" class="input" name="module"><option value="">All modules</option>
+          {% for value, label in audit.module_labels.items() %}<option value="{{ value }}" {% if f.module == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="audit-status">Result</label>
+        <select id="audit-status" class="input" name="status"><option value="">Succeeded and failed</option>
+          <option value="success" {% if f.status == 'success' %}selected{% endif %}>Succeeded only</option>
+          <option value="failed" {% if f.status == 'failed' %}selected{% endif %}>Failed only</option></select></div>
+      <div class="field"><label for="audit-day">On this day</label><input id="audit-day" class="input" type="date" name="day" value="{{ f.day }}"></div>
+      <div class="field"><label for="audit-start">From (date &amp; time)</label><input id="audit-start" class="input" type="datetime-local" name="start" value="{{ f.start }}"></div>
+      <div class="field"><label for="audit-end">To (date &amp; time)</label><input id="audit-end" class="input" type="datetime-local" name="end" value="{{ f.end }}"></div>
+      <div class="audit-filters__actions">
+        <button class="btn btn-primary btn-sm" type="submit">Apply</button>
+        <a class="btn btn-outline btn-sm" href="{{ url_for('core.personal_settings', _anchor='audit-logs') }}">Clear filters</a>
+      </div>
+    </form>
+  </details>
+
+  {% for notice in f.notices %}<p class="audit-notice" role="status">{{ notice }}</p>{% endfor %}
+
+  {% if audit.entries %}
+  <p class="audit-count muted" aria-live="polite">{{ pg.first }}&ndash;{{ pg.last }} of {{ pg.total }}{% if f.active %} (filtered){% endif %} &middot; Philippine time</p>
+  <ul class="audit-list" aria-label="Audit log entries">
+    {% for row in audit.entries %}
+    <li class="audit-row{% if not row.success %} is-failed{% endif %}">
+      <details>
+        <summary>
+          <time datetime="{{ row.created_at.isoformat() }}Z">{{ row.created_at|localdt('%b %d, %Y %I:%M:%S %p') }}</time>
+          <span class="audit-who audit-clip" title="{{ row.actor_name }}">{{ row.actor_name }}</span>
+          <span class="audit-badge audit-badge--{{ audit.action_tones.get(row.action, 'neutral') }}">{{ audit.action_labels.get(row.action, row.action) }}</span>
+          <span class="audit-text audit-clip" title="{{ row.description }}">{{ row.description }}</span>
+        </summary>
+        <dl class="audit-facts">
+          <div><dt>Description</dt><dd>{{ row.description }}</dd></div>
+          <div><dt>Who</dt><dd>{{ row.actor_name }}{% if row.actor_role %} ({{ 'Admin' if row.actor_role == 'admin' else 'Staff' }}){% endif %}</dd></div>
+          <div><dt>Module</dt><dd>{{ audit.module_labels.get(row.module, row.module) }}</dd></div>
+          {% if row.resource_label %}<div><dt>Record</dt><dd>{{ row.resource_label }}{% if row.resource_id %} <span class="muted">#{{ row.resource_id }}</span>{% endif %}</dd></div>{% endif %}
+          <div><dt>Result</dt><dd>{{ 'Succeeded' if row.success else 'Failed' }}</dd></div>
+          {% if row.ip_address %}<div><dt>IP address</dt><dd>{{ row.ip_address }}</dd></div>{% endif %}
+        </dl>
+        {% set changed = audit.diff_rows(row) %}
+        {% if changed %}
+        <div class="audit-diff" tabindex="0" role="region" aria-label="Changed values">
+          <table class="table">
+            <thead><tr><th scope="col">Field</th><th scope="col">Before</th><th scope="col">After</th></tr></thead>
+            <tbody>{% for key, before, after in changed %}<tr><th scope="row">{{ key|replace('_', ' ')|capitalize }}</th><td>{{ show(before) }}</td><td>{{ show(after) }}</td></tr>{% endfor %}</tbody>
+          </table>
+        </div>
+        {% endif %}
+      </details>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if pg.pages > 1 %}
+  <nav class="audit-pager" aria-label="Audit log pages">
+    {% if pg.has_prev %}<a class="btn btn-outline btn-sm" href="{{ url_for('core.personal_settings', page=pg.prev_num, _anchor='audit-logs', **f.params) }}">Previous</a>{% else %}<span class="btn btn-outline btn-sm is-disabled" aria-disabled="true">Previous</span>{% endif %}
+    <span class="muted" aria-current="page">Page {{ pg.page }} of {{ pg.pages }}</span>
+    {% if pg.has_next %}<a class="btn btn-outline btn-sm" href="{{ url_for('core.personal_settings', page=pg.next_num, _anchor='audit-logs', **f.params) }}">Next</a>{% else %}<span class="btn btn-outline btn-sm is-disabled" aria-disabled="true">Next</span>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <div class="empty"><strong>No audit records found</strong>{% if f.active %}Nothing matches these filters. <a href="{{ url_for('core.personal_settings', _anchor='audit-logs') }}">Clear filters</a>{% else %}Actions will appear here as staff and admins use Laundrix.{% endif %}</div>
+  {% endif %}
+</section>

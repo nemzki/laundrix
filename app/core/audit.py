@@ -3,6 +3,7 @@ sign-in code writes to) so there is a single activity log. Never pass secrets, t
 or identity-document data in `detail`."""
 from flask import has_request_context, request
 
+from app.audit.services import audit_auth_event
 from app.extensions import db
 from app.models import AuthEvent
 
@@ -21,5 +22,7 @@ def record_event(event, *, success=True, actor=None, target=None, email=None, de
         event=event[:40], success=success, ip=ip, user_agent=ua,
         detail=(detail or "")[:500] or None,
     ))
+    # Also record it in the central Audit Logs (same transaction; failures are NOT swallowed).
+    audit_auth_event(event, success=success, actor=actor, target=target, email=email, detail=detail)
     if commit:
         db.session.commit()

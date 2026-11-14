@@ -4,7 +4,7 @@
 {% block title %}Personal Settings | Laundrix{% endblock %}
 {% block page_title %}Personal Settings{% endblock %}
 {% block page_subtitle %}Your profile, identity verification, and appearance preferences.{% endblock %}
-{% block page_head %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/personal-settings.css') }}">{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/personal-settings.css') }}">{% if audit %}<link rel="stylesheet" href="{{ url_for('audit.static', filename='css/audit.css') }}">{% endif %}{% endblock %}
 {% block content %}
 <div class="personal-settings" data-personal-settings>
   <section class="card ps-card" aria-labelledby="profile-heading">
@@ -65,6 +65,7 @@
     <p class="muted">For changes to your sign-in credentials, contact your administrator.</p>
     <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline" type="submit">{{ icon('logout',16) }}Logout</button></form>
   </section>
+  {% if audit %}{% include 'audit/_card.html' %}{% endif %}
 </div>
 {% endblock %}
 

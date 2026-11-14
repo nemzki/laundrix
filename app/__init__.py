@@ -79,6 +79,7 @@ def _init_extensions(app):
 
 
 def _register_blueprints(app):
+    from app.audit import bp as audit_bp
     from app.auth import bp as auth_bp
     from app.catalog import bp as catalog_bp
     from app.core import bp as core_bp
@@ -101,6 +102,7 @@ def _register_blueprints(app):
     app.register_blueprint(orders_bp, url_prefix="/orders")
     app.register_blueprint(payments_bp, url_prefix="/payments")
     app.register_blueprint(staff_admin_bp, url_prefix="/admin/staff")
+    app.register_blueprint(audit_bp, url_prefix="/admin/audit-logs")
     app.register_blueprint(tracking_bp)
 
 def _register_cli(app):
