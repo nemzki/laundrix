@@ -1,0 +1,172 @@
+{% extends 'core/base.html' %}
+{% from 'core/_icons.html' import icon %}
+{% from 'core/_nav_shared.html' import user_initials %}
+{% from 'core/_personal_settings_link.html' import personal_settings_link %}
+{% block title %}Analytics & Reports · Laundrix{% endblock %}
+{% block head %}
+  <link rel="preload" href="{{ url_for('core.static', filename='react-dashboard/fonts/GeistSans-Variable.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='react-dashboard/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/admin-consistency.css') }}">
+  <link rel="stylesheet" href="{{ url_for('analytics.static', filename='css/analytics.css') }}">
+{% endblock %}
+{% block body %}
+{% from 'dashboard/_data.html' import dashboard_data with context %}
+{% set d = dashboard_data %}
+{% macro navigation() -%}
+<nav aria-label="Main navigation" class="dashboard-navigation">
+  {% for group in d.navigation %}<section aria-label="{{ group.label }}"><p class="dashboard-nav-label">{{ group.label }}</p>
+    {% for item in group['items'] %}<a class="dashboard-nav-link" href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>{{ icon(item.icon if item.icon not in ('services','staff') else 'users', 18) }}<span>{{ item.label }}</span></a>{% endfor %}
+  </section>{% endfor %}
+</nav>
+{%- endmacro %}
+{% macro account() -%}
+<div class="dashboard-account"><div class="dashboard-user">
+  {% if d.user.picture %}<img src="{{ d.user.picture }}" alt="" width="36" height="36" referrerpolicy="no-referrer">{% else %}<span class="dashboard-avatar" aria-hidden="true">{{ user_initials(current_user) }}</span>{% endif %}
+  <div><strong>{{ d.user.name }}</strong><span>{{ d.user.label }}</span></div>
+  {{ personal_settings_link() }}
+</div><form method="post" action="{{ d.urls.logout }}"><input type="hidden" name="csrf_token" value="{{ d.csrf }}"><button class="dashboard-native-button" type="submit">{{ icon('logout',16) }}Logout</button></form></div>
+{%- endmacro %}
+<div id="laundrix-analytics" class="lx-react lx-dashboard" data-dashboard-role="admin" data-renderer="server">
+  <div class="dashboard-static-shell">
+    <aside class="dashboard-static-sidebar" aria-label="Admin sidebar">
+      <a class="dashboard-brand" href="{{ d.urls.home }}"><img src="{{ d.urls.brand }}" alt="Laundrix" width="34" height="40"><strong>Laundrix</strong></a>
+      {{ navigation() }}{{ account() }}
+    </aside>
+    <div class="dashboard-static-main">
+      <header class="dashboard-static-header">
+        <details class="dashboard-native-menu"><summary aria-label="Open navigation">{{ icon('menu',18) }}</summary><div>{{ navigation() }}{{ account() }}</div></details>
+        <span>Insights / <strong>Analytics & Reports</strong></span>
+      </header>
+      <main id="dashboard-main" tabindex="-1" class="dashboard-content">
+        <div class="dashboard-heading">
+          <div><h1>Analytics & Reports</h1><p class="analytics-intro">Business performance, order activity, payments, and machine-learning development.</p></div>
+          <a class="dashboard-native-button" href="{{ d.urls.home }}">{{ icon('dashboard',16) }}Back to Dashboard</a>
+        </div>
+
+        <section class="analytics-section" aria-labelledby="overview-heading">
+          <div class="analytics-section-heading"><div><h2 id="overview-heading">Business overview</h2><p>Live aggregates from existing Laundrix records.</p></div><span class="dashboard-status" data-tone="neutral">{{ report.report_period }}</span></div>
+          <div class="analytics-kpis">
+            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Total Orders</p><p class="dashboard-metric-value">{{ report.summary.total_orders }}</p></div><span class="dashboard-metric-icon">{{ icon('orders',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Orders This Month</p><p class="dashboard-metric-value">{{ report.summary.orders_this_month }}</p></div><span class="dashboard-metric-icon">{{ icon('chart',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Total Customers</p><p class="dashboard-metric-value">{{ report.summary.total_customers }}</p></div><span class="dashboard-metric-icon">{{ icon('users',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Order Value</p><p class="dashboard-metric-value">{{ report.summary.order_value|peso }}</p></div><span class="dashboard-metric-icon">{{ icon('receipt',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Payments Collected · 12 Months</p><p class="dashboard-metric-value">{{ report.summary.collected_12m|peso }}</p></div><span class="dashboard-metric-icon">{{ icon('wallet',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Outstanding Balance</p><p class="dashboard-metric-value">{{ report.summary.outstanding_balance|peso }}</p></div><span class="dashboard-metric-icon">{{ icon('alert',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Orders With Balance</p><p class="dashboard-metric-value">{{ report.summary.orders_with_balance }}</p></div><span class="dashboard-metric-icon">{{ icon('receipt',18) }}</span></article>
+          </div>
+        </section>
+
+        <section class="analytics-section" aria-labelledby="trends-heading">
+          <div class="analytics-section-heading"><div><h2 id="trends-heading">Business trends</h2><p>Monthly order volume and recorded net payments for the last six months.</p></div></div>
+          <div class="analytics-panels">
+            <article class="dashboard-card dashboard-panel analytics-card">
+              <div class="dashboard-panel-heading"><h2>Orders by Month</h2></div>
+              {% if report.monthly|sum(attribute='orders') %}
+              <svg class="analytics-chart" viewBox="0 0 600 190" role="img" aria-label="Bar chart of orders by month">
+                <line class="chart-grid" x1="30" y1="150" x2="580" y2="150"></line>
+                {% for item in report.monthly %}<rect class="chart-bar" x="{{ 48 + loop.index0 * 90 }}" y="{{ 145 - item.orders_height }}" width="42" height="{{ item.orders_height }}" rx="5"></rect><text class="chart-value" x="{{ 69 + loop.index0 * 90 }}" y="{{ 136 - item.orders_height }}" text-anchor="middle">{{ item.orders }}</text><text x="{{ 69 + loop.index0 * 90 }}" y="170" text-anchor="middle">{{ item.label[:3] }}</text>{% endfor %}
+              </svg>
+              {% else %}<p class="analytics-empty">No order activity is available for this period yet.</p>{% endif %}
+            </article>
+            <article class="dashboard-card dashboard-panel analytics-card">
+              <div class="dashboard-panel-heading"><h2>Payments Collected by Month</h2></div>
+              {% if report.monthly|sum(attribute='collected') > 0 %}
+              <svg class="analytics-chart" viewBox="0 0 600 190" role="img" aria-label="Bar chart of net payments collected by month">
+                <line class="chart-grid" x1="30" y1="150" x2="580" y2="150"></line>
+                {% for item in report.monthly %}<rect class="chart-bar-secondary" x="{{ 48 + loop.index0 * 90 }}" y="{{ 145 - item.collected_height }}" width="42" height="{{ item.collected_height }}" rx="5"></rect><text class="chart-value" x="{{ 69 + loop.index0 * 90 }}" y="{{ 136 - item.collected_height }}" text-anchor="middle">{{ item.collected|round|int }}</text><text x="{{ 69 + loop.index0 * 90 }}" y="170" text-anchor="middle">{{ item.label[:3] }}</text>{% endfor %}
+              </svg>
+              {% else %}<p class="analytics-empty">No recorded payments are available for this period yet.</p>{% endif %}
+            </article>
+          </div>
+        </section>
+
+        <section class="analytics-section" aria-labelledby="operations-heading">
+          <div class="analytics-section-heading"><div><h2 id="operations-heading">Orders and services</h2><p>Current order-status distribution and most valuable order-item categories.</p></div></div>
+          <div class="analytics-panels">
+            <article class="dashboard-card dashboard-panel analytics-card">
+              <div class="dashboard-panel-heading"><h2>Order Status Distribution</h2></div>
+              {% if report.statuses %}<div class="analytics-status-list">{% for item in report.statuses %}<div class="analytics-status-row"><span>{{ item.label }}</span><strong>{{ item.count }}</strong></div>{% endfor %}</div>{% else %}<p class="analytics-empty">No order records yet.</p>{% endif %}
+            </article>
+            <article class="dashboard-card dashboard-panel analytics-card">
+              <div class="dashboard-panel-heading"><h2>Popular Services and Items</h2></div>
+              {% if report.services %}<ul class="analytics-rank-list">{% for item in report.services %}<li><div class="analytics-rank-head"><span>{{ item.name }}</span><strong>{{ item.lines }} lines</strong></div><progress class="analytics-progress" max="100" value="{{ item.bar_width }}" aria-label="{{ item.name }} relative activity"></progress></li>{% endfor %}</ul>{% else %}<p class="analytics-empty">Service activity will appear after order items are recorded.</p>{% endif %}
+            </article>
+          </div>
+        </section>
+
+        <section class="analytics-section" aria-labelledby="payments-heading">
+          <div class="analytics-section-heading"><div><h2 id="payments-heading">Payment methods</h2><p>Net recorded payments by method, including reversals.</p></div></div>
+          <article class="dashboard-card dashboard-panel analytics-card">
+            {% if report.payment_methods %}<ul class="analytics-rank-list">{% for item in report.payment_methods %}<li><div class="analytics-rank-head"><span>{{ item.name }}</span><strong>{{ item.amount|peso }}</strong></div><progress class="analytics-progress" max="100" value="{{ item.bar_width }}" aria-label="{{ item.name }} relative activity"></progress></li>{% endfor %}</ul>{% else %}<p class="analytics-empty">No payment transactions have been recorded in the last 12 months.</p>{% endif %}
+          </article>
+        </section>
+
+        <section class="analytics-section" aria-labelledby="ml-heading">
+          <div class="analytics-section-heading"><div><h2 id="ml-heading">Machine Learning · Unclaimed Order Prediction</h2><p>Historical readiness and isolated model-training demonstration.</p></div><span class="dashboard-status" data-tone="{{ 'success' if ml_status.status == 'data_threshold_met' else 'warn' }}">{{ 'Data threshold reached' if ml_status.status == 'data_threshold_met' else 'Insufficient real history' }}</span></div>
+          <article class="dashboard-card dashboard-panel analytics-card">
+            <p>{{ ml_status.message }}</p>
+            <div class="analytics-kpis">
+              <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Orders With Ready History</p><p class="dashboard-metric-value">{{ ml_status.observed_ready_orders }}</p></div><span class="dashboard-metric-icon">{{ icon('package',18) }}</span></article>
+              <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Eligible Historical Orders</p><p class="dashboard-metric-value">{{ ml_status.eligible_samples }}</p></div><span class="dashboard-metric-icon">{{ icon('orders',18) }}</span></article>
+              <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Minimum Required</p><p class="dashboard-metric-value">{{ ml_status.minimum_samples }}</p></div><span class="dashboard-metric-icon">{{ icon('chart',18) }}</span></article>
+              <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Recent Orders Excluded</p><p class="dashboard-metric-value">{{ ml_status.excluded_recent_orders }}</p></div><span class="dashboard-metric-icon">{{ icon('alert',18) }}</span></article>
+            </div>
+            <div class="analytics-note analytics-spaced"><strong>Outcome counts:</strong> Picked up within 30 days: {{ ml_status.picked_up_within_30_days }} · Not picked up within 30 days: {{ ml_status.not_picked_up_within_30_days }}. Each training label requires a complete 30-day observation window after the latest Ready for Pickup event.</div>
+          </article>
+
+          <article class="dashboard-card dashboard-panel analytics-card analytics-spaced">
+            <div class="dashboard-panel-heading"><h2>Production Model</h2><span class="dashboard-status" data-tone="{{ 'success' if production_model else 'neutral' }}">{{ 'Trained on real history' if production_model else 'Not available' }}</span></div>
+            {% if production_model %}
+              <p>Trained from {{ production_model.eligible_samples }} eligible genuine Laundrix orders. The model was selected using a chronological validation segment and evaluated on a separate later test segment.</p>
+              <div class="analytics-model-grid">
+                <div class="analytics-model-stat"><span>Selected algorithm</span><strong>{{ production_model.selected_model|replace('_',' ')|title }}</strong></div>
+                <div class="analytics-model-stat"><span>Eligible historical orders</span><strong>{{ production_model.eligible_samples }}</strong></div>
+                <div class="analytics-model-stat"><span>Held-out test F1</span><strong>{{ (production_model.held_out_test_metrics.f1 * 100)|round(1) }}%</strong></div>
+                <div class="analytics-model-stat"><span>Trained at</span><strong>{{ production_model.trained_at[:10] }}</strong></div>
+              </div>
+              <div class="analytics-model-grid">
+                <div class="analytics-model-stat"><span>Test accuracy</span><strong>{{ (production_model.held_out_test_metrics.accuracy * 100)|round(1) }}%</strong></div>
+                <div class="analytics-model-stat"><span>Test precision</span><strong>{{ (production_model.held_out_test_metrics.precision * 100)|round(1) }}%</strong></div>
+                <div class="analytics-model-stat"><span>Test recall</span><strong>{{ (production_model.held_out_test_metrics.recall * 100)|round(1) }}%</strong></div>
+                <div class="analytics-model-stat"><span>Test ROC-AUC</span><strong>{{ (production_model.held_out_test_metrics.roc_auc * 100)|round(1) }}%</strong></div>
+              </div>
+              {% if production_predictions %}
+                <div class="analytics-section-heading analytics-spaced-heading"><div><h2>Current Ready for Pickup risk estimates</h2><p>Scores from the production model for orders currently marked Ready for Pickup. These are uncalibrated model scores, not guaranteed probabilities.</p></div></div>
+                <div class="dashboard-recent-desktop"><table class="dashboard-table"><thead><tr><th>Order Reference</th><th>Model score (not calibrated)</th><th>Indicative score band</th></tr></thead><tbody>
+                  {% for prediction in production_predictions %}<tr><td>{{ prediction.reference }}</td><td>{{ prediction.score_percent }}%</td><td>{{ prediction.score_band }}</td></tr>{% endfor %}
+                </tbody></table></div>
+              {% else %}<p class="analytics-empty">No orders are currently marked Ready for Pickup.</p>{% endif %}
+            {% else %}
+              <p class="analytics-empty">No production model is available. The model will only be trained after the genuine historical dataset meets the readiness threshold and every chronological training, validation, and test segment contains both outcome classes.</p>
+              <p class="analytics-empty">When the dataset is ready, run <code>flask analytics train-production</code> from the project root. This command reads existing database records and writes the model artifact under <code>instance/ml-production/</code>.</p>
+            {% endif %}
+          </article>
+
+          <article class="dashboard-card dashboard-panel analytics-card analytics-spaced">
+            <div class="dashboard-panel-heading"><h2>Development Model Training</h2><span class="dashboard-status" data-tone="{{ 'success' if demo_model else 'neutral' }}">{{ 'Demo model trained' if demo_model else 'Not trained yet' }}</span></div>
+            <div class="analytics-warning"><strong>Development-only:</strong> the demo model uses generated synthetic examples held in memory. It does not use or insert sample orders into MySQL. Its metrics and example predictions are not evidence of real-world Laundrix accuracy and must not be used to make decisions about real orders.</div>
+            {% if demo_model %}
+              <div class="analytics-model-grid">
+                <div class="analytics-model-stat"><span>Algorithm selected</span><strong>{{ demo_model.selected_model|replace('_',' ')|title }}</strong></div>
+                <div class="analytics-model-stat"><span>Synthetic samples</span><strong>{{ demo_model.samples }}</strong></div>
+                <div class="analytics-model-stat"><span>Training / test split</span><strong>{{ demo_model.training_samples }} / {{ demo_model.testing_samples }}</strong></div>
+                <div class="analytics-model-stat"><span>Trained at</span><strong>{{ demo_model.trained_at[:10] }}</strong></div>
+              </div>
+              <div class="analytics-section-heading analytics-spaced-heading"><div><h2>Algorithm comparison</h2><p>Held-out test metrics from the synthetic demonstration dataset.</p></div></div>
+              <div class="dashboard-recent-desktop"><table class="dashboard-table"><thead><tr><th>Algorithm</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-score</th><th>ROC-AUC</th></tr></thead><tbody>
+                {% for name, values in demo_model.metrics.items() %}<tr><td>{{ name|replace('_',' ')|title }}{% if name == demo_model.selected_model %} · Selected{% endif %}</td><td>{{ (values.accuracy * 100)|round(1) }}%</td><td>{{ (values.precision * 100)|round(1) }}%</td><td>{{ (values.recall * 100)|round(1) }}%</td><td>{{ (values.f1 * 100)|round(1) }}%</td><td>{{ (values.roc_auc * 100)|round(1) }}%</td></tr>{% endfor %}
+              </tbody></table></div>
+              <div class="analytics-section-heading analytics-spaced-heading"><div><h2>Example predictions</h2><p>Three generated sample orders only — not actual Laundrix orders or calibrated probabilities.</p></div></div>
+              <div class="analytics-prediction-demo">{% for probability in demo_model.demo_prediction_percentages %}<article><span>Generated demo order {{ loop.index }}</span><strong>{{ probability }}%</strong><span>Simulated model score for the not-picked-up-within-30-days class</span></article>{% endfor %}</div>
+            {% else %}
+              <p class="analytics-empty">No development model has been trained yet. To generate the synthetic training set in memory, compare Logistic Regression and Random Forest, and save a clearly labelled development artifact, run this command from the project root:</p>
+              <pre><code>flask analytics train-demo</code></pre>
+              <p class="analytics-empty">This creates files only inside <code>instance/ml-development/</code>. It does not insert, update, or delete database records.</p>
+            {% endif %}
+          </article>
+        </section>
+      </main>
+    </div>
+  </div>
+</div>
+{% endblock %}

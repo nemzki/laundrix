@@ -74,7 +74,8 @@ export function Dashboard({ data, identity, onReady }: { data: DashboardData; id
           {data.popular.length ? <ul className="dashboard-popular">{data.popular.map((item, index) => <li key={`${item.name}-${index}`}><span>{item.name}</span><span>{item.count} line{item.count === 1 ? '' : 's'}</span></li>)}</ul> :
             <div className="dashboard-empty"><strong>No data yet</strong><p>Popular services appear once orders exist.</p></div>}
         </Card>}
-      </div><a className="dashboard-fallback" href={data.urls.fallback}>Use Original Interface</a>
+      </div>
+      <a className="dashboard-fallback" href={data.urls.fallback}>Use Original Interface</a>
     </div><BottomNavigation data={data} />
   </AppShell></TooltipProvider>
 }

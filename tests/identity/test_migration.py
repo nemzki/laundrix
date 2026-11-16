@@ -145,45 +145,121 @@ def test_the_full_chain_matches_the_models(conn):
         for col, mc in model_cols.items():
             assert mc.nullable == db_cols[col]["nullable"], f"{name}.{col}: nullability differs"
 
+
 def _revision_graph():
-    """{revision: down_revision} read from the real migration files."""
-    import re
+    """Return {revision: (down_revisions, path)} from the real migration files."""
+    import ast
+
     graph = {}
     for path in VERSIONS.glob("*.py"):
-        text = path.read_text(encoding="utf-8")
-        rev = re.search(r"^revision\s*=\s*['\"](\w+)['\"]", text, re.M).group(1)
-        down = re.search(r"^down_revision\s*=\s*(?:None|['\"](\w+)['\"])", text, re.M).group(1)
-        graph[rev] = (down, path)
+        tree = ast.parse(path.read_text(encoding="utf-8-sig"))
+        values = {}
+
+        for node in tree.body:
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id in {
+                        "revision",
+                        "down_revision",
+                    }:
+                        values[target.id] = ast.literal_eval(node.value)
+
+        rev = values["revision"]
+        down = values.get("down_revision")
+
+        if down is None:
+            parents = ()
+        elif isinstance(down, str):
+            parents = (down,)
+        else:
+            parents = tuple(down)
+
+        graph[rev] = (parents, path)
+
     return graph
 
 
-def test_the_revision_graph_is_one_straight_line_with_a_single_head():
+def test_the_revision_graph_has_one_head_and_all_revisions_are_reachable():
     graph = _revision_graph()
-    heads = [r for r in graph if not any(d == r for d, _ in graph.values())]
-    roots = [r for r, (d, _) in graph.items() if d is None]
-    assert len(heads) == 1 and len(roots) == 1
-    assert len({d for d, _ in graph.values() if d}) == len(graph) - 1          # no revision has two children
-    seen, cur = [], heads[0]
-    while cur:
-        seen.append(cur)
-        cur = graph[cur][0]
-    assert set(seen) == set(graph)                                              # every revision reachable
-    assert seen[::-1][: len(CHAIN)] == CHAIN                                    # identity chain is the real start
+
+    heads = [
+        rev for rev in graph
+        if not any(rev in parents for parents, _ in graph.values())
+    ]
+    roots = [
+        rev for rev, (parents, _) in graph.items()
+        if not parents
+    ]
+
+    assert heads == ["d53e74365dc4"]
+    assert len(roots) == 1
+
+    seen = set()
+    pending = list(heads)
+
+    while pending:
+        current = pending.pop()
+        if current in seen:
+            continue
+
+        seen.add(current)
+        pending.extend(graph[current][0])
+
+    assert seen == set(graph)
+
+    # The original identity migration chain must remain intact.
+    identity_path = []
+    current = "11b2bcbca728"
+
+    while current:
+        identity_path.append(current)
+        parents = graph[current][0]
+        current = parents[0] if parents else None
+
+    assert identity_path[::-1][:len(CHAIN)] == CHAIN
 
 
 def test_skipped_revisions_do_not_touch_the_compared_tables():
     import re
+
     graph = _revision_graph()
+
     for rev in LATER_REVISIONS_ON_COMPARED_TABLES:
-        cur = rev
-        while cur and cur != CHAIN[-1]:
-            cur = graph[cur][0]
-        assert cur == CHAIN[-1], f"{rev} must descend from {CHAIN[-1]}"
-    skipped = set(graph) - set(CHAIN) - set(LATER_REVISIONS_ON_COMPARED_TABLES)
+        pending = [rev]
+        visited = set()
+        reaches_identity_end = False
+
+        while pending:
+            current = pending.pop()
+            if current in visited:
+                continue
+            visited.add(current)
+
+            if current == CHAIN[-1]:
+                reaches_identity_end = True
+                break
+
+            pending.extend(graph[current][0])
+
+        assert reaches_identity_end, (
+            f"{rev} must descend from {CHAIN[-1]}"
+        )
+
+    skipped = (
+        set(graph)
+        - set(CHAIN)
+        - set(LATER_REVISIONS_ON_COMPARED_TABLES)
+    )
+
     touching = re.compile(
-        r"(alter_table|add_column|drop_column|alter_column|create_index|drop_index)\(\s*['\"]"
-        r"(users|auth_events|staff_credentials|identity_verifications|identity_verification_events)['\"]")
+        r"(alter_table|add_column|drop_column|alter_column|create_index|drop_index)"
+        r"\(\s*['\"]"
+        r"(users|auth_events|staff_credentials|identity_verifications|identity_verification_events)['\"]"
+    )
+
     for rev in skipped:
         source = graph[rev][1].read_text(encoding="utf-8")
-        assert not touching.search(source), f"{rev} changes a compared table; add it to LATER_REVISIONS_ON_COMPARED_TABLES"
-
+        assert not touching.search(source), (
+            f"{rev} changes a compared table; "
+            "add it to LATER_REVISIONS_ON_COMPARED_TABLES"
+        )

@@ -1,12 +1,10 @@
 """Laundrix application factory."""
 import logging
-import os
-from logging.handlers import RotatingFileHandler
 
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from config import BASE_DIR, get_config
+from config import get_config
 from app.extensions import csrf, db, limiter, login_manager, migrate, oauth, talisman
 
 CSP = {
@@ -80,6 +78,7 @@ def _init_extensions(app):
 
 def _register_blueprints(app):
     from app.audit import bp as audit_bp
+    from app.analytics import bp as analytics_bp
     from app.auth import bp as auth_bp
     from app.catalog import bp as catalog_bp
     from app.core import bp as core_bp
@@ -103,6 +102,7 @@ def _register_blueprints(app):
     app.register_blueprint(payments_bp, url_prefix="/payments")
     app.register_blueprint(staff_admin_bp, url_prefix="/admin/staff")
     app.register_blueprint(audit_bp, url_prefix="/admin/audit-logs")
+    app.register_blueprint(analytics_bp, url_prefix="/admin/analytics")
     app.register_blueprint(tracking_bp)
 
 def _register_cli(app):
@@ -111,17 +111,18 @@ def _register_cli(app):
     register_commands(app)
 
 
+
 def _configure_logging(app):
     if app.debug or app.testing:
         return
-    log_dir = os.path.join(BASE_DIR, "logs")
-    os.makedirs(log_dir, exist_ok=True)
-    handler = RotatingFileHandler(
-        os.path.join(log_dir, "laundrix.log"), maxBytes=1_000_000, backupCount=5
-    )
+
+    handler = logging.StreamHandler()
     handler.setFormatter(
-        logging.Formatter("%(asctime)s %(levelname)s [%(name)s] %(message)s")
+        logging.Formatter(
+            "%(asctime)s %(levelname)s [%(name)s] %(message)s"
+        )
     )
     handler.setLevel(logging.INFO)
+
     app.logger.addHandler(handler)
     app.logger.setLevel(logging.INFO)

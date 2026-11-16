@@ -206,18 +206,52 @@ def _cols(conn, table):
     return {c["name"] for c in sa.inspect(conn).get_columns(table)}
 
 
+
 def test_the_migration_chains_from_the_current_head_without_a_second_head():
-    import re
+    import ast
+
     graph = {}
+
     for path in (ROOT / "migrations" / "versions").glob("*.py"):
-        text = path.read_text(encoding="utf-8")
-        rev = re.search(r"^revision\s*=\s*['\"](\w+)['\"]", text, re.M).group(1)
-        down = re.search(r"^down_revision\s*=\s*(?:None|['\"](\w+)['\"])", text, re.M).group(1)
-        graph[rev] = down
-    heads = [r for r in graph if r not in graph.values()]
-    assert graph["f2b7d4c9a1e3"] == "e7b3c9a4d1f6"          # the SMS migration still sits on the staff/account one
-    assert heads == ["a9c4e2d7b1f3"] and graph["a9c4e2d7b1f3"] == "b5d1e8c3a7f2"   # audit_logs is the head
-    assert graph["b5d1e8c3a7f2"] == "f2b7d4c9a1e3"                                   # Staff ID retirement sits below it
+        tree = ast.parse(path.read_text(encoding="utf-8-sig"))
+        values = {}
+
+        for node in tree.body:
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id in {
+                        "revision",
+                        "down_revision",
+                    }:
+                        values[target.id] = ast.literal_eval(node.value)
+
+        rev = values["revision"]
+        down = values.get("down_revision")
+
+        if down is None:
+            parents = ()
+        elif isinstance(down, str):
+            parents = (down,)
+        else:
+            parents = tuple(down)
+
+        graph[rev] = parents
+
+    heads = [
+        rev for rev in graph
+        if not any(rev in parents for parents in graph.values())
+    ]
+
+    assert graph["f2b7d4c9a1e3"] == ("e7b3c9a4d1f6",)
+    assert graph["b5d1e8c3a7f2"] == ("f2b7d4c9a1e3",)
+    assert graph["a9c4e2d7b1f3"] == ("b5d1e8c3a7f2",)
+    assert graph["a9c4e2d7b1f5"] == ("f2b7d4c9a1e3",)
+
+    assert graph["d53e74365dc4"] == (
+        "a9c4e2d7b1f3",
+        "a9c4e2d7b1f5",
+    )
+    assert heads == ["d53e74365dc4"]
 
 
 def test_existing_orders_migrate_with_consent_false(conn):

@@ -1,4 +1,4 @@
-{# Frontend view model from existing authorized context only. No new query or business rule. #}
+{# Frontend view model from existing authorized context only. #}
 {% from 'core/_nav_shared.html' import user_initials %}
 {% set role = 'admin' if admin_area else 'staff' %}
 {% set view = namespace(metrics=[], recent=[], popular=[], groups=[]) %}
@@ -30,7 +30,7 @@
     status=o.status|status_label, value=o.status, tone=o.status|status_tone, url=url_for('orders.detail', reference=o.reference))] %}
 {% endfor %}
 {% set view.groups = [
-  dict(label='Overview', items=[dict(label='Dashboard', url=url_for('dashboard.index'), icon='dashboard', active=true)]),
+  dict(label='Overview', items=[dict(label='Dashboard', url=url_for('dashboard.index'), icon='dashboard', active=request.endpoint in ('dashboard.index', 'dashboard.admin_dashboard', 'dashboard.staff_dashboard'))]),
   dict(label='Operations', items=[dict(label='New Order', url=url_for('orders.new_order'), icon='plus', active=false),
     dict(label='Manage Orders', url=url_for('orders.index'), icon='orders', active=false),
     dict(label='Outstanding Balances', url=url_for('payments.outstanding'), icon='wallet', active=false)])
@@ -42,7 +42,8 @@
       dict(label='Staff Management', url=url_for('staff_admin.index'), icon='staff', active=false)]),
     dict(label='Finance', items=[dict(label='Payment Records', url=url_for('payments.records'), icon='receipt', active=false),
       dict(label='Payment Summary', url=url_for('payments.summary'), icon='chart', active=false),
-      dict(label='Payment Settings', url=url_for('payments.settings'), icon='settings', active=false)])
+      dict(label='Payment Settings', url=url_for('payments.settings'), icon='settings', active=false)]),
+    dict(label='Insights', items=[dict(label='Analytics & Reports', url=url_for('analytics.index'), icon='chart', active=request.endpoint == 'analytics.index')])
   ] %}
 {% endif %}
 {% set dashboard_data = dict(role=role, title=dashboard_title, description=dashboard_description,

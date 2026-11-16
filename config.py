@@ -36,6 +36,24 @@ def _database_uri() -> str:
     ).render_as_string(hide_password=False)
 
 
+def _database_engine_options() -> dict:
+    options = {
+        "pool_pre_ping": True,
+        "pool_recycle": 280,
+    }
+
+    ssl_ca = (os.getenv("DB_SSL_CA") or "").strip()
+
+    if ssl_ca:
+        options["connect_args"] = {
+            "ssl_ca": ssl_ca,
+            "ssl_verify_cert": _bool("DB_SSL_VERIFY_CERT", True),
+            "ssl_verify_identity": _bool("DB_SSL_VERIFY_IDENTITY", True),
+        }
+
+    return options
+
+
 class BaseConfig:
     ENV_NAME = "development"
 
@@ -45,10 +63,14 @@ class BaseConfig:
     APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # reject request bodies > 2 MB (webhooks are small)
 
+    # --- File storage ---
+    PROFILE_AVATAR_DIR = os.getenv("PROFILE_AVATAR_DIR") or None
+    PAYMENT_UPLOAD_DIR = os.getenv("PAYMENT_UPLOAD_DIR") or None
+
     # --- Database ---
     SQLALCHEMY_DATABASE_URI = _database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True, "pool_recycle": 280}
+    SQLALCHEMY_ENGINE_OPTIONS = _database_engine_options()
 
     # --- Google OAuth (admins) ---
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
