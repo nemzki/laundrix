@@ -17,6 +17,7 @@ from app.models import (
     OrderStatus,
     Payment,
     PaymentKind,
+    HistoricalTransaction,
 )
 
 
@@ -62,6 +63,41 @@ def get_analytics_report(as_of=None):
     for _ in range(6):
         month_keys.append(cursor.strftime("%Y-%m"))
         cursor = _shift_month(cursor, 1)
+
+    historical_totals = db.session.execute(
+        db.select(
+            func.count(HistoricalTransaction.id),
+            func.coalesce(func.sum(HistoricalTransaction.total_amount), 0),
+        )
+    ).one()
+
+    historical_monthly = {
+        key: {
+            "key": key,
+            "label": datetime.strptime(key, "%Y-%m").strftime("%b %Y"),
+            "transactions": 0,
+            "revenue": Decimal("0.00"),
+        }
+        for key in month_keys
+    }
+
+    historical_rows = db.session.execute(
+        db.select(
+            HistoricalTransaction.transaction_date,
+            HistoricalTransaction.total_amount,
+        ).where(
+            HistoricalTransaction.transaction_date >= first_month.date(),
+            HistoricalTransaction.transaction_date < _shift_month(
+                _month_start(now), 1
+            ).date(),
+        )
+    ).all()
+
+    for row in historical_rows:
+        key = row.transaction_date.strftime("%Y-%m")
+        if key in historical_monthly:
+            historical_monthly[key]["transactions"] += 1
+            historical_monthly[key]["revenue"] += _money(row.total_amount)
 
     monthly = {
         key: {"key": key, "label": datetime.strptime(key, "%Y-%m").strftime("%b %Y"),
@@ -163,5 +199,20 @@ def get_analytics_report(as_of=None):
         "statuses": status_data,
         "services": services,
         "payment_methods": methods,
+        "historical": {
+            "summary": {
+                "transaction_count": int(historical_totals[0] or 0),
+                "recorded_revenue": _money(historical_totals[1]).quantize(
+                    Decimal("0.01")
+                ),
+            },
+            "monthly": [
+                {
+                    **item,
+                    "revenue": item["revenue"].quantize(Decimal("0.01")),
+                }
+                for item in historical_monthly.values()
+            ],
+        },
         "report_period": f"{first_month.strftime('%b %Y')} – {now.strftime('%b %Y')}",
     }

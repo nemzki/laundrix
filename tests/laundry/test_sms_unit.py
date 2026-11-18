@@ -251,7 +251,7 @@ def test_the_migration_chains_from_the_current_head_without_a_second_head():
         "a9c4e2d7b1f3",
         "a9c4e2d7b1f5",
     )
-    assert heads == ["d53e74365dc4"]
+    assert heads == ["94f6f8ac3700"]
 
 
 def test_existing_orders_migrate_with_consent_false(conn):

@@ -3,7 +3,15 @@ from decimal import Decimal
 
 from app.analytics.services import get_analytics_report
 from app.extensions import db
-from app.models import Customer, Order, OrderItem, OrderStatus, Payment, PaymentMethod
+from app.models import (
+    Customer,
+    HistoricalTransaction,
+    Order,
+    OrderItem,
+    OrderStatus,
+    Payment,
+    PaymentMethod,
+)
 from app.models.payment import PaymentKind
 
 
@@ -157,3 +165,60 @@ def test_analytics_report_calculates_orders_payments_and_services(app):
     assert monthly["2026-11"]["collected"] == Decimal("10.00")
 
     assert report["report_period"] == "Jun 2026 \u2013 Nov 2026"
+
+def test_historical_transactions_are_reported_separately_from_live_data(app):
+    db.session.add_all([
+        HistoricalTransaction(
+            transaction_date=datetime(2026, 10, 3).date(),
+            source_transaction_no=1,
+            customer_name="Historical Customer A",
+            raw_weight="8 kls",
+            fold_amount=Decimal("20.00"),
+            liquid_soap_amount=Decimal("15.00"),
+            surf_downy_amount=Decimal("15.00"),
+            load_amount=Decimal("135.00"),
+            total_amount=Decimal("125.00"),
+            payment_status="unknown",
+            import_source="washup_laundry_shop_history.csv",
+            source_row_key="historical-test-2026-10-03-001",
+        ),
+        HistoricalTransaction(
+            transaction_date=datetime(2026, 11, 2).date(),
+            source_transaction_no=1,
+            customer_name="Historical Customer B",
+            raw_weight="Comp.",
+            fold_amount=Decimal("20.00"),
+            liquid_soap_amount=Decimal("15.00"),
+            surf_downy_amount=Decimal("15.00"),
+            load_amount=Decimal("135.00"),
+            total_amount=Decimal("175.00"),
+            payment_status="unknown",
+            import_source="washup_laundry_shop_history.csv",
+            source_row_key="historical-test-2026-11-02-001",
+        ),
+    ])
+    db.session.commit()
+
+    report = get_analytics_report(as_of=datetime(2026, 11, 16))
+    summary = report["summary"]
+    historical = report["historical"]
+
+    assert historical["summary"]["transaction_count"] == 2
+    assert historical["summary"]["recorded_revenue"] == Decimal("300.00")
+
+    monthly = {item["key"]: item for item in historical["monthly"]}
+    assert monthly["2026-10"]["transactions"] == 1
+    assert monthly["2026-10"]["revenue"] == Decimal("125.00")
+    assert monthly["2026-11"]["transactions"] == 1
+    assert monthly["2026-11"]["revenue"] == Decimal("175.00")
+
+    # Historical records must not inflate live business metrics.
+    assert summary["total_orders"] == 0
+    assert summary["orders_this_month"] == 0
+    assert summary["total_customers"] == 0
+    assert summary["order_value"] == Decimal("0.00")
+    assert summary["collected_12m"] == Decimal("0.00")
+    assert summary["outstanding_balance"] == Decimal("0.00")
+    assert summary["orders_with_balance"] == 0
+
+    assert report["payment_methods"] == []

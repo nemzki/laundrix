@@ -12,12 +12,13 @@ from app.models.sms import SMSNotification, SMSStatus
 from app.models.payment import (
     Payment, PaymentArrangement, PaymentEvent, PaymentKind, PaymentMethod, PaymentSettings, PaymentStatus,
 )
+from app.models.historical_transaction import HistoricalTransaction
 
 __all__ = [
     "AccountStatus", "Role", "User", "StaffCredential", "AuthEvent", "AuditLog", "AuditLogImmutableError",
     "IdentityVerification", "IdentityVerificationEvent",
     "ICON_KEYS", "PackageMeasure", "PricingUnit", "Service", "ServiceAddon", "ServicePackage",
-    "Customer", "ItemType", "Order", "OrderItem", "OrderStatus", "OrderStatusHistory",
+    "Customer", "HistoricalTransaction", "ItemType", "Order", "OrderItem", "OrderStatus", "OrderStatusHistory",
     "SMSNotification", "SMSStatus",
     "Payment", "PaymentArrangement", "PaymentEvent", "PaymentKind", "PaymentMethod",
     "PaymentSettings", "PaymentStatus",

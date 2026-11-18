@@ -56,6 +56,79 @@
           </div>
         </section>
 
+        <section class="analytics-section" aria-labelledby="historical-heading">
+          <div class="analytics-section-heading">
+            <div>
+              <h2 id="historical-heading">Historical Transactions</h2>
+              <p>Imported historical records, reported separately from live Laundrix activity.</p>
+            </div>
+            <span class="dashboard-status" data-tone="neutral">Historical data</span>
+          </div>
+
+          <div class="analytics-kpis">
+            <article class="dashboard-card dashboard-metric analytics-kpi">
+              <div>
+                <p class="dashboard-metric-label">Historical Transactions</p>
+                <p class="dashboard-metric-value">{{ report.historical.summary.transaction_count }}</p>
+              </div>
+              <span class="dashboard-metric-icon">{{ icon('orders',18) }}</span>
+            </article>
+            <article class="dashboard-card dashboard-metric analytics-kpi">
+              <div>
+                <p class="dashboard-metric-label">Historical Recorded Revenue</p>
+                <p class="dashboard-metric-value">{{ report.historical.summary.recorded_revenue|peso }}</p>
+              </div>
+              <span class="dashboard-metric-icon">{{ icon('receipt',18) }}</span>
+            </article>
+          </div>
+
+          <div class="analytics-panels analytics-spaced">
+            <article class="dashboard-card dashboard-panel analytics-card">
+              <div class="dashboard-panel-heading">
+                <h2>Historical Revenue by Month</h2>
+              </div>
+              {% if report.historical.monthly|sum(attribute='revenue') > 0 %}
+                {% set historical_max = report.historical.monthly|map(attribute='revenue')|max %}
+                <svg class="analytics-chart" viewBox="0 0 600 190" role="img" aria-label="Bar chart of historical recorded revenue by month">
+                  <line class="chart-grid" x1="30" y1="150" x2="580" y2="150"></line>
+                  {% for item in report.historical.monthly %}
+                    {% set bar_height = 100 * item.revenue / historical_max %}
+                    <rect class="chart-bar" x="{{ 48 + loop.index0 * 90 }}" y="{{ 145 - bar_height }}" width="42" height="{{ bar_height }}" rx="5"></rect>
+                    <text class="chart-value" x="{{ 69 + loop.index0 * 90 }}" y="{{ 136 - bar_height }}" text-anchor="middle">{{ item.revenue|round|int }}</text>
+                    <text x="{{ 69 + loop.index0 * 90 }}" y="170" text-anchor="middle">{{ item.label[:3] }}</text>
+                  {% endfor %}
+                </svg>
+              {% else %}
+                <p class="analytics-empty">No historical transactions are recorded for this period.</p>
+              {% endif %}
+            </article>
+
+            <article class="dashboard-card dashboard-panel analytics-card">
+              <div class="dashboard-panel-heading">
+                <h2>Monthly Historical Summary</h2>
+              </div>
+              {% if report.historical.monthly|sum(attribute='transactions') > 0 %}
+                <div class="analytics-status-list">
+                  {% for item in report.historical.monthly %}
+                    {% if item.transactions > 0 %}
+                      <div class="analytics-status-row">
+                        <span>{{ item.label }} - {{ item.transactions }} transactions</span>
+                        <strong>{{ item.revenue|peso }}</strong>
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              {% else %}
+                <p class="analytics-empty">No historical transactions are available for this period.</p>
+              {% endif %}
+            </article>
+          </div>
+
+          <p class="analytics-note analytics-spaced">
+            <strong>Data note:</strong> Historical recorded revenue represents amounts in the imported records. It is not verified payment collection and is excluded from live orders, customers, payment methods, and outstanding balances.
+          </p>
+        </section>
+
         <section class="analytics-section" aria-labelledby="trends-heading">
           <div class="analytics-section-heading"><div><h2 id="trends-heading">Business trends</h2><p>Monthly order volume and recorded net payments for the last six months.</p></div></div>
           <div class="analytics-panels">
