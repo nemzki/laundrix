@@ -13,6 +13,7 @@ from app.analytics.services import get_analytics_report
 from app.core.decorators import role_required
 from app.models import Role
 from app.orders.services import dashboard_stats
+from app.analytics.ml.dispatch_queue import get_ready_dispatch_queue
 
 
 @bp.route("/", endpoint="index")
@@ -31,4 +32,5 @@ def index():
         demo_model=load_demo_training_summary(current_app.instance_path),
         production_model=load_production_model_summary(current_app.instance_path),
         production_predictions=get_current_ready_order_predictions(current_app.instance_path),
+        dispatch_queue=get_ready_dispatch_queue(),
     )

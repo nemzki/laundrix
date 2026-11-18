@@ -43,6 +43,60 @@
           <a class="dashboard-native-button" href="{{ d.urls.home }}">{{ icon('dashboard',16) }}Back to Dashboard</a>
         </div>
 
+
+<section class="analytics-section" aria-labelledby="dispatch-heading">
+  <div class="analytics-section-heading">
+    <div>
+      <h2 id="dispatch-heading">Ready for Pickup Dispatch Queue</h2>
+      <p>Orders are prioritized by how long they have been waiting since their latest Ready for Pickup status.</p>
+    </div>
+    <span class="dashboard-status" data-tone="{{ 'success' if dispatch_queue else 'neutral' }}">
+      {{ dispatch_queue|length }} awaiting pickup
+    </span>
+  </div>
+
+  <article class="dashboard-card dashboard-panel analytics-card">
+    {% if dispatch_queue %}
+      <div class="dashboard-recent-desktop">
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>Priority</th>
+              <th>Order Reference</th>
+              <th>Customer</th>
+              <th>Waiting Time</th>
+              <th>Order Items</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in dispatch_queue %}
+              <tr>
+                <td><strong>#{{ item.priority }}</strong></td>
+                <td>{{ item.reference }}</td>
+                <td>{{ item.customer_name }}</td>
+                <td>{{ item.waiting_label }}</td>
+                <td>
+                  {% for order_item in item.items %}
+                    {{ order_item.name }} ({{ order_item.quantity }} {{ order_item.unit }}){% if not loop.last %}, {% endif %}
+                  {% endfor %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="analytics-empty">There are currently no Ready for Pickup orders with recorded readiness history.</p>
+    {% endif %}
+
+    <div class="analytics-note analytics-spaced">
+      <strong>Prioritization method:</strong>
+      Oldest Ready for Pickup event first. This is a rule-based operational queue, not an ML-generated risk prediction.
+    </div>
+  </article>
+</section>
+
+
         <section class="analytics-section" aria-labelledby="overview-heading">
           <div class="analytics-section-heading"><div><h2 id="overview-heading">Business overview</h2><p>Live aggregates from existing Laundrix records.</p></div><span class="dashboard-status" data-tone="neutral">{{ report.report_period }}</span></div>
           <div class="analytics-kpis">
