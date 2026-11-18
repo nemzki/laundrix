@@ -76,7 +76,7 @@
                 <td>{{ item.customer_name }}</td>
                 <td>{{ item.waiting_label }}</td>
                 <td>
-                  {% for order_item in item.items %}
+                  {% for order_item in item["items"] %}
                     {{ order_item.name }} ({{ order_item.quantity }} {{ order_item.unit }}){% if not loop.last %}, {% endif %}
                   {% endfor %}
                 </td>
