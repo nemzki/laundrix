@@ -46,5 +46,8 @@
     {{ nav_link(url_for('payments.records'), 'Payment Records', 'receipt', ep == 'payments.records', link_class) }}
     {{ nav_link(url_for('payments.summary'), 'Payment Summary', 'chart', ep == 'payments.summary', link_class) }}
     {{ nav_link(url_for('payments.settings'), 'Payment Settings', 'settings', ep == 'payments.settings', link_class) }}
-  {% endif %}
+
+    {% if show_groups %}<p class="lx-nav__group-label">Insights</p>{% endif %}
+    {{ nav_link(url_for('analytics.index'), 'Analytics & Reports', 'chart', ep == 'analytics.index', link_class) }}
+{% endif %}
 {%- endmacro %}
