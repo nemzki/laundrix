@@ -38,61 +38,56 @@
         <span>Insights / <strong>Analytics & Reports</strong></span>
       </header>
       <main id="dashboard-main" tabindex="-1" class="dashboard-content">
-        <div class="dashboard-heading">
-          <div><h1>Analytics & Reports</h1><p class="analytics-intro">Orders waiting for pickup and which ones are most likely to be disposed of.</p></div>
-          <a class="dashboard-native-button" href="{{ d.urls.home }}">{{ icon('dashboard',16) }}Back to Dashboard</a>
-        </div>
-
+        {% macro pct(v) %}{{ ((v * 100)|round(1))|string|replace('.0', '') }}%{% endmacro %}
         {% set s = report.summary %}
         {% set m = report.model %}
         {% set h = report.history %}
 
-        <section class="analytics-section" aria-labelledby="overview-heading">
-          <div class="analytics-section-heading">
-            <div><h2 id="overview-heading">Unclaimed orders overview</h2><p>Orders left for more than {{ report.disposal_days }} days after they are ready are disposed of.</p></div>
-            <span class="dashboard-status" data-tone="neutral">{{ report.today.strftime('%b %d, %Y') }}</span>
-          </div>
-          <div class="analytics-kpis">
-            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Waiting for Pickup</p><p class="dashboard-metric-value">{{ s.waiting_count }}</p></div><span class="dashboard-metric-icon">{{ icon('package',18) }}</span></article>
-            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">High Disposal Risk</p><p class="dashboard-metric-value">{{ s.high_risk_count if m else '—' }}</p></div><span class="dashboard-metric-icon">{{ icon('alert',18) }}</span></article>
-            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Value at Risk</p><p class="dashboard-metric-value">{{ s.value_at_risk|peso if m else '—' }}</p></div><span class="dashboard-metric-icon">{{ icon('wallet',18) }}</span></article>
-            <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Past Disposal Date</p><p class="dashboard-metric-value">{{ s.overdue_count }}</p></div><span class="dashboard-metric-icon">{{ icon('chart',18) }}</span></article>
-          </div>
-        </section>
+        <div class="dashboard-heading">
+          <div><h1>Analytics & Reports</h1><p>Unclaimed orders and their risk of being disposed.</p></div>
+          <a class="dashboard-native-button" href="{{ d.urls.home }}">{{ icon('dashboard',16) }}Back to Dashboard</a>
+        </div>
 
-        <section class="analytics-section" aria-labelledby="predictions-heading">
-          <div class="analytics-section-heading">
-            <div><h2 id="predictions-heading">Disposal risk predictions</h2><p>Each waiting order gets a score for how likely it is to end up disposed of. Highest risk first.</p></div>
-            <span class="dashboard-status" data-tone="{{ 'success' if m else 'neutral' }}">{{ 'Model ready' if m else 'Model not trained' }}</span>
+        <div class="analytics-stack">
+
+          <div class="analytics-kpis">
+            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">Waiting for pickup</p><p class="dashboard-metric-value">{{ s.waiting_count }}</p></div><span class="dashboard-metric-icon">{{ icon('package',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">High disposal risk</p><p class="dashboard-metric-value">{{ s.high_risk_count if m else '—' }}</p></div><span class="dashboard-metric-icon">{{ icon('alert',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">Value at risk</p><p class="dashboard-metric-value">{{ s.value_at_risk|peso if m else '—' }}</p></div><span class="dashboard-metric-icon">{{ icon('wallet',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">Past disposal date</p><p class="dashboard-metric-value">{{ s.overdue_count }}</p></div><span class="dashboard-metric-icon">{{ icon('chart',18) }}</span></article>
           </div>
-          <article class="dashboard-card dashboard-panel analytics-card">
+
+          <article class="dashboard-card dashboard-panel analytics-card" aria-labelledby="predictions-heading">
+            <div class="dashboard-panel-heading">
+              <div><h2 id="predictions-heading">Disposal risk predictions</h2><p class="analytics-sub">Orders left unclaimed for {{ report.disposal_days }} days are disposed. Highest risk first.</p></div>
+              <span class="analytics-pill" data-tone="neutral">{{ report.waiting|length }} waiting</span>
+            </div>
             {% if report.waiting %}
-              <div class="dashboard-recent-desktop">
-                <table class="dashboard-table">
-                  <thead><tr><th>Order</th><th>Customer</th><th>Source</th><th>Ready Date</th><th>Waiting</th><th>Days Left</th><th>Total</th><th>Risk Score</th><th>Risk</th><th>Action</th></tr></thead>
+              <div class="analytics-scroll">
+                <table class="dashboard-table analytics-table">
+                  <thead><tr><th>Order</th><th>Customer</th><th>Ready</th><th>Time left</th><th class="analytics-num">Total</th><th>Risk</th><th>Action</th></tr></thead>
                   <tbody>
                     {% for item in report.waiting %}
                     <tr>
-                      <td><strong>{{ item.reference }}</strong></td>
+                      <td><strong>{{ item.reference }}</strong><span class="analytics-sub">{{ 'Live order' if item.order_id else 'Imported' }}</span></td>
                       <td>{{ item.customer_name }}</td>
-                      <td>{{ item.source }}</td>
-                      <td>{{ item.ready_date.strftime('%b %d, %Y') }}</td>
-                      <td>{{ item.days_waiting }} day{{ '' if item.days_waiting == 1 else 's' }}</td>
-                      <td>{% if item.days_left < 0 %}<span class="dashboard-status" data-tone="warn">Past due</span>{% else %}{{ item.days_left }}{% endif %}</td>
-                      <td>{{ item.total|peso }}</td>
-                      <td>{{ (item.score_percent|string ~ '%') if item.score_percent is not none else '—' }}</td>
-                      <td>{% if item.band %}<span class="dashboard-status" data-tone="{{ 'warn' if item.band == 'High' else 'info' if item.band == 'Medium' else 'success' }}">{{ item.band }}</span>{% else %}—{% endif %}</td>
+                      <td>{{ item.ready_date.strftime('%b %d') }}</td>
+                      <td>
+                        {% if item.days_left < 0 %}<span class="analytics-pill" data-tone="high">Past due</span>{% else %}{{ item.days_left }} day{{ '' if item.days_left == 1 else 's' }} left{% endif %}
+                        <span class="analytics-sub">Waiting {{ item.days_waiting }} day{{ '' if item.days_waiting == 1 else 's' }}</span>
+                      </td>
+                      <td class="analytics-num">{{ item.total|peso }}</td>
+                      <td>{% if item.band %}<span class="analytics-pill" data-tone="{{ item.band|lower }}">{{ item.band }} · {{ pct(item.score_percent / 100) }}</span>{% else %}—{% endif %}</td>
                       <td>
                         {% if item.order_id %}
                           <details class="analytics-action">
-                            <summary>Mark disposed</summary>
+                            <summary class="analytics-btn">Mark disposed</summary>
                             <form method="post" action="{{ url_for('analytics.dispose', order_id=item.order_id) }}">
                               <input type="hidden" name="csrf_token" value="{{ d.csrf }}">
-                              <p>Confirm that {{ item.reference }} was disposed of.</p>
-                              <button class="dashboard-native-button" type="submit">Confirm disposed</button>
+                              <button class="analytics-btn" data-variant="danger" type="submit">Confirm disposed</button>
                             </form>
                           </details>
-                        {% else %}—{% endif %}
+                        {% else %}<span class="analytics-sub">—</span>{% endif %}
                       </td>
                     </tr>
                     {% endfor %}
@@ -100,37 +95,30 @@
                 </table>
               </div>
             {% else %}
-              <p class="analytics-empty">No orders are waiting for pickup right now.</p>
-            {% endif %}
-            {% if not m %}
-              <div class="analytics-note analytics-spaced"><strong>No scores yet.</strong> Scores appear after the model is trained (see Model details below).</div>
-            {% else %}
-              <div class="analytics-note analytics-spaced"><strong>How to read this:</strong> the risk score is a model estimate, not a guarantee. Use it to decide which customers to contact first. “Imported history” rows come from the uploaded records and disappear from this list once their disposal date passes.</div>
+              <p class="analytics-empty">No orders are waiting for pickup.</p>
             {% endif %}
           </article>
-        </section>
 
-        {% if report.disposals.total %}
-        <section class="analytics-section" aria-labelledby="disposed-heading">
-          <div class="analytics-section-heading">
-            <div><h2 id="disposed-heading">Orders marked as disposed</h2><p>Recorded here by admins. This does not change the order's status on the Orders pages.</p></div>
-            <span class="dashboard-status" data-tone="neutral">{{ report.disposals.total }} total</span>
-          </div>
-          <article class="dashboard-card dashboard-panel analytics-card">
-            <div class="dashboard-recent-desktop">
-              <table class="dashboard-table">
-                <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Marked on</th><th>Action</th></tr></thead>
+          {% if report.disposals.total %}
+          <article class="dashboard-card dashboard-panel analytics-card" aria-labelledby="disposed-heading">
+            <div class="dashboard-panel-heading">
+              <div><h2 id="disposed-heading">Marked as disposed</h2><p class="analytics-sub">Recorded here only; the order's status on the Orders pages is unchanged.</p></div>
+              <span class="analytics-pill" data-tone="neutral">{{ report.disposals.total }} total</span>
+            </div>
+            <div class="analytics-scroll">
+              <table class="dashboard-table analytics-table">
+                <thead><tr><th>Order</th><th>Customer</th><th>Marked on</th><th class="analytics-num">Total</th><th>Action</th></tr></thead>
                 <tbody>
                   {% for row in report.disposals.rows %}
                   <tr>
                     <td><strong>{{ row.reference }}</strong></td>
                     <td>{{ row.customer_name }}</td>
-                    <td>{{ row.total|peso }}</td>
                     <td>{{ row.disposed_at|localdt('%b %d, %Y') }}</td>
+                    <td class="analytics-num">{{ row.total|peso }}</td>
                     <td>
                       <form method="post" action="{{ url_for('analytics.undo_dispose', order_id=row.order_id) }}">
                         <input type="hidden" name="csrf_token" value="{{ d.csrf }}">
-                        <button class="dashboard-native-button" type="submit">Undo</button>
+                        <button class="analytics-btn" type="submit">Undo</button>
                       </form>
                     </td>
                   </tr>
@@ -139,75 +127,59 @@
               </table>
             </div>
           </article>
-        </section>
-        {% endif %}
+          {% endif %}
 
-        <section class="analytics-section" aria-labelledby="model-heading">
-          <div class="analytics-section-heading">
-            <div><h2 id="model-heading">Model details</h2><p>One logistic-regression model, trained from the imported order history.</p></div>
-            <span class="dashboard-status" data-tone="{{ 'success' if m else 'warn' }}">{{ ('Version ' ~ m.version) if m else 'Not trained' }}</span>
-          </div>
-          <article class="dashboard-card dashboard-panel analytics-card">
-            {% if m %}
-              {% if m.labels_simulated %}
-                <div class="analytics-warning"><strong>Simulated outcomes:</strong> this model was trained on outcome labels (claimed / disposed) that were simulated or not confirmed as real shop records. Its scores only show that the system works. Replace the labels with real records and retrain before relying on it.</div>
-              {% endif %}
-              <div class="analytics-model-grid">
-                <div class="analytics-model-stat"><span>Orders used for training</span><strong>{{ m.n_orders }}</strong></div>
-                <div class="analytics-model-stat"><span>Of those, disposed</span><strong>{{ m.n_disposed }}</strong></div>
-                <div class="analytics-model-stat"><span>Ready dates covered</span><strong>{{ m.data_start.strftime('%b %d') }} – {{ m.data_end.strftime('%b %d') }}</strong></div>
-                <div class="analytics-model-stat"><span>Trained on</span><strong>{{ m.trained_at|localdt('%b %d, %Y') }}</strong></div>
-              </div>
-              <div class="analytics-section-heading analytics-spaced-heading"><div><h2>Accuracy on the newest orders</h2><p>Measured on {{ m.metrics.test_orders }} recent orders ({{ m.metrics.test_disposed }} disposed) that the model did not learn from.</p></div></div>
-              <div class="analytics-model-grid">
-                <div class="analytics-model-stat"><span>Accuracy</span><strong>{{ (m.metrics.accuracy * 100)|round(1) }}%</strong></div>
-                <div class="analytics-model-stat"><span>Disposed orders caught (recall)</span><strong>{{ (m.metrics.recall * 100)|round(1) }}%</strong></div>
-                <div class="analytics-model-stat"><span>Flags that were right (precision)</span><strong>{{ (m.metrics.precision * 100)|round(1) }}%</strong></div>
-                <div class="analytics-model-stat"><span>Ranking quality (ROC-AUC)</span><strong>{{ (m.metrics.roc_auc * 100)|round(1) }}%</strong></div>
-              </div>
-              <p class="analytics-empty">Guessing “claimed” for every order would score {{ (m.metrics.baseline_accuracy * 100)|round(1) }}% accuracy.{% if m.metrics.test_disposed < 10 %} The test set has few disposed orders, so these numbers can change a lot with more data.{% endif %}</p>
-              <div class="analytics-section-heading analytics-spaced-heading"><div><h2>What the model looks at</h2><p>Strongest factors first.</p></div></div>
-              <ul class="analytics-rank-list">
-                {% for factor in m.factors %}
-                  <li><div class="analytics-rank-head"><span>{{ factor.label }}</span><strong>{{ 'raises risk' if factor.raises_risk else 'lowers risk' }}</strong></div></li>
-                {% endfor %}
-              </ul>
-              <p class="analytics-note analytics-spaced">No customer names, phone numbers or IDs are used as inputs. To retrain after importing new records, run <code>flask analytics train</code>.</p>
-            {% else %}
-              <p class="analytics-empty">No model has been trained yet. Import the history file, then train from the project folder:</p>
-              <pre><code>flask analytics import-history --file washup_laundry_shop_history.csv --execute
-flask analytics train</code></pre>
-              <p class="analytics-empty">Training needs enough completed orders with a known outcome (claimed or disposed). Until then this page only lists the orders waiting for pickup.</p>
-            {% endif %}
-          </article>
-        </section>
-
-        <section class="analytics-section" aria-labelledby="history-heading">
-          <div class="analytics-section-heading">
-            <div><h2 id="history-heading">Pickup history</h2><p>What happened to past orders after they were ready.</p></div>
-            <span class="dashboard-status" data-tone="neutral">Imported records</span>
-          </div>
-          {% if h.has_data %}
-            <div class="analytics-kpis">
-              <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Orders Claimed</p><p class="dashboard-metric-value">{{ h.counts.claimed }}</p></div><span class="dashboard-metric-icon">{{ icon('check',18) }}</span></article>
-              <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Orders Disposed</p><p class="dashboard-metric-value">{{ h.counts.disposed }}</p></div><span class="dashboard-metric-icon">{{ icon('alert',18) }}</span></article>
-              <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Value of Disposed Orders</p><p class="dashboard-metric-value">{{ h.disposed_value|peso }}</p></div><span class="dashboard-metric-icon">{{ icon('wallet',18) }}</span></article>
-              <article class="dashboard-card dashboard-metric analytics-kpi"><div><p class="dashboard-metric-label">Avg. Days to Pickup</p><p class="dashboard-metric-value">{{ h.avg_pickup_days if h.avg_pickup_days is not none else '—' }}</p></div><span class="dashboard-metric-icon">{{ icon('chart',18) }}</span></article>
+          <article class="dashboard-card dashboard-panel analytics-card" aria-labelledby="history-heading">
+            <div class="dashboard-panel-heading">
+              <div><h2 id="history-heading">Pickup history</h2><p class="analytics-sub">What happened to past orders after they were ready.</p></div>
             </div>
-            <article class="dashboard-card dashboard-panel analytics-card analytics-spaced">
-              <div class="dashboard-panel-heading"><h2>Orders by month ready</h2></div>
-              <div class="dashboard-recent-desktop">
-                <table class="dashboard-table">
-                  <thead><tr><th>Month</th><th>Claimed</th><th>Disposed</th><th>Still waiting</th></tr></thead>
-                  <tbody>{% for row in h.months %}<tr><td>{{ row.label }}</td><td>{{ row.claimed }}</td><td>{{ row.disposed }}</td><td>{{ row.waiting }}</td></tr>{% endfor %}</tbody>
+            {% if h.has_data %}
+              <div class="analytics-body">
+                <div class="analytics-stats">
+                  <div class="analytics-stat"><span>Claimed</span><strong>{{ h.counts.claimed }}</strong></div>
+                  <div class="analytics-stat"><span>Disposed</span><strong>{{ h.counts.disposed }}</strong></div>
+                  <div class="analytics-stat"><span>Value of disposed</span><strong>{{ h.disposed_value|peso }}</strong></div>
+                  <div class="analytics-stat"><span>Avg. days to pickup</span><strong>{{ h.avg_pickup_days if h.avg_pickup_days is not none else '—' }}</strong></div>
+                </div>
+              </div>
+              <div class="analytics-scroll analytics-scroll-short">
+                <table class="dashboard-table analytics-table">
+                  <thead><tr><th>Month ready</th><th class="analytics-num">Claimed</th><th class="analytics-num">Disposed</th><th class="analytics-num">Still waiting</th></tr></thead>
+                  <tbody>{% for row in h.months %}<tr><td>{{ row.label }}</td><td class="analytics-num">{{ row.claimed }}</td><td class="analytics-num">{{ row.disposed }}</td><td class="analytics-num">{{ row.waiting }}</td></tr>{% endfor %}</tbody>
                 </table>
               </div>
-              <p class="analytics-note analytics-spaced"><strong>Note:</strong> recent months show fewer disposals because orders are only disposed {{ report.disposal_days }} days after they are ready.{% if h.labels_simulated %} The claimed / disposed outcomes in these records are simulated placeholders, not real shop records.{% endif %}</p>
-            </article>
-          {% else %}
-            <article class="dashboard-card dashboard-panel analytics-card"><p class="analytics-empty">No history with recorded outcomes has been imported yet.</p></article>
-          {% endif %}
-        </section>
+            {% else %}
+              <p class="analytics-empty">No history with recorded outcomes yet.</p>
+            {% endif %}
+          </article>
+
+          <article class="dashboard-card dashboard-panel analytics-card" aria-labelledby="model-heading">
+            <div class="dashboard-panel-heading">
+              <div><h2 id="model-heading">Prediction model</h2><p class="analytics-sub">Logistic regression trained on past orders.</p></div>
+              <div class="analytics-pills">
+                {% if m and m.labels_simulated %}<span class="analytics-pill" data-tone="neutral">Simulated labels</span>{% endif %}
+                <span class="analytics-pill" data-tone="{{ 'low' if m else 'neutral' }}">{{ ('Version ' ~ m.version) if m else 'Not trained' }}</span>
+              </div>
+            </div>
+            {% if m %}
+              <div class="analytics-body">
+                <div class="analytics-stats">
+                  <div class="analytics-stat"><span>Accuracy</span><strong>{{ pct(m.metrics.accuracy) }}</strong></div>
+                  <div class="analytics-stat"><span>Recall</span><strong>{{ pct(m.metrics.recall) }}</strong></div>
+                  <div class="analytics-stat"><span>Precision</span><strong>{{ pct(m.metrics.precision) }}</strong></div>
+                  <div class="analytics-stat"><span>ROC-AUC</span><strong>{{ pct(m.metrics.roc_auc) }}</strong></div>
+                </div>
+                <p class="analytics-meta">Trained {{ m.trained_at|localdt('%b %d, %Y') }} on {{ m.n_orders }} orders ({{ m.n_disposed }} disposed) · tested on the newest {{ m.metrics.test_orders }}</p>
+                <div class="analytics-chips">
+                  {% for factor in m.factors %}<span class="analytics-chip">{{ factor.label }} · {{ 'raises' if factor.raises_risk else 'lowers' }} risk</span>{% endfor %}
+                </div>
+              </div>
+            {% else %}
+              <p class="analytics-empty">No model has been trained yet.</p>
+            {% endif %}
+          </article>
+
+        </div>
       </main>
     </div>
   </div>
