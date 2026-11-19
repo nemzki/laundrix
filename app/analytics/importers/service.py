@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -11,7 +10,8 @@ from app.analytics.importers.historical_transactions import (
 )
 
 
-COMPARISON_FIELDS = (
+# If any of these differ from what is already stored, the import stops (possible wrong file).
+BASE_FIELDS = (
     "customer_name",
     "raw_weight",
     "fold_amount",
@@ -19,8 +19,19 @@ COMPARISON_FIELDS = (
     "surf_downy_amount",
     "load_amount",
     "total_amount",
-    "payment_status",
     "source_row_key",
+)
+
+# Outcome fields may be filled in later by re-importing an updated CSV for the same source.
+# They are only compared/updated when the CSV actually contains the outcome columns, so
+# re-importing an old 9-column file can never wipe outcomes that are already stored.
+OUTCOME_FIELDS = (
+    "payment_status",
+    "ready_date",
+    "outcome_status",
+    "claimed_date",
+    "disposed_date",
+    "status_source",
 )
 
 
@@ -31,8 +42,9 @@ def import_historical_transactions(
 ):
     """Validate and optionally import historical transactions.
 
-    Dry-run is the default. Existing identical records are skipped.
-    Conflicting records stop the import before any writes occur.
+    Dry-run is the default. Identical records are skipped. Existing records whose outcome
+    columns differ are updated. Existing records whose base fields differ stop the import
+    before any writes occur.
     """
     path = Path(file_path)
 
@@ -53,6 +65,7 @@ def import_historical_transactions(
     }
 
     to_insert = []
+    to_update = []
     skipped = 0
     conflicts = []
 
@@ -68,15 +81,20 @@ def import_historical_transactions(
             to_insert.append(record)
             continue
 
-        identical = all(
-            getattr(existing, field) == record[field]
-            for field in COMPARISON_FIELDS
-        )
-
-        if identical:
-            skipped += 1
-        else:
+        if any(getattr(existing, field) != record[field] for field in BASE_FIELDS):
             conflicts.append(key)
+            continue
+
+        has_outcomes = "outcome_status" in record
+        outcome_changes = {
+            field: record[field]
+            for field in OUTCOME_FIELDS
+            if has_outcomes and getattr(existing, field) != record[field]
+        }
+        if outcome_changes:
+            to_update.append((existing, outcome_changes))
+        else:
+            skipped += 1
 
     if conflicts:
         examples = ", ".join(
@@ -91,6 +109,7 @@ def import_historical_transactions(
     result = {
         "total_rows": len(records),
         "inserted": len(to_insert),
+        "updated": len(to_update),
         "skipped": skipped,
         "executed": execute,
         "import_source": import_source,
@@ -102,6 +121,10 @@ def import_historical_transactions(
     try:
         for record in to_insert:
             db.session.add(HistoricalTransaction(**record))
+
+        for existing, changes in to_update:
+            for field, value in changes.items():
+                setattr(existing, field, value)
 
         db.session.commit()
 

@@ -1,4 +1,3 @@
-
 import csv
 import hashlib
 from datetime import date
@@ -6,6 +5,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 
+# The original 9 columns. Every file must have these.
 REQUIRED_COLUMNS = (
     "Date",
     "No",
@@ -18,6 +18,17 @@ REQUIRED_COLUMNS = (
     "Total Amount",
 )
 
+# Optional columns used by the unclaimed-order prediction model.  A file may leave all of
+# them out (old format).  If "Status" is present, the other five must be present too.
+OUTCOME_COLUMNS = (
+    "Payment Status",
+    "Ready Date",
+    "Status",
+    "Claimed Date",
+    "Disposed Date",
+    "Status Source",
+)
+
 MONEY_COLUMNS = {
     "Fold": "fold_amount",
     "Liquid Soap": "liquid_soap_amount",
@@ -25,6 +36,10 @@ MONEY_COLUMNS = {
     "Load Amount": "load_amount",
     "Total Amount": "total_amount",
 }
+
+PAYMENT_STATUSES = ("paid", "unpaid")
+OUTCOME_STATUSES = ("claimed", "unclaimed", "disposed")
+STATUS_SOURCES = ("recorded", "simulated")
 
 
 class HistoricalCsvError(ValueError):
@@ -65,6 +80,77 @@ def _parse_amount(value, line_number, column):
         )
 
     return amount.quantize(Decimal("0.01"))
+
+
+def _parse_optional_date(value, line_number, column):
+    value = value.strip()
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError as exc:
+        raise HistoricalCsvError(
+            f"Line {line_number}: invalid {column} {value!r}; expected YYYY-MM-DD."
+        ) from exc
+
+
+def _parse_outcome(values, transaction_date, line_number):
+    """Validate the optional outcome columns of one row and return model field values."""
+    payment = values["Payment Status"].strip().lower() or "unknown"
+    if payment != "unknown" and payment not in PAYMENT_STATUSES:
+        raise HistoricalCsvError(
+            f"Line {line_number}: Payment Status must be paid or unpaid, got {payment!r}."
+        )
+
+    status = values["Status"].strip().lower() or "unknown"
+    if status != "unknown" and status not in OUTCOME_STATUSES:
+        raise HistoricalCsvError(
+            f"Line {line_number}: Status must be claimed, unclaimed or disposed, got {status!r}."
+        )
+
+    source = values["Status Source"].strip().lower() or "unknown"
+    if source != "unknown" and source not in STATUS_SOURCES:
+        raise HistoricalCsvError(
+            f"Line {line_number}: Status Source must be recorded or simulated, got {source!r}."
+        )
+
+    ready = _parse_optional_date(values["Ready Date"], line_number, "Ready Date")
+    claimed = _parse_optional_date(values["Claimed Date"], line_number, "Claimed Date")
+    disposed = _parse_optional_date(values["Disposed Date"], line_number, "Disposed Date")
+
+    if status == "unknown":
+        if claimed or disposed:
+            raise HistoricalCsvError(
+                f"Line {line_number}: Claimed/Disposed Date given but Status is empty."
+            )
+    else:
+        if ready is None:
+            raise HistoricalCsvError(f"Line {line_number}: Ready Date is required when Status is set.")
+        if ready < transaction_date:
+            raise HistoricalCsvError(f"Line {line_number}: Ready Date is before the transaction Date.")
+        if status == "claimed" and (claimed is None or disposed is not None or claimed < ready):
+            raise HistoricalCsvError(
+                f"Line {line_number}: a claimed order needs a Claimed Date on/after Ready Date "
+                "and no Disposed Date."
+            )
+        if status == "disposed" and (disposed is None or claimed is not None or disposed < ready):
+            raise HistoricalCsvError(
+                f"Line {line_number}: a disposed order needs a Disposed Date on/after Ready Date "
+                "and no Claimed Date."
+            )
+        if status == "unclaimed" and (claimed is not None or disposed is not None):
+            raise HistoricalCsvError(
+                f"Line {line_number}: an unclaimed order must not have a Claimed or Disposed Date."
+            )
+
+    return {
+        "payment_status": payment,
+        "ready_date": ready,
+        "outcome_status": status,
+        "claimed_date": claimed,
+        "disposed_date": disposed,
+        "status_source": source,
+    }
 
 
 def parse_historical_csv(file_path, import_source):
@@ -118,9 +204,18 @@ def parse_historical_csv(file_path, import_source):
                     + ", ".join(missing)
                 )
 
+            has_outcomes = "Status" in headers
+            if has_outcomes:
+                missing_outcomes = [c for c in OUTCOME_COLUMNS if c not in headers]
+                if missing_outcomes:
+                    raise HistoricalCsvError(
+                        "Missing outcome columns: " + ", ".join(missing_outcomes)
+                    )
+
+            wanted = REQUIRED_COLUMNS + (OUTCOME_COLUMNS if has_outcomes else ())
             column_indexes = {
                 column: headers.index(column)
-                for column in REQUIRED_COLUMNS
+                for column in wanted
             }
 
             for line_number, row in enumerate(reader, start=2):
@@ -200,6 +295,9 @@ def parse_historical_csv(file_path, import_source):
                         line_number,
                         csv_column,
                     )
+
+                if has_outcomes:
+                    record.update(_parse_outcome(values, transaction_date, line_number))
 
                 key_material = (
                     f"{import_source}|"

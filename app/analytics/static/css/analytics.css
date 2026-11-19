@@ -49,3 +49,7 @@
 .analytics-progress::-moz-progress-bar { background:#4779bd; border-radius:99px; }
 .analytics-spaced { margin-top:1rem; }
 .analytics-spaced-heading { margin-top:1.2rem; }
+.analytics-action summary { cursor:pointer; font-size:.82rem; font-weight:600; list-style:none; white-space:nowrap; }
+.analytics-action summary::-webkit-details-marker { display:none; }
+.analytics-action form { display:grid; gap:.5rem; margin-top:.5rem; min-width:190px; }
+.analytics-action p { margin:0; font-size:.76rem; color:var(--muted-foreground,#64748b); white-space:normal; }

@@ -1,1 +1,1 @@
-"""Machine-learning readiness and prediction services."""
+"""Unclaimed-order disposal-risk model (one model: logistic regression)."""

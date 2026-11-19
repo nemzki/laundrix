@@ -10,34 +10,30 @@ bp = Blueprint(
 )
 
 
-@bp.cli.command("train-demo")
-@click.option("--samples", default=800, type=click.IntRange(200, 5000), show_default=True)
-def train_demo(samples):
-    """Train a clearly labelled development model using synthetic in-memory data."""
-    from app.analytics.ml.demo_training import train_demo_models
-
-    result = train_demo_models(current_app.instance_path, samples=samples)
-    click.echo("Development-only synthetic model training completed.")
-    click.echo(f"Selected model: {result['selected_model']}")
-    click.echo(f"Samples: {result['samples']} (synthetic; never inserted into MySQL)")
-    click.echo(f"Metrics: {result['metrics'][result['selected_model']]}")
-    click.echo("WARNING: This model must not be used for real customer/order decisions.")
-
-
-@bp.cli.command("train-production")
-def train_production():
-    """Train only when genuine Laundrix history meets readiness and split checks."""
-    from app.analytics.ml.production_training import train_production_model
+@bp.cli.command("train")
+def train():
+    """Train the unclaimed-order disposal-risk model from imported history."""
+    from app.analytics.ml.training import train_model
 
     try:
-        result = train_production_model(current_app.instance_path)
+        run = train_model()
     except ValueError as exc:
         raise click.ClickException(str(exc)) from exc
-    click.echo("Production model trained from genuine Laundrix history.")
-    click.echo(f"Selected model: {result['selected_model']}")
-    click.echo(f"Eligible orders: {result['eligible_samples']}")
-    click.echo(f"Held-out chronological test metrics: {result['held_out_test_metrics']}")
-    click.echo("Review the test metrics before using predictions operationally.")
+
+    metrics = run.metrics
+    click.echo(f"Model version {run.version} trained and set as the active model.")
+    click.echo(f"Orders used: {run.n_orders} (disposed: {run.n_disposed}), "
+               f"ready dates {run.data_start} to {run.data_end}")
+    click.echo(
+        f"Test on the newest {metrics['test_orders']} orders "
+        f"({metrics['test_disposed']} disposed): "
+        f"accuracy {metrics['accuracy']}, precision {metrics['precision']}, "
+        f"recall {metrics['recall']}, F1 {metrics['f1']}, ROC-AUC {metrics['roc_auc']} "
+        f"(guessing 'claimed' every time scores {metrics['baseline_accuracy']})."
+    )
+    if run.labels_simulated:
+        click.echo("WARNING: some outcome labels are simulated or unconfirmed. "
+                   "Do not rely on these predictions for real decisions.")
 
 
 @bp.cli.command("import-history")
@@ -85,6 +81,7 @@ def import_history(file_path, import_source, execute):
     click.echo(f"Source: {result['import_source']}")
     click.echo(f"CSV rows: {result['total_rows']}")
     click.echo(f"New records: {result['inserted']}")
+    click.echo(f"Existing records with outcome updates: {result['updated']}")
     click.echo(f"Identical records skipped: {result['skipped']}")
 
     if execute:
