@@ -5,9 +5,9 @@ An order becomes a training example only when **Laundrix itself confirms its out
 - **Picked up** – its status history shows it moved to *Picked Up / Released* (or *Completed*) after *Ready for Pickup*.
 - **Disposed** – an admin pressed **Mark disposed** on the Analytics page.
 
-It must also be **mature**: ready at least `DISPOSAL_DAYS` (14) days ago. Orders still waiting, or waiting
+It must also be **mature**: ready at least `DISPOSAL_DAYS` (30) days ago. Orders still waiting, or waiting
 longer than that with nothing recorded, are **never** used as labels. They are reported as
-"N orders have waited more than 14 days with no outcome recorded".
+"N orders have waited more than 30 days with no outcome recorded".
 
 Inputs (all known when the order became ready, so nothing leaks the answer): order total, whether it was fully
 paid *by the time it became ready*, how many earlier orders the customer had, and whether it was ready on a weekend.

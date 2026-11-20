@@ -12,6 +12,7 @@ import pytest
 
 from app.analytics import exports
 from app.analytics.charts import get_chart_data, parse_period
+from app.analytics.ml.policy import DISPOSAL_DAYS
 from app.analytics.ml.system_data import load_records, shop_today, summarize
 from app.extensions import db
 from app.models import (
@@ -107,7 +108,7 @@ def test_retrains_after_enough_new_outcomes(app, admin_client, method):
     admin_client.get("/admin/analytics/")
     for i in range(10):
         disposed = i % 5 == 0
-        make_order(days_ago=40 - i, picked_after=None if disposed else 2, disposed=disposed,
+        make_order(days_ago=60 - i, picked_after=None if disposed else 2, disposed=disposed,
                    paid=not disposed, customer_key=i + 2000, method=method)
     admin_client.get("/admin/analytics/")
     runs = system_runs()
@@ -121,7 +122,7 @@ def test_unconfirmed_orders_are_never_training_labels(app, admin_client, method)
         make_order(days_ago=60, method=method)
     html = admin_client.get("/admin/analytics/").get_data(as_text=True)
     assert system_runs()[0].n_orders == 120
-    assert "waited more than 14 days with no outcome recorded" in html
+    assert f"waited more than {DISPOSAL_DAYS} days with no outcome recorded" in html
 
 
 def test_imported_history_is_ignored(app, admin_client, method):

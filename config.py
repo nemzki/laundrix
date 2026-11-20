@@ -77,6 +77,11 @@ class BaseConfig:
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
     GOOGLE_ALLOWED_DOMAIN = (os.getenv("GOOGLE_ALLOWED_DOMAIN") or "").strip().lower() or None
 
+    # --- Initial administrator (read ONLY by `flask bootstrap-admin`; remove the password afterwards) ---
+    INITIAL_ADMIN_USERNAME = (os.getenv("INITIAL_ADMIN_USERNAME") or "").strip().lower() or None
+    INITIAL_ADMIN_PASSWORD = os.getenv("INITIAL_ADMIN_PASSWORD") or None
+    INITIAL_ADMIN_EMAIL = (os.getenv("INITIAL_ADMIN_EMAIL") or "").strip().lower() or None
+
     # --- Administrator password sign-in ---
     # --- Administrator password sign-in (Google OAuth remains available separately) ---
     # Read by app/auth/credentials.py; default on so username/email + password works locally.
@@ -228,6 +233,7 @@ class TestingConfig(BaseConfig):
     FACE_LOGIN_MIN_SIMILARITY = 90.0    # pinned so a developer's .env calibration can't change test outcomes
     FACE_LOGIN_MIN_MARGIN = 5.0
     UNISMS_API_SECRET_KEY = None
+    INITIAL_ADMIN_USERNAME = INITIAL_ADMIN_PASSWORD = INITIAL_ADMIN_EMAIL = None   # never taken from a developer .env
 
     @classmethod
     def validate(cls):

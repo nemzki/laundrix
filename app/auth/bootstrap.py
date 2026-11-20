@@ -106,9 +106,9 @@ def create_initial_admin(username, password, email=None, allow_additional=False)
 
 def rotate_password(user, new_password):
     """Set a new administrator password (validated + hashed) and clear any lockout."""
-    if user is None or user.role != Role.ADMIN or not user.username:
-        raise ValueError("That account is not a password administrator.")
-    problems = password_problems(new_password, user.username)
+    if user is None or user.role != Role.ADMIN:
+        raise ValueError("That account is not an administrator.")
+    problems = password_problems(new_password, user.username or (user.email or "").split("@")[0])
     if problems:
         raise ValueError("The new password " + "; ".join(problems) + ".")
     user.password_hash = generate_password_hash(new_password)

@@ -26,13 +26,17 @@ def register_auth_commands(app):
             raise SystemExit(1)
 
     @app.cli.command("rotate-admin-password")
-    @click.argument("username", required=False)
-    def rotate_admin_password(username):
-        """Change an administrator's password (prompted; never read from the environment)."""
-        username = (username or app.config.get("INITIAL_ADMIN_USERNAME") or "").strip().lower()
-        user = db.session.execute(db.select(User).filter_by(username=username)).scalar_one_or_none()
+    @click.argument("identifier", required=False)
+    def rotate_admin_password(identifier):
+        """Set or change an administrator's password (prompted; never read from the environment).
+
+        IDENTIFIER is the administrator's email or username. Use the email for an account that was
+        created for Google sign-in: it has no password yet, and this gives it one."""
+        ident = (identifier or app.config.get("INITIAL_ADMIN_USERNAME") or "").strip().lower()
+        column = User.email if "@" in ident else User.username
+        user = db.session.execute(db.select(User).where(column == ident)).scalar_one_or_none() if ident else None
         if user is None or user.role != Role.ADMIN:
-            click.secho("No administrator with that username.", fg="red")
+            click.secho("No administrator with that email or username.", fg="red")
             raise SystemExit(1)
         password = click.prompt("New password", hide_input=True, confirmation_prompt=True)
         try:
@@ -40,4 +44,5 @@ def register_auth_commands(app):
         except ValueError as exc:
             click.secho(str(exc), fg="red")
             raise SystemExit(1)
-        click.secho(f"Password changed for '{user.username}'.", fg="green")
+        click.secho(f"Password set for '{user.username or user.email}'.", fg="green")
+        click.echo("Sign in at /auth/admin with this email or username and the new password.")

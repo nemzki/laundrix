@@ -5,7 +5,7 @@ Change a value here and the page applies it on the next visit (no retraining com
 
 # How many days after an order becomes "Ready for Pickup" the shop disposes of it if nobody
 # claims it. Set this to YOUR shop's real rule.
-DISPOSAL_DAYS = 14
+DISPOSAL_DAYS = 30
 
 # --- when is there enough real data to train? -------------------------------------------------
 # Only "mature" orders count: ready at least DISPOSAL_DAYS ago AND with a confirmed outcome

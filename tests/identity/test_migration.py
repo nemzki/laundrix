@@ -191,7 +191,7 @@ def test_the_revision_graph_has_one_head_and_all_revisions_are_reachable():
         if not parents
     ]
 
-    assert heads == ["94f6f8ac3700"]
+    assert heads == ["a1d5c8e3b7f2"]
     assert len(roots) == 1
 
     seen = set()
