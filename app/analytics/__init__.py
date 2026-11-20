@@ -12,28 +12,42 @@ bp = Blueprint(
 
 @bp.cli.command("train")
 def train():
-    """Train the unclaimed-order disposal-risk model from imported history."""
-    from app.analytics.ml.training import train_model
+    """Train the unclaimed-order model from Laundrix's own confirmed orders (if there is enough data)."""
+    from app.analytics.ml.training import NotReady, NotReliable, train_model
 
     try:
         run = train_model()
-    except ValueError as exc:
+    except (NotReady, NotReliable) as exc:
         raise click.ClickException(str(exc)) from exc
 
     metrics = run.metrics
     click.echo(f"Model version {run.version} trained and set as the active model.")
-    click.echo(f"Orders used: {run.n_orders} (disposed: {run.n_disposed}), "
+    click.echo(f"Confirmed orders used: {run.n_orders} (disposed: {run.n_disposed}), "
                f"ready dates {run.data_start} to {run.data_end}")
     click.echo(
-        f"Test on the newest {metrics['test_orders']} orders "
-        f"({metrics['test_disposed']} disposed): "
+        f"Test on the newest {metrics['test_orders']} orders ({metrics['test_disposed']} disposed): "
         f"accuracy {metrics['accuracy']}, precision {metrics['precision']}, "
-        f"recall {metrics['recall']}, F1 {metrics['f1']}, ROC-AUC {metrics['roc_auc']} "
-        f"(guessing 'claimed' every time scores {metrics['baseline_accuracy']})."
+        f"recall {metrics['recall']}, ROC-AUC {metrics['roc_auc']}."
     )
-    if run.labels_simulated:
-        click.echo("WARNING: some outcome labels are simulated or unconfirmed. "
-                   "Do not rely on these predictions for real decisions.")
+
+
+@bp.cli.command("purge-simulated")
+@click.option("--execute", is_flag=True, help="Delete the rows. Without this flag only counts them.")
+def purge_simulated(execute):
+    """Remove imported history rows whose outcomes are marked 'simulated' (placeholder data)."""
+    from app.extensions import db
+    from app.models import HistoricalTransaction
+
+    rows = db.session.scalar(
+        db.select(db.func.count(HistoricalTransaction.id)).where(HistoricalTransaction.status_source == "simulated")
+    )
+    click.echo(f"Imported rows with simulated outcomes: {rows}")
+    if not execute:
+        click.echo("Dry-run. Nothing was deleted. Add --execute to delete them.")
+        return
+    db.session.execute(db.delete(HistoricalTransaction).where(HistoricalTransaction.status_source == "simulated"))
+    db.session.commit()
+    click.echo("Deleted.")
 
 
 @bp.cli.command("import-history")

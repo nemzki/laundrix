@@ -26,4 +26,6 @@ class UnclaimedModelRun(db.Model):
     data_end = db.Column(db.Date)
     disposal_days = db.Column(db.Integer, nullable=False)
     labels_simulated = db.Column(db.Boolean, nullable=False, default=False)
+    # "system" = trained on Laundrix's own confirmed orders; "imported" = older model from imported history
+    data_source = db.Column(db.String(20), nullable=False, default="imported", server_default="imported")
     trained_at = db.Column(db.DateTime, nullable=False, default=utcnow)

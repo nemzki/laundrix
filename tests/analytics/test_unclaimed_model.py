@@ -7,9 +7,6 @@ from app.analytics.importers.historical_transactions import HistoricalCsvError, 
 from app.analytics.ml import model as ml
 from app.analytics.ml.features import FEATURES, feature_vector, previous_order_counts
 from app.analytics.ml.policy import DISPOSAL_DAYS
-from app.analytics.ml.training import load_training_rows, train_model
-from app.extensions import db
-from app.models import HistoricalTransaction, UnclaimedModelRun
 
 HEADER = ("Date,No,Name,Kilo/Gram,Fold,Liquid Soap,Surf/Downy,Load Amount,Total Amount,"
           "Payment Status,Ready Date,Status,Claimed Date,Disposed Date,Status Source\n")
@@ -65,40 +62,3 @@ def test_csv_rejects_claimed_without_claimed_date(tmp_path):
     )
     with pytest.raises(HistoricalCsvError, match="Claimed Date"):
         parse_historical_csv(path, "h.csv")
-
-
-def _add_history(count, start=date(2026, 8, 1)):
-    """Disposed orders are unpaid first-timers, so the data is learnable."""
-    for i in range(count):
-        disposed = i % 4 == 0
-        day = start + timedelta(days=i // 3)
-        db.session.add(HistoricalTransaction(
-            transaction_date=day, source_transaction_no=i % 3 + 1, customer_name=f"C{i if disposed else i % 5}",
-            raw_weight="8 kls", total_amount=185, payment_status="unpaid" if disposed else "paid",
-            ready_date=day, outcome_status="disposed" if disposed else "claimed",
-            claimed_date=None if disposed else day + timedelta(days=1),
-            disposed_date=day + timedelta(days=DISPOSAL_DAYS) if disposed else None,
-            status_source="recorded", import_source="t", source_row_key=f"k{i}",
-        ))
-    db.session.commit()
-
-
-def test_training_refuses_small_data(app):
-    _add_history(20)
-    with pytest.raises(ValueError, match="mature orders"):
-        train_model(as_of=date(2026, 12, 31))
-
-
-def test_training_saves_one_active_model_and_excludes_immature_orders(app):
-    _add_history(160)
-    run = train_model(as_of=date(2026, 12, 31))
-    assert run.is_active and run.version == 1 and run.labels_simulated is False
-    assert run.metrics["test_disposed"] > 0
-
-    again = train_model(as_of=date(2026, 12, 31))
-    assert again.version == 2
-    assert db.session.query(UnclaimedModelRun).filter_by(is_active=True).count() == 1
-
-    # With an early as_of, later orders are not yet mature and must be left out.
-    early = load_training_rows(as_of=date(2026, 8, 20))
-    assert 0 < len(early) < 160

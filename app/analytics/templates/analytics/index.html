@@ -39,37 +39,100 @@
       </header>
       <main id="dashboard-main" tabindex="-1" class="dashboard-content">
         {% macro pct(v) %}{{ ((v * 100)|round(1))|string|replace('.0', '') }}%{% endmacro %}
-        {% set s = report.summary %}
-        {% set m = report.model %}
-        {% set h = report.history %}
+        {% set c = report.charts %}
+        {% set ml = report.ml %}
+        {% set m = ml.model %}
+        {% set info = ml.info %}
+        {% set ws = report.waiting_summary %}
 
         <div class="dashboard-heading">
-          <div><h1>Analytics & Reports</h1><p>Unclaimed orders and their risk of being disposed.</p></div>
+          <div><h1>Analytics & Reports</h1><p>Business activity, unclaimed-order predictions and data exports.</p></div>
           <a class="dashboard-native-button" href="{{ d.urls.home }}">{{ icon('dashboard',16) }}Back to Dashboard</a>
         </div>
 
         <div class="analytics-stack">
 
           <div class="analytics-kpis">
-            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">Waiting for pickup</p><p class="dashboard-metric-value">{{ s.waiting_count }}</p></div><span class="dashboard-metric-icon">{{ icon('package',18) }}</span></article>
-            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">High disposal risk</p><p class="dashboard-metric-value">{{ s.high_risk_count if m else '—' }}</p></div><span class="dashboard-metric-icon">{{ icon('alert',18) }}</span></article>
-            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">Value at risk</p><p class="dashboard-metric-value">{{ s.value_at_risk|peso if m else '—' }}</p></div><span class="dashboard-metric-icon">{{ icon('wallet',18) }}</span></article>
-            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">Past disposal date</p><p class="dashboard-metric-value">{{ s.overdue_count }}</p></div><span class="dashboard-metric-icon">{{ icon('chart',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">Orders · last {{ days }} days</p><p class="dashboard-metric-value">{{ c.summary.orders }}</p></div><span class="dashboard-metric-icon">{{ icon('orders',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">Revenue collected</p><p class="dashboard-metric-value">{{ c.summary.revenue|peso }}</p></div><span class="dashboard-metric-icon">{{ icon('wallet',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">Avg. revenue per order</p><p class="dashboard-metric-value">{{ c.summary.avg_order|peso if c.summary.avg_order is not none else '—' }}</p></div><span class="dashboard-metric-icon">{{ icon('chart',18) }}</span></article>
+            <article class="dashboard-card dashboard-metric"><div><p class="dashboard-metric-label">Waiting for pickup</p><p class="dashboard-metric-value">{{ ws.count }}</p></div><span class="dashboard-metric-icon">{{ icon('package',18) }}</span></article>
           </div>
 
-          <article class="dashboard-card dashboard-panel analytics-card" aria-labelledby="predictions-heading">
+          <div class="analytics-bar">
+            <h2 class="analytics-bar-title">Business activity</h2>
+            <nav class="analytics-periods" aria-label="Period">
+              {% for p in periods %}<a class="analytics-period" href="{{ url_for('analytics.index', days=p) }}"{% if p == days %} aria-current="page"{% endif %}>{{ p }} days</a>{% endfor %}
+            </nav>
+          </div>
+
+          <div class="analytics-grid">
+            <article class="dashboard-card dashboard-panel analytics-card">
+              <div class="dashboard-panel-heading"><div><h2>Orders per day</h2><p class="analytics-sub">New orders created.</p></div></div>
+              <div class="analytics-chart">{% if c.summary.orders %}<canvas id="chart-orders" role="img" aria-label="Orders per day"></canvas>{% else %}<p class="analytics-empty">No orders in this period.</p>{% endif %}</div>
+            </article>
+            <article class="dashboard-card dashboard-panel analytics-card">
+              <div class="dashboard-panel-heading"><div><h2>Revenue per day</h2><p class="analytics-sub">Payments received, minus reversals.</p></div></div>
+              <div class="analytics-chart">{% if c.revenue['values']|select|list %}<canvas id="chart-revenue" role="img" aria-label="Revenue per day"></canvas>{% else %}<p class="analytics-empty">No payments recorded in this period.</p>{% endif %}</div>
+            </article>
+            <article class="dashboard-card dashboard-panel analytics-card">
+              <div class="dashboard-panel-heading"><div><h2>Order status</h2><p class="analytics-sub">All orders by current status.</p></div></div>
+              <div class="analytics-chart">{% if c.status['values']|sum %}<canvas id="chart-status" role="img" aria-label="Order status distribution"></canvas>{% else %}<p class="analytics-empty">No orders yet.</p>{% endif %}</div>
+            </article>
+            <article class="dashboard-card dashboard-panel analytics-card">
+              <div class="dashboard-panel-heading"><div><h2>Most used services</h2><p class="analytics-sub">Orders containing each service or package.</p></div></div>
+              <div class="analytics-chart">{% if c.services.labels %}<canvas id="chart-services" role="img" aria-label="Most used services"></canvas>{% else %}<p class="analytics-empty">No services ordered in this period.</p>{% endif %}</div>
+            </article>
+          </div>
+
+          <article class="dashboard-card dashboard-panel analytics-card" aria-labelledby="ml-heading">
             <div class="dashboard-panel-heading">
-              <div><h2 id="predictions-heading">Disposal risk predictions</h2><p class="analytics-sub">Orders left unclaimed for {{ report.disposal_days }} days are disposed. Highest risk first.</p></div>
-              <span class="analytics-pill" data-tone="neutral">{{ report.waiting|length }} waiting</span>
+              <div><h2 id="ml-heading">Unclaimed order prediction</h2><p class="analytics-sub">Learns from your own orders which unclaimed laundry is likely to be disposed of after {{ report.disposal_days }} days.</p></div>
+              <span class="analytics-pill" data-tone="{{ 'low' if ml.status == 'trained' else 'medium' if ml.status in ('not_reliable', 'error') else 'neutral' }}">
+                {% if ml.status == 'trained' %}Trained · v{{ m.version }}{% elif ml.status == 'not_reliable' %}Not reliable yet{% elif ml.status == 'error' %}Training failed{% else %}Not ready{% endif %}
+              </span>
             </div>
+
+            <div class="analytics-body">
+              {% if ml.status == 'trained' %}
+                <div class="analytics-stats">
+                  <div class="analytics-stat"><span>Training orders</span><strong>{{ m.n_orders }}</strong></div>
+                  <div class="analytics-stat"><span>Of those, disposed</span><strong>{{ m.n_disposed }}</strong></div>
+                  <div class="analytics-stat"><span>Accuracy</span><strong>{{ pct(m.metrics.accuracy) }}</strong></div>
+                  <div class="analytics-stat"><span>Recall</span><strong>{{ pct(m.metrics.recall) }}</strong></div>
+                  <div class="analytics-stat"><span>Precision</span><strong>{{ pct(m.metrics.precision) }}</strong></div>
+                  <div class="analytics-stat"><span>ROC-AUC</span><strong>{{ pct(m.metrics.roc_auc) }}</strong></div>
+                </div>
+                <p class="analytics-meta">Trained {{ m.trained_at|localdt('%b %d, %Y') }} on confirmed orders ready {{ m.data_start.strftime('%b %d') }} – {{ m.data_end.strftime('%b %d, %Y') }} · tested on the newest {{ m.metrics.test_orders }} · retrains automatically as new outcomes are recorded</p>
+                <div class="analytics-chips">
+                  {% for factor in m.factors %}<span class="analytics-chip">{{ factor.label }} · {{ 'raises' if factor.raises_risk else 'lowers' }} risk</span>{% endfor %}
+                </div>
+                {% if ml.message %}<div class="analytics-notice" data-tone="warn">{{ ml.message }}</div>{% endif %}
+              {% else %}
+                <div class="analytics-notice" data-tone="{{ 'warn' if ml.status in ('not_reliable', 'error') else 'neutral' }}">{{ ml.message }}</div>
+                {% if ml.status == 'not_ready' %}
+                <div class="analytics-progress-list">
+                  <label class="analytics-progress"><span>Confirmed orders</span><progress max="{{ info.need_total }}" value="{{ [info.labelled, info.need_total]|min }}"></progress><strong>{{ info.labelled }} / {{ info.need_total }}</strong></label>
+                  <label class="analytics-progress"><span>Picked up</span><progress max="{{ info.need_each }}" value="{{ [info.claimed, info.need_each]|min }}"></progress><strong>{{ info.claimed }} / {{ info.need_each }}</strong></label>
+                  <label class="analytics-progress"><span>Disposed</span><progress max="{{ info.need_each }}" value="{{ [info.disposed, info.need_each]|min }}"></progress><strong>{{ info.disposed }} / {{ info.need_each }}</strong></label>
+                </div>
+                <p class="analytics-meta">Only orders with a confirmed outcome that became ready at least {{ report.disposal_days }} days ago count (picked up, or marked disposed below).</p>
+                {% endif %}
+              {% endif %}
+              {% if info.overdue_unresolved %}
+                <div class="analytics-notice" data-tone="warn">{{ info.overdue_unresolved }} order{{ '' if info.overdue_unresolved == 1 else 's' }} {{ 'has' if info.overdue_unresolved == 1 else 'have' }} waited more than {{ report.disposal_days }} days with no outcome recorded. Mark them as disposed (or update their status) so they count as confirmed records.</div>
+              {% endif %}
+            </div>
+
+            <div class="dashboard-panel-heading analytics-subheading"><div><h2>Orders waiting for pickup</h2>{% if ml.scores_available %}<p class="analytics-sub">Highest disposal risk first.</p>{% endif %}</div><span class="analytics-pill" data-tone="neutral">{{ ws.count }} waiting</span></div>
             {% if report.waiting %}
               <div class="analytics-scroll">
                 <table class="dashboard-table analytics-table">
-                  <thead><tr><th>Order</th><th>Customer</th><th>Ready</th><th>Time left</th><th class="analytics-num">Total</th><th>Risk</th><th>Action</th></tr></thead>
+                  <thead><tr><th>Order</th><th>Customer</th><th>Ready</th><th>Time left</th><th class="analytics-num">Total</th>{% if ml.scores_available %}<th>Risk</th>{% endif %}<th>Action</th></tr></thead>
                   <tbody>
                     {% for item in report.waiting %}
                     <tr>
-                      <td><strong>{{ item.reference }}</strong><span class="analytics-sub">{{ 'Live order' if item.order_id else 'Imported' }}</span></td>
+                      <td><strong>{{ item.reference }}</strong></td>
                       <td>{{ item.customer_name }}</td>
                       <td>{{ item.ready_date.strftime('%b %d') }}</td>
                       <td>
@@ -77,17 +140,15 @@
                         <span class="analytics-sub">Waiting {{ item.days_waiting }} day{{ '' if item.days_waiting == 1 else 's' }}</span>
                       </td>
                       <td class="analytics-num">{{ item.total|peso }}</td>
-                      <td>{% if item.band %}<span class="analytics-pill" data-tone="{{ item.band|lower }}">{{ item.band }} · {{ pct(item.score_percent / 100) }}</span>{% else %}—{% endif %}</td>
+                      {% if ml.scores_available %}<td><span class="analytics-pill" data-tone="{{ item.band|lower }}">{{ item.band }} · {{ pct(item.score_percent / 100) }}</span></td>{% endif %}
                       <td>
-                        {% if item.order_id %}
-                          <details class="analytics-action">
-                            <summary class="analytics-btn">Mark disposed</summary>
-                            <form method="post" action="{{ url_for('analytics.dispose', order_id=item.order_id) }}">
-                              <input type="hidden" name="csrf_token" value="{{ d.csrf }}">
-                              <button class="analytics-btn" data-variant="danger" type="submit">Confirm disposed</button>
-                            </form>
-                          </details>
-                        {% else %}<span class="analytics-sub">—</span>{% endif %}
+                        <details class="analytics-action">
+                          <summary class="analytics-btn">Mark disposed</summary>
+                          <form method="post" action="{{ url_for('analytics.dispose', order_id=item.order_id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ d.csrf }}">
+                            <button class="analytics-btn" data-variant="danger" type="submit">Confirm disposed</button>
+                          </form>
+                        </details>
                       </td>
                     </tr>
                     {% endfor %}
@@ -129,54 +190,20 @@
           </article>
           {% endif %}
 
-          <article class="dashboard-card dashboard-panel analytics-card" aria-labelledby="history-heading">
+          <article class="dashboard-card dashboard-panel analytics-card" aria-labelledby="export-heading">
             <div class="dashboard-panel-heading">
-              <div><h2 id="history-heading">Pickup history</h2><p class="analytics-sub">What happened to past orders after they were ready.</p></div>
+              <div><h2 id="export-heading">Export data</h2><p class="analytics-sub">Download current records as a CSV file that opens in Excel. Customer phone numbers are not included.</p></div>
             </div>
-            {% if h.has_data %}
-              <div class="analytics-body">
-                <div class="analytics-stats">
-                  <div class="analytics-stat"><span>Claimed</span><strong>{{ h.counts.claimed }}</strong></div>
-                  <div class="analytics-stat"><span>Disposed</span><strong>{{ h.counts.disposed }}</strong></div>
-                  <div class="analytics-stat"><span>Value of disposed</span><strong>{{ h.disposed_value|peso }}</strong></div>
-                  <div class="analytics-stat"><span>Avg. days to pickup</span><strong>{{ h.avg_pickup_days if h.avg_pickup_days is not none else '—' }}</strong></div>
-                </div>
-              </div>
-              <div class="analytics-scroll analytics-scroll-short">
-                <table class="dashboard-table analytics-table">
-                  <thead><tr><th>Month ready</th><th class="analytics-num">Claimed</th><th class="analytics-num">Disposed</th><th class="analytics-num">Still waiting</th></tr></thead>
-                  <tbody>{% for row in h.months %}<tr><td>{{ row.label }}</td><td class="analytics-num">{{ row.claimed }}</td><td class="analytics-num">{{ row.disposed }}</td><td class="analytics-num">{{ row.waiting }}</td></tr>{% endfor %}</tbody>
-                </table>
-              </div>
-            {% else %}
-              <p class="analytics-empty">No history with recorded outcomes yet.</p>
-            {% endif %}
-          </article>
-
-          <article class="dashboard-card dashboard-panel analytics-card" aria-labelledby="model-heading">
-            <div class="dashboard-panel-heading">
-              <div><h2 id="model-heading">Prediction model</h2><p class="analytics-sub">Logistic regression trained on past orders.</p></div>
-              <div class="analytics-pills">
-                {% if m and m.labels_simulated %}<span class="analytics-pill" data-tone="neutral">Simulated labels</span>{% endif %}
-                <span class="analytics-pill" data-tone="{{ 'low' if m else 'neutral' }}">{{ ('Version ' ~ m.version) if m else 'Not trained' }}</span>
-              </div>
+            <div class="analytics-body">
+              <form class="analytics-export" method="get" action="{{ url_for('analytics.export') }}">
+                <label>Records
+                  <select name="dataset">{% for key, label in export_datasets.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select>
+                </label>
+                <label>From<input type="date" name="start" value="{{ export_defaults.start }}" max="{{ export_defaults.end }}" required></label>
+                <label>To<input type="date" name="end" value="{{ export_defaults.end }}" max="{{ export_defaults.end }}" required></label>
+                <button class="analytics-btn analytics-btn-primary" type="submit">Download CSV</button>
+              </form>
             </div>
-            {% if m %}
-              <div class="analytics-body">
-                <div class="analytics-stats">
-                  <div class="analytics-stat"><span>Accuracy</span><strong>{{ pct(m.metrics.accuracy) }}</strong></div>
-                  <div class="analytics-stat"><span>Recall</span><strong>{{ pct(m.metrics.recall) }}</strong></div>
-                  <div class="analytics-stat"><span>Precision</span><strong>{{ pct(m.metrics.precision) }}</strong></div>
-                  <div class="analytics-stat"><span>ROC-AUC</span><strong>{{ pct(m.metrics.roc_auc) }}</strong></div>
-                </div>
-                <p class="analytics-meta">Trained {{ m.trained_at|localdt('%b %d, %Y') }} on {{ m.n_orders }} orders ({{ m.n_disposed }} disposed) · tested on the newest {{ m.metrics.test_orders }}</p>
-                <div class="analytics-chips">
-                  {% for factor in m.factors %}<span class="analytics-chip">{{ factor.label }} · {{ 'raises' if factor.raises_risk else 'lowers' }} risk</span>{% endfor %}
-                </div>
-              </div>
-            {% else %}
-              <p class="analytics-empty">No model has been trained yet.</p>
-            {% endif %}
           </article>
 
         </div>
@@ -184,4 +211,10 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+  <script type="application/json" id="analytics-chart-data">{{ {'orders': report.charts.orders, 'revenue': report.charts.revenue, 'status': report.charts.status, 'services': report.charts.services}|tojson }}</script>
+  <script src="{{ url_for('core.static', filename='vendor/chartjs/chart.umd.min.js') }}" defer></script>
+  <script src="{{ url_for('analytics.static', filename='js/analytics-charts.js') }}" defer></script>
 {% endblock %}

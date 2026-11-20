@@ -1,123 +1,121 @@
-"""Train the disposal-risk model from imported historical transactions and save it."""
-from datetime import datetime, timedelta
-
+"""Train the unclaimed-order model from Laundrix's own confirmed orders, only when it is safe."""
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 from app.analytics.ml import model as ml
-from app.analytics.ml.features import FEATURES, feature_vector, previous_order_counts
+from app.analytics.ml.features import FEATURES
 from app.analytics.ml.policy import (
     DISPOSAL_DAYS,
     MIN_PER_OUTCOME,
+    MIN_ROC_AUC,
     MIN_TRAINING_ORDERS,
+    RETRAIN_AFTER_NEW,
     TEST_FRACTION,
 )
-from app.core.timeutil import SHOP_TZ
+from app.analytics.ml.system_data import DISPOSED, load_records, summarize, training_rows
 from app.extensions import db
-from app.models import HistoricalTransaction, UnclaimedModelRun
+from app.models import UnclaimedModelRun
+
+SYSTEM = "system"
 
 
-def shop_today():
-    return datetime.now(SHOP_TZ).date()
+class NotReady(ValueError):
+    """Not enough confirmed orders yet (a normal state, not an error)."""
 
 
-def load_training_rows(as_of=None):
-    """Mature orders with a known outcome, oldest first, as (features, label, row).
-
-    Mature = ready at least DISPOSAL_DAYS ago, so "claimed" and "disposed" are both final.
-    Newer orders are left out; otherwise they could only ever look "claimed".
-    """
-    today = as_of or shop_today()
-    cutoff = today - timedelta(days=DISPOSAL_DAYS)
-
-    everyone = db.session.execute(
-        db.select(
-            HistoricalTransaction.id,
-            HistoricalTransaction.customer_name,
-            HistoricalTransaction.transaction_date,
-            HistoricalTransaction.source_transaction_no,
-        )
-    ).all()
-    previous = previous_order_counts((r.id, r.customer_name, r.transaction_date, r.source_transaction_no)
-                                     for r in everyone)
-
-    rows = db.session.execute(
-        db.select(HistoricalTransaction)
-        .where(
-            HistoricalTransaction.outcome_status.in_(("claimed", "disposed")),
-            HistoricalTransaction.ready_date.is_not(None),
-            HistoricalTransaction.ready_date <= cutoff,
-        )
-        .order_by(HistoricalTransaction.ready_date, HistoricalTransaction.id)
-    ).scalars().all()
-
-    return [
-        (
-            feature_vector(
-                row.total_amount,
-                row.payment_status == "paid",
-                previous.get(row.id, 0),
-                row.ready_date,
-            ),
-            1 if row.outcome_status == "disposed" else 0,
-            row,
-        )
-        for row in rows
-    ]
+class NotReliable(ValueError):
+    """Trained, but the model does not beat chance on held-out orders, so it is not used."""
 
 
-def train_model(as_of=None):
-    """Train, test on the newest part of the data, then save a new active model version."""
-    rows = load_training_rows(as_of)
-    labels = [label for _, label, _ in rows]
-    disposed = sum(labels)
-    claimed = len(labels) - disposed
+def get_active_run():
+    return db.session.execute(
+        db.select(UnclaimedModelRun)
+        .where(UnclaimedModelRun.data_source == SYSTEM, UnclaimedModelRun.is_active.is_(True))
+        .order_by(UnclaimedModelRun.version.desc()).limit(1)
+    ).scalar_one_or_none()
 
-    if len(rows) < MIN_TRAINING_ORDERS:
-        raise ValueError(
-            f"Only {len(rows)} mature orders with a known outcome; "
-            f"at least {MIN_TRAINING_ORDERS} are needed."
-        )
-    if min(claimed, disposed) < MIN_PER_OUTCOME:
-        raise ValueError(
-            f"Not enough of each outcome (claimed: {claimed}, disposed: {disposed}); "
-            f"at least {MIN_PER_OUTCOME} of each are needed."
+
+def train_model(records=None, today=None):
+    """Train on confirmed orders and save a new active version. Raises NotReady / NotReliable."""
+    if records is None:
+        records, today = load_records(today)
+    info = summarize(records, today)
+    if not info["enough"]:
+        raise NotReady(
+            "Machine learning is not ready. More order records are needed for reliable training "
+            f"({'; '.join(info['missing'])})."
         )
 
-    x = [features for features, _, _ in rows]
+    rows = training_rows(records)
+    x = [r["features"] for r in rows]
+    y = [1 if r["outcome"] == DISPOSED else 0 for r in rows]
     split = int(len(rows) * (1 - TEST_FRACTION))
-    x_train, y_train, x_test, y_test = x[:split], labels[:split], x[split:], labels[split:]
-    for name, part in (("training", y_train), ("test", y_test)):
+    for name, part in (("training", y[:split]), ("test", y[split:])):
         if len(set(part)) < 2:
-            raise ValueError(
-                f"The {name} part contains only one outcome. Add more history before training."
+            raise NotReady(
+                f"Machine learning is not ready. The {name} part of the data has only one outcome; "
+                "more orders with both outcomes are needed."
             )
 
-    # 1) fit on the older part and measure on the newer part (honest test)
-    metrics = ml.evaluate(ml.fit(x_train, y_train), x_test, y_test)
-    # 2) the saved model is refit on everything so it learns from the newest orders too
-    params = ml.fit(x, labels)
+    # 1) fit on the older orders, measure on the newest ones (an honest, time-based test)
+    metrics = ml.evaluate(ml.fit(x[:split], y[:split]), x[split:], y[split:])
+    if metrics["roc_auc"] < MIN_ROC_AUC:
+        raise NotReliable(
+            f"The model is not reliable yet (ROC-AUC {metrics['roc_auc']:.2f}, "
+            f"needs at least {MIN_ROC_AUC:.2f}). Predictions are hidden until more data is available."
+        )
+    # 2) the saved model is refit on every confirmed order
+    params = ml.fit(x, y)
 
-    sources = {row.status_source for _, _, row in rows}
-    last_version = db.session.scalar(db.select(func.max(UnclaimedModelRun.version))) or 0
+    last = db.session.scalar(db.select(func.max(UnclaimedModelRun.version))) or 0
     try:
-        db.session.execute(db.update(UnclaimedModelRun).values(is_active=False))
+        db.session.execute(
+            db.update(UnclaimedModelRun)
+            .where(UnclaimedModelRun.data_source == SYSTEM).values(is_active=False)
+        )
         run = UnclaimedModelRun(
-            version=last_version + 1,
-            is_active=True,
-            algorithm=ml.ALGORITHM,
-            features=list(FEATURES),
-            params=params,
-            metrics=metrics,
-            n_orders=len(rows),
-            n_disposed=disposed,
-            data_start=rows[0][2].ready_date,
-            data_end=rows[-1][2].ready_date,
-            disposal_days=DISPOSAL_DAYS,
-            labels_simulated=sources != {"recorded"},
+            version=last + 1, is_active=True, algorithm=ml.ALGORITHM, features=list(FEATURES),
+            params=params, metrics=metrics, n_orders=len(rows), n_disposed=sum(y),
+            data_start=rows[0]["ready_date"], data_end=rows[-1]["ready_date"],
+            disposal_days=DISPOSAL_DAYS, labels_simulated=False, data_source=SYSTEM,
         )
         db.session.add(run)
         db.session.commit()
+    except IntegrityError:           # two requests trained at the same moment; the other one won
+        db.session.rollback()
+        run = get_active_run()
     except Exception:
         db.session.rollback()
         raise
     return run
+
+
+NOT_READY_MESSAGE = "Machine learning is not ready. More order records are needed for reliable training."
+
+
+def ensure_model(records, today):
+    """Called when an admin opens Analytics: train or retrain automatically when appropriate.
+
+    Returns (active_run_or_None, status, message, summary_dict) where status is one of
+    "trained", "not_ready", "not_reliable" or "error". Never raises for a normal
+    'not enough data' situation, and a failed retraining never removes a working model.
+    """
+    info = summarize(records, today)
+    run = get_active_run()
+    status, message = None, None
+    due = info["enough"] and (run is None or info["labelled"] >= run.n_orders + RETRAIN_AFTER_NEW)
+    if due:
+        try:
+            run = train_model(records, today) or run
+        except NotReady as exc:
+            status, message = "not_ready", str(exc)
+        except NotReliable as exc:
+            status, message = "not_reliable", str(exc)
+        except Exception:  # never break the page because training failed
+            db.session.rollback()
+            status, message = "error", "Training could not be completed right now. Please try again later."
+    if run is not None:
+        return run, "trained", message, info
+    if status is None:
+        status = "not_ready"
+    return None, status, message or NOT_READY_MESSAGE, info

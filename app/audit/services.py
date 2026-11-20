@@ -39,6 +39,7 @@ class AuditAction:
     PAYMENT, REVERSAL = "payment", "reversal"
     APPROVE, REJECT, SUSPEND = "approve", "reject", "suspend"
     REACTIVATE, DEACTIVATE, ENROLL = "reactivate", "deactivate", "enroll"
+    EXPORT = "export"
 
     LABELS = {
         LOGIN: "Sign in", LOGIN_FAILED: "Failed sign in", LOGOUT: "Sign out",
@@ -47,6 +48,7 @@ class AuditAction:
         PAYMENT: "Payment recorded", REVERSAL: "Payment reversal",
         APPROVE: "Approve account", REJECT: "Reject account", SUSPEND: "Suspend account",
         REACTIVATE: "Reactivate", DEACTIVATE: "Deactivate", ENROLL: "Staff enrollment",
+        EXPORT: "Data export",
     }
     ALL = tuple(LABELS)
     # Tone for the badge in the UI.
@@ -55,6 +57,7 @@ class AuditAction:
         UPDATE: "info", DELETE: "danger", STATUS_CHANGE: "progress", PRICE_CHANGE: "warn",
         PAYMENT: "success", REVERSAL: "danger", APPROVE: "success", REJECT: "danger",
         SUSPEND: "danger", REACTIVATE: "success", DEACTIVATE: "warn", ENROLL: "info",
+        EXPORT: "warn",
     }
 
 
