@@ -42,9 +42,9 @@
   function initStatusModal() {
     var modalEl = document.getElementById("statusUpdateModal");
     var form = document.getElementById("statusUpdateForm");
-    if (!modalEl || !form || typeof bootstrap === "undefined") return;
+    if (!modalEl || !form || typeof window.laundrixDialog === "undefined") return;
 
-    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    var modal = window.laundrixDialog(modalEl);
     var valueInput = document.getElementById("statusUpdateValue");
     var noteInput = document.getElementById("statusUpdateNote");
     var noteOptional = modalEl.querySelector("[data-note-optional]");
@@ -94,7 +94,7 @@
       }
     });
 
-    modalEl.addEventListener("hidden.bs.modal", function () {
+    modalEl.addEventListener("dialog:hidden", function () {
       if (valueInput) valueInput.value = "";
       if (noteInput) noteInput.value = "";
       configureNote(false);
@@ -109,9 +109,9 @@
   function initConfirmReceivedModal() {
     var modalEl = document.getElementById("confirmReceivedModal");
     var form = document.getElementById("confirmReceivedForm");
-    if (!modalEl || !form || typeof bootstrap === "undefined") return;
+    if (!modalEl || !form || typeof window.laundrixDialog === "undefined") return;
 
-    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    var modal = window.laundrixDialog(modalEl);
     var submitBtn = form.querySelector("[data-submit-btn]");
     var busy = bindBusySubmit(form, submitBtn);
 
@@ -125,7 +125,7 @@
       modal.show();
     });
 
-    modalEl.addEventListener("hidden.bs.modal", function () {
+    modalEl.addEventListener("dialog:hidden", function () {
       form.setAttribute("action", "#");
       if (busy) busy.setBusy(false);
     });
@@ -134,9 +134,9 @@
   function initSmsRetryModal() {
     var modalEl = document.getElementById("smsRetryModal");
     var form = document.getElementById("smsRetryForm");
-    if (!modalEl || !form || typeof bootstrap === "undefined") return;
+    if (!modalEl || !form || typeof window.laundrixDialog === "undefined") return;
 
-    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    var modal = window.laundrixDialog(modalEl);
     var title = document.getElementById("smsRetryModalLabel");
     var submitBtn = form.querySelector("[data-submit-btn]");
     var label = submitBtn && submitBtn.querySelector("[data-label]");
@@ -155,7 +155,7 @@
       modal.show();
     });
 
-    modalEl.addEventListener("hidden.bs.modal", function () {
+    modalEl.addEventListener("dialog:hidden", function () {
       form.setAttribute("action", "#");
       if (busy) busy.setBusy(false);
     });
@@ -164,9 +164,9 @@
   function initReversePaymentModal() {
     var modalEl = document.getElementById("reversePaymentModal");
     var form = document.getElementById("reversePaymentForm");
-    if (!modalEl || !form || typeof bootstrap === "undefined") return;
+    if (!modalEl || !form || typeof window.laundrixDialog === "undefined") return;
 
-    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    var modal = window.laundrixDialog(modalEl);
     var amountEl = modalEl.querySelector("[data-reverse-amount]");
     var methodEl = modalEl.querySelector("[data-reverse-method]");
     var reason = document.getElementById("reverseReason");
@@ -190,7 +190,7 @@
       if (reason) window.setTimeout(function () { reason.focus(); }, 200);
     });
 
-    modalEl.addEventListener("hidden.bs.modal", function () {
+    modalEl.addEventListener("dialog:hidden", function () {
       form.setAttribute("action", "#");
       if (reason) reason.value = "";
       if (busy) busy.setBusy(false);

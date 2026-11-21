@@ -47,7 +47,7 @@ for (const role of ['admin', 'staff'] as const) for (const width of [320, 768, 1
   await expect(page.locator('[data-field=stub]')).toHaveAttribute('href', original.stubUrl)
   const stub = await page.request.get(original.stubUrl); expect(stub.status()).toBe(200); expect(await stub.text()).toContain(ref!)
   await page.screenshot({ path: `test-results/dashboard/manage-orders-${role}-${width}-modal.png`, fullPage: true })
-  await page.locator('#orderSummaryModal [data-bs-dismiss=modal]').click(); await expect(page.locator('#orderSummaryModal')).toBeHidden()
+  await page.locator('#orderSummaryModal [data-dialog-dismiss=modal]').click(); await expect(page.locator('#orderSummaryModal')).toBeHidden()
   await link.click(); await expect(page.locator('[data-summary-content]')).toBeVisible(); await expect(page.locator('#orderSummaryModal')).toBeFocused(); await page.keyboard.press('Escape'); await expect(page.locator('#orderSummaryModal')).toBeHidden()
   await expect(link).toBeFocused()
   await link.click(); await expect(page.locator('#orderSummaryModal')).toBeFocused(); await page.mouse.click(1,1); await expect(page.locator('#orderSummaryModal')).toBeHidden()

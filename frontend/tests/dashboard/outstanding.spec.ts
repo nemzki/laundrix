@@ -65,7 +65,7 @@ for (const role of ['admin','staff'] as const) for (const width of [320,768,1440
   await expect(page.locator(`tr[data-order-ref="${ref}"] [data-ob-payment]`)).toBeFocused()
   // Reopen mounts exactly one shared form/controller, then cancel.
   await open(page); await expect(page.locator('[data-method=cash]')).toHaveCount(1)
-  await page.locator('#recordPaymentModal .modal-footer [data-bs-dismiss]').click()
+  await page.locator('#recordPaymentModal .modal-footer [data-dialog-dismiss]').click()
   await expect(page.locator('#recordPaymentModal')).toBeHidden()
   await page.locator('#ob-payment-filter').selectOption('unpaid'); await ready(page)
   expect(await page.locator('.ob-rows [data-payment-status]').evaluateAll(nodes => nodes.every(n => n.getAttribute('data-payment-status')==='unpaid'))).toBe(true)
@@ -92,7 +92,7 @@ test('shared modal cash, real GCash configuration, validation, split transaction
   await expect(page.locator('#pr-1')).toHaveAttribute('required','')
   await page.locator('#record-payment button[type=submit]').click()
   expect(await page.locator('#pr-1').evaluate((e:HTMLInputElement)=>e.validity.valueMissing)).toBe(true)
-  await page.locator('#recordPaymentModal .modal-footer [data-bs-dismiss]').click(); await expect(page.locator('#recordPaymentModal')).toBeHidden()
+  await page.locator('#recordPaymentModal .modal-footer [data-dialog-dismiss]').click(); await expect(page.locator('#recordPaymentModal')).toBeHidden()
   expect((await page.request.post('/payments/settings',{headers,data:{partial_enabled:true,pay_later_enabled:true,gcash_account_name:'Isolated Outstanding QA',gcash_account_number:'09170000000',payment_instructions:'Verify test recipient.'}})).ok()).toBe(true)
   const png=execFileSync('../.venv/Scripts/python.exe',['-c','import io,sys; from PIL import Image; b=io.BytesIO(); Image.new("RGB",(160,160),"blue").save(b,"PNG"); sys.stdout.buffer.write(b.getvalue())'])
   expect((await page.request.post('/payments/settings/qr',{headers,multipart:{image:{name:'isolated-test.png',mimeType:'image/png',buffer:png}}})).ok()).toBe(true)

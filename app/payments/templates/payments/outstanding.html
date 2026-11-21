@@ -28,9 +28,9 @@
   <div class="card ob-panel">
     <form class="ob-filters" method="get" action="{{ url_for('payments.outstanding') }}">
       <div class="ob-filter-left">
-        <div class="ob-search ob-client-control">{{ icon('search',16) }}<label class="visually-hidden" for="ob-search">Search reference, customer, or contact</label><input class="input" id="ob-search" type="search" name="q" value="{{ request.args.get('q','') }}" placeholder="Search reference, customer, or contact" autocomplete="off"></div>
+        <div class="ob-search ob-client-control">{{ icon('search',16) }}<label class="tw:sr-only" for="ob-search">Search reference, customer, or contact</label><input class="input" id="ob-search" type="search" name="q" value="{{ request.args.get('q','') }}" placeholder="Search reference, customer, or contact" autocomplete="off"></div>
         {% if status == 'paid' %}<input type="hidden" name="status" value="paid"><span class="ob-paid-label">Fully paid orders</span>{% else %}
-        <div class="ob-select-wrap"><label class="visually-hidden" for="ob-payment-filter">Payment filter</label>
+        <div class="ob-select-wrap"><label class="tw:sr-only" for="ob-payment-filter">Payment filter</label>
           <select class="input" id="ob-payment-filter" name="status" aria-label="Payment filter">
           {% for key, label in [('outstanding','Unpaid & Partial'),('unpaid','Unpaid Only'),('partial','Partially Paid Only')] %}<option value="{{ key }}"{% if status == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
           </select>
@@ -38,7 +38,7 @@
         <button class="btn btn-outline ob-native-submit" type="submit">Apply Filters</button>
         <a class="ob-clear" href="{{ url_for('payments.outstanding') }}" data-ob-link{% if status == 'outstanding' and not request.args.get('q') and request.args.get('sort','highest') == 'highest' %} hidden{% endif %}>Clear Filters</a>
       </div>
-      <div class="ob-select-wrap ob-sort ob-client-control"><label class="visually-hidden" for="ob-sort">Sort orders</label>
+      <div class="ob-select-wrap ob-sort ob-client-control"><label class="tw:sr-only" for="ob-sort">Sort orders</label>
         <select class="input" id="ob-sort" name="sort" aria-label="Sort orders">
         {% for key, label in [('highest','Highest Balance'),('lowest','Lowest Balance'),('oldest','Oldest First'),('newest','Newest First')] %}<option value="{{ key }}"{% if request.args.get('sort','highest') == key %} selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
@@ -46,7 +46,7 @@
     </form>
     <div data-ob-results data-total="{{ pagination.total }}" data-page="{{ pagination.page }}" data-pages="{{ pagination.pages }}" data-per-page="{{ pagination.per_page }}">
       <div class="ob-table-wrap" tabindex="0" role="region" aria-label="Orders with outstanding balances"><table class="ob-table">
-        <caption class="visually-hidden">Orders and their outstanding balances</caption>
+        <caption class="tw:sr-only">Orders and their outstanding balances</caption>
         <thead><tr>{% for name in ['Order Reference','Customer','Date Created','Laundry Status','Total','Balance','Payment','Action'] %}<th scope="col"{% if name in ['Total','Balance'] %} class="num"{% endif %}>{{ name }}</th>{% endfor %}</tr></thead>
         <tbody class="ob-skeleton" aria-hidden="true">{% for row in range(10) %}<tr>{% for col in range(8) %}<td><span></span></td>{% endfor %}</tr>{% endfor %}</tbody>
         <tbody class="ob-error"><tr><td colspan="8"><strong>Balances could not be loaded.</strong><p>Please try again.</p><button class="btn btn-outline" type="button" data-ob-retry>Retry</button></td></tr></tbody>
@@ -65,9 +65,9 @@
       <footer class="ob-footer"><span>Showing {{ (pagination.page-1)*pagination.per_page+1 if orders else 0 }}&ndash;{{ (pagination.page-1)*pagination.per_page+orders|length if orders else 0 }} of {{ pagination.total }} orders</span>{{ render_pagination(pagination,'payments.outstanding',status=status) }}</footer>
     </div>
   </div>
-  <p class="visually-hidden" data-ob-announcement role="status"></p>
+  <p class="tw:sr-only" data-ob-announcement role="status"></p>
 </section>
-<div class="modal fade payment-modal" id="recordPaymentModal" tabindex="-1" aria-labelledby="recordPaymentTitle" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h2 id="recordPaymentTitle" class="modal-title">Record Payment</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body" data-ob-modal-status role="status">Loading latest order details...</div></div></div></div>
+<dialog class="modal payment-modal" id="recordPaymentModal" aria-labelledby="recordPaymentTitle"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0"><div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><h2 id="recordPaymentTitle" class="modal-title">Record Payment</h2><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></div><div class="modal-body" data-ob-modal-status role="status">Loading latest order details...</div></div></div></dialog>
 <div class="ob-toast" data-ob-toast role="status" hidden><button type="button" data-toast-close aria-label="Dismiss notification">&times;</button><strong data-toast-title></strong><p data-toast-message></p></div>
 {% endblock %}
 {% block page_scripts %}

@@ -1,25 +1,4 @@
-/* Global foundation. Tokens + Bootstrap load before this file. */
-
-/* Bootstrap theme bridge (must load after bootstrap.min.css) */
-:root {
-  --bs-primary: var(--lx-primary);
-  --bs-primary-rgb: 37, 99, 235;
-  --bs-secondary: var(--lx-muted);
-  --bs-success: var(--lx-success);
-  --bs-danger: var(--lx-danger);
-  --bs-warning: var(--lx-warn);
-  --bs-info: var(--lx-info);
-  --bs-body-font-family: var(--lx-font);
-  --bs-body-color: var(--lx-text);
-  --bs-body-bg: var(--lx-bg);
-  --bs-border-color: var(--lx-border);
-  --bs-link-color: var(--lx-primary-hover);
-  --bs-link-hover-color: var(--lx-navy);
-  --bs-border-radius: var(--lx-radius-sm);
-  --bs-border-radius-lg: var(--lx-radius);
-  --bs-focus-ring-color: rgba(37, 99, 235, 0.35);
-}
-
+/* Shared defaults for server-rendered pages. */
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
@@ -37,12 +16,38 @@ body.centered {
   padding: 1.5rem;
 }
 img { max-width: 100%; display: block; }
+svg { vertical-align: middle; }
 a { color: var(--lx-primary-hover); }
+a:hover { color: var(--lx-navy); }
+p, dl, ol, ul { margin-top: 0; margin-bottom: 1rem; }
+ol, ul { padding-left: 2rem; }
+ol ol, ol ul, ul ol, ul ul { margin-bottom: 0; }
+dd { margin: 0 0 .5rem; }
+dt { font-weight: 700; }
+blockquote, figure { margin: 0 0 1rem; }
+small, .small { font-size: .875em; }
+hr { margin: 1rem 0; border: 0; border-top: 1px solid; opacity: .25; }
+table { border-collapse: collapse; }
+th { text-align: inherit; }
+caption { padding: .5rem 0; color: var(--lx-muted); text-align: left; caption-side: bottom; }
+button, input, select, textarea, optgroup { margin: 0; font: inherit; }
+::file-selector-button { font: inherit; }
+button, select { text-transform: none; }
+button:not(:disabled), [type="button"]:not(:disabled), [type="submit"]:not(:disabled) { cursor: pointer; }
+textarea { resize: vertical; }
+fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+legend { margin-bottom: .5rem; }
+[hidden] { display: none !important; }
 h1, h2, h3 {
   line-height: 1.2;
   margin: 0 0 0.5rem;
   color: var(--lx-navy);
   font-weight: 700;
+}
+h4, h5, h6 {
+  margin: 0 0 .5rem;
+  font-weight: 500;
+  line-height: 1.2;
 }
 .muted { color: var(--lx-muted); }
 .sr-only {

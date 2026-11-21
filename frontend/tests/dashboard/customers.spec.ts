@@ -51,7 +51,7 @@ for(const width of [320,768,1440]) test(`customer directory and right-side profi
   await expect(page.locator('#customerModalTitle')).toHaveText('Edit Customer')
   await expect(page.locator('#customerForm [name=email],#customerForm [name=address],#customerForm [name=notes]')).toHaveCount(0)
   await page.screenshot({path:`test-results/dashboard/customers-${width}-edit.png`,fullPage:true})
-  await page.locator('#customerModal .modal-footer [data-bs-dismiss]').click();await expect(page.locator('#customerModal')).toBeHidden()
+  await page.locator('#customerModal .modal-footer [data-dialog-dismiss]').click();await expect(page.locator('#customerModal')).toBeHidden()
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
   await page.screenshot({path:`test-results/dashboard/customers-${width}.png`,fullPage:true})
   expect(errors).toEqual([])
@@ -105,7 +105,7 @@ test('real add/edit persistence, duplicate guard, validation and sheet refresh',
   const actual=(await (await page.request.get(saved.url)).json()).customer
   expect(actual.full_name).toBe('Updated Customer QA');expect(actual.contact_number).toBe('09185556666')
   await expect(page.locator('[data-customer-toast]')).toContainText('Customer updated')
-  await page.locator('#customerSheet [data-bs-dismiss]').click();await expect(page.locator('#customerSheet')).toBeHidden()
+  await page.locator('#customerSheet [data-dialog-dismiss]').click();await expect(page.locator('#customerSheet')).toBeHidden()
   await page.locator('[data-add-customer]').click();await page.locator('#customer-name').fill('Explicit Duplicate QA');await page.locator('#customer-mobile').fill('09185556666')
   await page.locator('#customerForm [type=submit]').click();await expect(page.locator('[data-customer-duplicate]')).toBeVisible()
   await expect(page.locator('[name=confirm_duplicate]')).not.toBeChecked()
@@ -122,7 +122,7 @@ test('customer profile fetch retry and Staff permission remain enforced',async({
   await rows(page).first().locator('[data-view-customer]').click()
   await expect(page.locator('#customerSheet').getByRole('button',{name:'Retry',exact:true})).toBeVisible()
   await page.locator('#customerSheet').getByRole('button',{name:'Retry',exact:true}).click();await expect(page.locator('[data-customer-profile]')).toBeVisible()
-  await page.locator('#customerSheet [data-bs-dismiss]').click();await expect(page.locator('#customerSheet')).toBeHidden()
+  await page.locator('#customerSheet [data-dialog-dismiss]').click();await expect(page.locator('#customerSheet')).toBeHidden()
   expect((await page.request.post('/orders/customers',{data:{full_name:'No CSRF',contact_number:'09170000011'}})).status()).toBe(400)
   const context=await page.context().browser()!.newContext();const staff=await context.newPage()
   try {await login(staff,'staff');expect((await staff.request.get('/orders/customers')).status()).toBe(403);expect((await staff.request.get('/orders/customers/1')).status()).toBe(403)} finally {await context.close()}

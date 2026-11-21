@@ -14,7 +14,6 @@ from app.audit import services as audit
 from app.core.decorators import role_required
 from app.extensions import db
 from app.models import Order, OrderDisposal, OrderStatus, Role
-from app.orders.services import dashboard_stats
 
 
 @bp.route("/", endpoint="index")
@@ -26,10 +25,6 @@ def index():
     today = shop_today()
     return render_template(
         "analytics/index.html",
-        dashboard_title="Analytics & Reports",
-        dashboard_description="Business activity, unclaimed-order predictions and data exports.",
-        admin_area=True,
-        stats=dashboard_stats(),  # needed by the shared dashboard navigation
         report=get_analytics_report(days),
         periods=PERIODS,
         days=days,

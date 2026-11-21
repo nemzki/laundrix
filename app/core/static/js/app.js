@@ -2,14 +2,73 @@
 (function () {
   "use strict";
 
-  // Close Bootstrap offcanvas after choosing a destination.
-  document.addEventListener("click", function (e) {
-    var link = e.target.closest && e.target.closest("#appNavDrawer a.lx-nav__link");
-    if (!link) return;
-    var drawer = document.getElementById("appNavDrawer");
-    if (!drawer || typeof bootstrap === "undefined" || !bootstrap.Offcanvas) return;
-    var instance = bootstrap.Offcanvas.getInstance(drawer);
-    if (instance) instance.hide();
+  var dialogs = new WeakMap();
+  function syncDialog(element) {
+    element.classList.toggle("show", element.open);
+    document.body.classList.toggle("modal-open", !!document.querySelector("dialog:is(.modal,.offcanvas)[open]"));
+    document.querySelectorAll("[data-dialog-target]").forEach(function (trigger) {
+      if (trigger.dataset.dialogTarget === "#" + element.id && trigger.hasAttribute("aria-expanded")) {
+        trigger.setAttribute("aria-expanded", String(element.open));
+      }
+    });
+  }
+  window.laundrixDialog = function (element) {
+    if (dialogs.has(element)) return dialogs.get(element);
+    function emit(name, cancelable) {
+      return element.dispatchEvent(new Event("dialog:" + name, { cancelable: cancelable }));
+    }
+    var dialog = {
+      show: function () {
+        if (element.open || !emit("show", true)) return;
+        element.showModal();
+        element.focus({ preventScroll: true });
+        syncDialog(element);
+        emit("shown");
+      },
+      hide: function () {
+        if (!element.open || !emit("hide", true)) return;
+        element.close();
+        syncDialog(element);
+        emit("hidden");
+      },
+      toggle: function () {
+        if (element.open) dialog.hide();
+        else dialog.show();
+      },
+    };
+    dialogs.set(element, dialog);
+    element.addEventListener("cancel", function (event) {
+      event.preventDefault();
+      dialog.hide();
+    });
+    var pressedBackdrop = false;
+    function onBackdrop(event) {
+      if (event.target !== element) return false;
+      if (element.classList.contains("modal")) return true;
+      var bounds = element.getBoundingClientRect();
+      return event.clientX < bounds.left || event.clientX >= bounds.right ||
+        event.clientY < bounds.top || event.clientY >= bounds.bottom;
+    }
+    element.addEventListener("pointerdown", function (event) { pressedBackdrop = onBackdrop(event); });
+    element.addEventListener("click", function (event) {
+      if (pressedBackdrop && onBackdrop(event)) dialog.hide();
+      pressedBackdrop = false;
+    });
+    return dialog;
+  };
+
+  document.addEventListener("click", function (event) {
+    var trigger = event.target.closest("[data-dialog-target]");
+    if (trigger) {
+      var element = document.getElementById(trigger.dataset.dialogTarget.slice(1));
+      if (element) window.laundrixDialog(element).show();
+      return;
+    }
+    var dismiss = event.target.closest("[data-dialog-dismiss], #appNavDrawer a.lx-nav__link");
+    if (dismiss) {
+      var dialog = dismiss.closest("dialog");
+      if (dialog) window.laundrixDialog(dialog).hide();
+    }
   });
 
   // Confirmation dialog: <form data-confirm="Message" data-confirm-title="Title">

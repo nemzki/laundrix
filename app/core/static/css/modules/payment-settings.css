@@ -13,9 +13,30 @@ body.app.payment-settings-page #payment-settings h2 { margin: 0; font-size: 14px
 .ps-policy-row > div:first-child { min-width: 0; }
 .ps-policy-row label { color: var(--lx-text); font-size: 13px; line-height: 20px; font-weight: 500; cursor: pointer; }
 .ps-policy-row p { margin: 4px 0 0; color: var(--lx-muted); font-size: 12px; line-height: 18px; }
-.ps-policy-row .form-switch { flex-shrink: 0; margin: 0; padding: 0; min-height: 24px; }
-.ps-policy-row .form-check-input { float: none; width: 40px; height: 22px; margin: 0; cursor: pointer; }
-.ps-policy-row .form-check-input:checked, .ps-method-reference .form-check-input:checked { background-color: var(--lx-primary); border-color: var(--lx-primary); }
+.ps-switch { flex-shrink: 0; min-height: 24px; }
+.ps-switch input {
+  appearance: none;
+  display: inline-grid;
+  align-items: center;
+  width: 40px;
+  height: 22px;
+  padding: 2px;
+  border: 1px solid var(--lx-border);
+  border-radius: 999px;
+  background: var(--lx-surface);
+  color: var(--lx-muted);
+  cursor: pointer;
+}
+.ps-switch input::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.ps-switch input:checked { background: var(--lx-primary); border-color: var(--lx-primary); color: #fff; }
+.ps-switch input:checked::before { justify-self: end; }
+.ps-switch input:focus-visible { outline: 2px solid var(--lx-primary); outline-offset: 2px; }
 .ps-card .field { margin: 0 0 16px; min-width: 0; }
 .ps-card .field:last-child { margin-bottom: 0; }
 .ps-card .field > label, .ps-modal .field > label { margin-bottom: 6px; font-size: 13px; line-height: 20px; font-weight: 500; }
@@ -34,7 +55,7 @@ body.internal-ui.payment-settings-page .input[aria-invalid=true] { border-color:
 .ps-qr-controls > .hint { margin-bottom: 16px; }
 .ps-qr-controls form { margin: 0; }
 .ps-qr-controls .remove-qr { margin-top: 10px; }
-.ps-qr-controls input[type=file] { overflow: hidden; padding: 6px; }
+.ps-qr-controls input[type=file] { height: 44px; overflow: hidden; padding: 6px; }
 .ps-methods-actions { display: flex; justify-content: flex-end; min-height: 36px; margin: -4px 0 16px; }
 .ps-methods-table { width: 100%; margin: 0; }
 body.internal-ui .ps-methods-table :is(th, td) { padding: 12px 10px; font-size: 13px; line-height: 20px; vertical-align: middle; }
@@ -56,8 +77,8 @@ body.app.payment-settings-page h2#ps-add-method-title { font-size: 16px; line-he
 .ps-modal .ps-method-form { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 .ps-method-fields { padding: 20px; overflow-y: auto; }
 .ps-method-fields .field { margin: 0 0 18px; }
-.ps-method-reference { margin: 0; font-size: 13px; line-height: 20px; }
-.ps-method-reference .form-check-input { margin-top: 3px; }
+.ps-method-reference { display: flex; align-items: center; gap: 6px; min-height: 1.5rem; margin: 0; font-size: 13px; line-height: 20px; }
+.ps-method-reference input { width: 1em; height: 1em; accent-color: var(--lx-primary); }
 .ps-method-footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--lx-border); background: var(--lx-paint-subtle, #f8fafc); }
 .ps-form-error { color: var(--lx-danger); }
 .ps-native-method { margin-top: 20px; border-top: 1px solid var(--lx-border); padding-top: 16px; }

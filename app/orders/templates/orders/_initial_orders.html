@@ -45,7 +45,7 @@
           </tr>{% endfor %}</tbody>
         </table></div></div>
         <div class="mo-mobile-orders divide-y">{% for o in view.orders %}<article class="mo-mobile-order">
-          <div class="flex items-start justify-between gap-3"><div class="min-w-0"><h3 class="mo-reference">{{ o.reference }}</h3><p class="mo-customer">{{ o.customer }}</p><p class="mo-contact">{{ o.contact }}</p></div>{{ view_link(o) }}</div>
+          <div class="flex items-start justify-between tw:gap-4!"><div class="min-w-0"><h3 class="mo-reference">{{ o.reference }}</h3><p class="mo-customer">{{ o.customer }}</p><p class="mo-contact">{{ o.contact }}</p></div>{{ view_link(o) }}</div>
           {{ date_cell(o) }}
           <div class="mo-mobile-statuses"><div><span class="sr-only">Laundry: </span>{{ status_badge(o.laundry, o.laundryTone) }}{% if o.awaiting %}<span class="mo-secondary">Awaiting receipt</span>{% endif %}</div>
             <div><span class="sr-only">Payment: </span>{{ status_badge(o.payment, o.paymentTone) }}{% if o.balanceNote %}<span class="mo-secondary mo-money">Balance {{ o.balanceNote }}</span>{% endif %}</div></div>

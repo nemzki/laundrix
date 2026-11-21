@@ -114,7 +114,7 @@ for (const role of ['admin', 'staff'] as const) for (const width of [320, 768, 1
     expect((await page.request.get(await print.getAttribute('href') || '')).status()).toBe(200)
     await expect(print).toHaveAttribute('target', '_blank')
     await expect(page.locator('#record-payment')).toBeHidden()
-    await page.locator('[data-bs-target="#recordPaymentModal"]').click()
+    await page.locator('[data-dialog-target="#recordPaymentModal"]').click()
     await expect(page.locator('#record-payment')).toBeVisible()
     await expect(page.locator('#pa-1')).toHaveValue((Number(quote.total_raw) - 40).toFixed(2))
     await page.locator('[data-method=gcash]').click()
@@ -123,7 +123,7 @@ for (const role of ['admin', 'staff'] as const) for (const width of [320, 768, 1
     const paymentFooter = (await page.locator('#recordPaymentModal .modal-footer').boundingBox())!
     expect(paymentFooter.y + paymentFooter.height).toBeLessThanOrEqual(1000)
     await page.locator('[data-method=cash]').click()
-    await page.locator('#recordPaymentModal [data-bs-dismiss=modal]').first().click()
+    await page.locator('#recordPaymentModal [data-dialog-dismiss=modal]').first().click()
     await expect(page.locator('#recordPaymentModal')).toBeHidden()
     const left = (await main.boundingBox())!, right = (await side.boundingBox())!
     if (width === 1440) {
@@ -161,7 +161,7 @@ for (const role of ['admin', 'staff'] as const) test(`${role} original receipt/s
   await expect(page.locator('#statusUpdateModal')).toBeHidden()
   await expect(page.locator('.order-tracker__step[aria-current=step]')).toHaveAttribute('data-workflow-status', 'ready_for_pickup')
   await page.locator('[data-toast-close]').click()
-  await page.locator('[data-bs-target="#recordPaymentModal"]').click()
+  await page.locator('[data-dialog-target="#recordPaymentModal"]').click()
   await page.locator('#pa-1').fill(String(Number(quote.total_raw) + 1))
   await page.locator('#record-payment button[type=submit]').click()
   expect(await page.locator('#pa-1').evaluate((el: HTMLInputElement) => el.validity.rangeOverflow)).toBe(true)
@@ -187,7 +187,7 @@ for (const role of ['admin', 'staff'] as const) test(`${role} original receipt/s
     await expect(page.locator('.pay-txn')).toHaveCount(5)
   } else await expect(page.locator('[data-reverse-payment]')).toHaveCount(0)
   const remaining = Number(quote.total_raw) - paid
-  await page.locator('[data-bs-target="#recordPaymentModal"]').click()
+  await page.locator('[data-dialog-target="#recordPaymentModal"]').click()
   await page.locator('[data-method=cash]').click(); await page.locator('#pa-1').fill(String(remaining))
   await submitForm(page, '#record-payment', `${detailURL}/payments`)
   await expect(page.locator('#payment .order-detail__finance dd').last()).toHaveText('₱0.00')
@@ -209,7 +209,7 @@ test('configured GCash modal, real server validation, split payment and settings
   const { detailURL } = await create(page)
   const csrf = await page.locator('#record-payment input[name=csrf_token]').inputValue()
   const headers = { 'X-CSRFToken': csrf }
-  await page.locator('[data-bs-target="#recordPaymentModal"]').click()
+  await page.locator('[data-dialog-target="#recordPaymentModal"]').click()
   await page.locator('[data-method=gcash]').click()
   await expect(page.locator('#pr-1')).toHaveAttribute('required', '')
   await page.locator('#record-payment button[type=submit]').click()
@@ -219,14 +219,14 @@ test('configured GCash modal, real server validation, split payment and settings
   expect(await page.locator('#pr-1').evaluate((el: HTMLInputElement) => el.validity.customError)).toBe(true)
   await expect(page.locator('[data-payment-config-status]')).toContainText('GCash QR code is not configured. Please check Payment Settings.')
   await expect(page.locator('[data-payment-qr]')).toBeHidden()
-  await page.locator('#recordPaymentModal [data-bs-dismiss=modal]').first().click()
+  await page.locator('#recordPaymentModal [data-dialog-dismiss=modal]').first().click()
   const settings = await page.request.post('/payments/settings', { headers, data: { partial_enabled: true, pay_later_enabled: true, gcash_account_name: 'Isolated QA Recipient', gcash_account_number: '09170000000', payment_instructions: 'Verify the isolated QA recipient.' } })
   expect(settings.status()).toBe(200)
   // A non-payment test image, uploaded only into the isolated fixture's temporary directory.
   const png = execFileSync('../.venv/Scripts/python.exe', ['-c', 'import io,sys; from PIL import Image; b=io.BytesIO(); Image.new("RGB",(160,160),"blue").save(b,"PNG"); sys.stdout.buffer.write(b.getvalue())'])
   const upload = await page.request.post('/payments/settings/qr', { headers, multipart: { image: { name: 'isolated-qa-image.png', mimeType: 'image/png', buffer: png } } })
   expect(upload.status()).toBe(200)
-  await page.locator('[data-bs-target="#recordPaymentModal"]').click()
+  await page.locator('[data-dialog-target="#recordPaymentModal"]').click()
   await expect(page.locator('[data-payment-account]')).toContainText('Isolated QA Recipient')
   await expect(page.locator('[data-payment-account]')).toContainText('09170000000')
   await expect(page.locator('[data-payment-qr]')).toBeVisible()
@@ -302,7 +302,7 @@ test('disabled payment methods disappear and are rejected by the original endpoi
   expect((await page.request.post(action, { headers })).status()).toBe(200)
   try {
     await page.goto(detailURL)
-    await page.locator('[data-bs-target="#recordPaymentModal"]').click()
+    await page.locator('[data-dialog-target="#recordPaymentModal"]').click()
     await expect(page.locator('[data-method=gcash]')).toHaveCount(0)
     await expect(page.locator('#pm-2 option[value=gcash]')).toHaveCount(0)
     const rejected = await page.request.post(`${detailURL}/payments`, { headers, data: { entries: [{ method: 'gcash', amount: '10' }] } })

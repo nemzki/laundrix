@@ -53,11 +53,6 @@
     --sidebar: #111827; --sidebar-foreground: var(--lx-text); --sidebar-border: var(--lx-border);
     --sidebar-primary: var(--lx-primary); --sidebar-primary-foreground: #fff;
     --sidebar-accent: var(--lx-primary-soft); --sidebar-accent-foreground: #93c5fd; --sidebar-ring: var(--lx-primary);
-    --bs-body-bg: var(--lx-bg); --bs-body-bg-rgb: 15,23,42;
-    --bs-body-color: var(--lx-text); --bs-body-color-rgb: 241,245,249;
-    --bs-border-color: var(--lx-border); --bs-secondary-color: var(--lx-muted);
-    --bs-secondary-bg: #253248; --bs-tertiary-bg: #182235;
-    --bs-link-color: #93c5fd; --bs-link-hover-color: #bfdbfe;
   }
   html[data-lx-theme=dark] .lx-react { --muted: var(--lx-paint-muted); }
   html[data-lx-theme=dark] body { background: var(--lx-bg); color: var(--lx-text); }
@@ -81,7 +76,7 @@
   html[data-lx-theme=dark] :is(.btn-primary, .mo-server-primary, .dashboard-primary, [data-slot=button][data-variant=default]) { --primary: #2c6ce2; --lx-primary: #2c6ce2; }
   html[data-lx-theme=dark] .lx-react [data-slot=button][data-variant=default],
   html[data-lx-theme=dark] :is(.btn-primary, .mo-server-primary) { color: #fff; }
-  html[data-lx-theme=dark] .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+  html[data-lx-theme=dark] .btn-close { color: var(--lx-text); }
   html[data-lx-theme=dark] .status-success { background: var(--lx-success-soft); color: var(--lx-success); }
   /* QR assets keep their white quiet zone; raster images are never recolored. */
   html[data-lx-theme=dark] :is(.qr-preview, [data-tracking-image]) { background: #fff; }
@@ -105,7 +100,7 @@
 
 @media print {
   .lx-theme-picker { display: none !important; }
-  html[data-lx-theme] { color-scheme: light; --bs-body-bg: #fff; --bs-body-color: #000; --bs-border-color: #ddd; }
+  html[data-lx-theme] { color-scheme: light; }
   html[data-lx-theme] body { background: #fff !important; color: #000 !important; }
 }
 

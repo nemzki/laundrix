@@ -25,12 +25,13 @@ body.app #outstanding-summary .ob-stat h2 { min-height:32px; padding-right:44px;
 .ob .ob-select-trigger:focus-visible { outline:2px solid var(--lx-paint-blue, #2563eb); outline-offset:1px; box-shadow:none; }
 .ob .ob-select-trigger > span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .ob .ob-select-trigger > svg { flex:0 0 16px; }
-.ob .ob-select-menu { min-width:176px; width:190px; max-width:calc(100vw - 32px); padding:4px; border:1px solid var(--border); border-radius:9px; z-index:1040; background:var(--lx-paint-surface, #fff); box-shadow:0 4px 12px #0f172a14; }
+.ob .ob-select-menu { min-width:176px; width:190px; max-width:calc(100vw - 32px); position:absolute; inset:calc(100% + 2px) auto auto 0; padding:4px; border:1px solid var(--border); border-radius:9px; z-index:1040; background:var(--lx-paint-surface, #fff); box-shadow:0 4px 12px #0f172a14; }
 .ob-sort .ob-select-menu { width:176px; }
-.ob .ob-select-menu .dropdown-item { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:7px 8px; font-size:13px; line-height:20px; border-radius:5px; color:var(--lx-paint-text, #0f274a); background:var(--lx-paint-surface, #fff); white-space:nowrap; }
-.ob .ob-select-menu .dropdown-item:hover, .ob .ob-select-menu .dropdown-item:focus { background:var(--lx-paint-muted, #f1f5f9); outline:none; }
-.ob .ob-select-menu .dropdown-item:focus-visible { outline:2px solid var(--lx-paint-blue, #2563eb); outline-offset:-2px; }
-.ob .ob-select-menu .dropdown-item.active { background:var(--lx-paint-blue-bg, #dbeafe); color:var(--lx-paint-blue-ink, #1e40af); }
+.ob .ob-select-menu--above { top:auto; bottom:calc(100% + 2px); }
+.ob .ob-select-menu .ob-select-option { display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; border:0; padding:7px 8px; font-size:13px; line-height:20px; border-radius:5px; color:var(--lx-paint-text, #0f274a); background:var(--lx-paint-surface, #fff); white-space:nowrap; }
+.ob .ob-select-menu .ob-select-option:hover, .ob .ob-select-menu .ob-select-option:focus { background:var(--lx-paint-muted, #f1f5f9); outline:none; }
+.ob .ob-select-menu .ob-select-option:focus-visible { outline:2px solid var(--lx-paint-blue, #2563eb); outline-offset:-2px; }
+.ob .ob-select-menu .ob-select-option.active { background:var(--lx-paint-blue-bg, #dbeafe); color:var(--lx-paint-blue-ink, #1e40af); }
 .ob-option-check { visibility:hidden; color:var(--lx-paint-blue, #2563eb); }
 .ob [aria-selected=true] .ob-option-check { visibility:visible; }
 .ob-search { width:320px; max-width:360px; min-width:0; flex:1 1 200px; align-items:center; gap:8px; padding:0 10px; border:1px solid var(--border); border-radius:8px; color:var(--lx-paint-muted-text, #64748b); background:var(--lx-paint-surface, #fff); }
@@ -42,8 +43,8 @@ body.app #outstanding-summary .ob-stat h2 { min-height:32px; padding-right:44px;
 .ob-clear { font-size:13px; text-decoration:none; white-space:nowrap; }
 .ob-paid-label { font-size:13px; color:var(--lx-paint-secondary, #475569); }
 .ob-table-wrap { position:relative; overflow-x:auto; overflow-y:hidden; width:100%; }
-/* Bootstrap leaves hidden captions in table flow; the 1px caption created a vertical scrollbar. */
-.ob-table caption.visually-hidden { position:absolute; top:0; left:0; }
+/* Take the screen-reader caption out of the scrolling table layout. */
+.ob-table caption[class~="tw:sr-only"] { position:absolute; top:0; left:0; }
 .ob-table-wrap:focus-visible { outline:2px solid var(--lx-primary); outline-offset:-2px; }
 .ob-table { width:100%; border-collapse:collapse; font-size:13px; line-height:20px; }
 .ob-table th { text-align:left; background:var(--lx-paint-subtle, #f8fafc); font-size:12px; font-weight:500; color:var(--lx-paint-secondary, #334155); border-block:1px solid var(--border); padding:10px 12px; white-space:nowrap; }

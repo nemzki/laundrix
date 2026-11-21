@@ -40,7 +40,7 @@ body.app.customers-page .page-header p { font-size:13px; line-height:20px; }
 body.app.customers-page .cm-actions .cm-edit { width:36px; height:36px; flex:0 0 36px; padding:0; border-color:transparent; background:transparent; justify-content:center; }
 .cm-actions .cm-edit:hover { background:var(--lx-paint-muted, #f1f5f9); }
 .cm-actions .btn:focus-visible,.cm-clear:focus-visible { outline:2px solid var(--lx-paint-blue, #2563eb); outline-offset:2px; box-shadow:none; }
-.cm-edit-tooltip { --bs-tooltip-bg:var(--lx-paint-text, #0f274a); --bs-tooltip-color:var(--lx-paint-surface, #fff); font-size:12px; }
+.cm-edit-tooltip { position:fixed; z-index:1080; transform:translate(-50%, calc(-100% - 6px)); pointer-events:none; padding:4px 8px; border-radius:4px; background:var(--lx-paint-text, #0f274a); color:var(--lx-paint-surface, #fff); font-size:12px; }
 .cm-pagination { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding:14px 16px; border-top:1px solid var(--border); color:var(--lx-paint-secondary, #475569); font-size:12px; }
 .cm-pagination .pagination { margin:0; align-items:center; gap:10px; flex-wrap:wrap; }
 .cm-empty { padding:32px 16px !important; text-align:center; }

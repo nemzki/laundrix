@@ -1,4 +1,4 @@
-/* Admin shell only. Reuses Bootstrap's existing mobile drawer. */
+/* Admin shell sidebar and shared mobile drawer. */
 (function () {
   "use strict";
   var button = document.querySelector('[data-admin-sidebar-toggle]');
@@ -13,21 +13,18 @@
   }
   button.addEventListener('click', function () {
     if (desktop.matches) document.body.classList.toggle('admin-sidebar-collapsed');
-    else if (drawer && typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
-      bootstrap.Offcanvas.getOrCreateInstance(drawer).toggle();
+    else if (drawer) {
+      window.laundrixDialog(drawer).toggle();
     }
     sync();
   });
   desktop.addEventListener('change', function () {
-    if (desktop.matches && drawer && typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
-      var instance = bootstrap.Offcanvas.getInstance(drawer);
-      if (instance) instance.hide();
-    }
+    if (desktop.matches && drawer) window.laundrixDialog(drawer).hide();
     sync();
   });
   if (drawer) {
-    drawer.addEventListener('shown.bs.offcanvas', sync);
-    drawer.addEventListener('hidden.bs.offcanvas', sync);
+    drawer.addEventListener('dialog:shown', sync);
+    drawer.addEventListener('dialog:hidden', sync);
   }
   sync();
 })();

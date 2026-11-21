@@ -4,16 +4,16 @@
   var form = document.getElementById('ps-add-method-form');
   var modal = document.getElementById('ps-add-method-modal');
   var trigger = document.querySelector('[data-add-method-trigger]');
-  if (!form || !modal || !trigger || typeof bootstrap === 'undefined') return;
+  if (!form || !modal || !trigger || typeof window.laundrixDialog === 'undefined') return;
   trigger.hidden = false;
   var error = document.getElementById('ps-method-error');
   var name = form.elements.namedItem('label');
   var submit = form.querySelector('[type=submit]');
-  var cancel = form.querySelector('[data-bs-dismiss]');
+  var cancel = form.querySelector('[data-dialog-dismiss]');
   var busy = false;
   var redirecting = false;
-  modal.addEventListener('shown.bs.modal', function () { name.focus(); });
-  modal.addEventListener('hide.bs.modal', function (event) { if (busy) event.preventDefault(); });
+  modal.addEventListener('dialog:shown', function () { name.focus(); });
+  modal.addEventListener('dialog:hide', function (event) { if (busy) event.preventDefault(); });
   name.addEventListener('input', function () {
     name.removeAttribute('aria-invalid');
     error.hidden = true;

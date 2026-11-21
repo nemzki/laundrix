@@ -18,7 +18,6 @@
     var resolved = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
     root.dataset.lxTheme = resolved;
     root.dataset.themePreference = preference;
-    root.dataset.bsTheme = resolved;
     // The landing export uses class-based dark variants; React uses the data attribute.
     root.classList.toggle('dark', resolved === 'dark');
     sync();

@@ -5,7 +5,7 @@
   if (!root || !window.fetch) return;
   var form = root.querySelector(".ob-filters");
   var modal = document.getElementById("recordPaymentModal");
-  var dialog = bootstrap.Modal.getOrCreateInstance(modal);
+  var dialog = window.laundrixDialog(modal);
   var controller, modalController, trigger, selectedURL, selectedRef, lastURL = new URL(location.href);
   var initialContent = modal.querySelector(".modal-content").cloneNode(true);
   var toast = document.querySelector("[data-ob-toast]");
@@ -27,23 +27,60 @@
     var wrapper = select.closest(".ob-select-wrap");
     var trigger = document.createElement("button");
     trigger.type="button"; trigger.className="btn btn-outline ob-select-trigger";
-    trigger.dataset.bsToggle="dropdown"; trigger.setAttribute("aria-haspopup","listbox"); trigger.setAttribute("aria-expanded","false");
+    trigger.setAttribute("aria-haspopup","listbox"); trigger.setAttribute("aria-expanded","false");
     trigger.setAttribute("aria-label",select.getAttribute("aria-label"));
     var label=document.createElement("span"); trigger.appendChild(label);
     var arrow=document.createElementNS("http://www.w3.org/2000/svg","svg");
     arrow.setAttribute("viewBox","0 0 24 24"); arrow.setAttribute("width","16"); arrow.setAttribute("height","16"); arrow.setAttribute("fill","none"); arrow.setAttribute("stroke","currentColor"); arrow.setAttribute("stroke-width","1.75"); arrow.setAttribute("aria-hidden","true");
     var path=document.createElementNS(arrow.namespaceURI,"path"); path.setAttribute("d","m6 9 6 6 6-6"); arrow.appendChild(path); trigger.appendChild(arrow);
-    var menu=document.createElement("div"); menu.className="dropdown-menu ob-select-menu"; menu.setAttribute("role","listbox"); menu.setAttribute("aria-label",select.getAttribute("aria-label"));
+    var menu=document.createElement("div"); menu.className="ob-select-menu"; menu.hidden=true;
+    menu.id=select.id+"-options"; trigger.setAttribute("aria-controls",menu.id);
+    menu.setAttribute("role","listbox"); menu.setAttribute("aria-label",select.getAttribute("aria-label"));
+    function setOpen(open) {
+      menu.hidden=!open;
+      trigger.setAttribute("aria-expanded", String(open));
+      if (open) {
+        var bounds=trigger.getBoundingClientRect();
+        menu.classList.toggle("ob-select-menu--above",
+          bounds.bottom + menu.offsetHeight + 2 > window.innerHeight && bounds.top > menu.offsetHeight);
+      }
+    }
+    function focusOption(index) { menu.children[index]?.focus(); }
     Array.from(select.options).forEach(function (option) {
-      var item=document.createElement("button"); item.type="button"; item.className="dropdown-item"; item.setAttribute("role","option"); item.dataset.value=option.value;
+      var item=document.createElement("button"); item.type="button"; item.tabIndex=-1;
+      item.className="ob-select-option"; item.setAttribute("role","option"); item.dataset.value=option.value;
       var text=document.createElement("span"); text.textContent=option.textContent; item.appendChild(text);
       var check=document.createElement("span"); check.className="ob-option-check"; check.textContent="\u2713"; check.setAttribute("aria-hidden","true"); item.appendChild(check);
-      item.addEventListener("click",function () { select.value=option.value; select.dispatchEvent(new Event("change",{bubbles:true})); bootstrap.Dropdown.getOrCreateInstance(trigger).hide(); trigger.focus(); });
+      item.addEventListener("click",function () {
+        select.value=option.value;
+        select.dispatchEvent(new Event("change",{bubbles:true}));
+        setOpen(false);
+        trigger.focus();
+      });
       menu.appendChild(item);
     });
-    wrapper.classList.add("dropdown"); select.classList.add("visually-hidden"); select.tabIndex=-1; select.setAttribute("aria-hidden","true");
+    select.classList.add("tw:sr-only"); select.tabIndex=-1; select.setAttribute("aria-hidden","true");
     wrapper.appendChild(trigger); wrapper.appendChild(menu);
-    bootstrap.Dropdown.getOrCreateInstance(trigger,{ popperConfig:function (config) { return Object.assign({},config,{strategy:"fixed"}); } });
+    trigger.addEventListener("click", function () { setOpen(menu.hidden); });
+    document.addEventListener("click", function (event) {
+      if (!wrapper.contains(event.target)) setOpen(false);
+    });
+    wrapper.addEventListener("focusout", function (event) {
+      if (!wrapper.contains(event.relatedTarget)) setOpen(false);
+    });
+    wrapper.addEventListener("keydown", function (event) {
+      var index=Array.from(menu.children).indexOf(document.activeElement);
+      if (event.key==="Escape" && !menu.hidden) {
+        setOpen(false); trigger.focus(); event.preventDefault(); return;
+      }
+      if (!["ArrowDown","ArrowUp","Home","End"].includes(event.key)) return;
+      event.preventDefault();
+      setOpen(true);
+      if (event.key==="Home") focusOption(0);
+      else if (event.key==="End") focusOption(menu.children.length-1);
+      else if (index===-1) focusOption(Math.max(0,select.selectedIndex));
+      else focusOption(Math.max(0,Math.min(menu.children.length-1,index+(event.key==="ArrowDown"?1:-1))));
+    });
     var control={ select:select, trigger:trigger, sync:function () {
       label.textContent=select.selectedOptions[0]?.textContent || "";
       trigger.setAttribute("aria-label",select.getAttribute("aria-label")+": "+label.textContent);
@@ -244,7 +281,7 @@
       retry.addEventListener("click",function () { area.textContent="Loading latest order details..."; openPayment(); }); area.appendChild(retry);
     } finally { clearTimeout(timeout); }
   }
-  modal.addEventListener("hidden.bs.modal",function () { if (modalController) modalController.abort(); modalController=null; if (modal.paymentDispose) modal.paymentDispose(); if (trigger && trigger.isConnected) trigger.focus({preventScroll:true}); });
+  modal.addEventListener("dialog:hidden",function () { if (modalController) modalController.abort(); modalController=null; if (modal.paymentDispose) modal.paymentDispose(); if (trigger && trigger.isConnected) trigger.focus({preventScroll:true}); });
   window.addEventListener("popstate",function () { apply(new URL(location.href),false); });
   document.addEventListener("visibilitychange",function () { if (!document.hidden) { load(new URL(location.href),false); counts(); } });
   load(new URL(location.href),false); counts();

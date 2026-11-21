@@ -141,3 +141,177 @@ test('replacement enrollment link, rejection and deactivation use original saved
  expect((await list(page,`?q=${encodeURIComponent(email)}`)).rows[0].status).toBe('deactivated')
  await page.keyboard.press('Escape');await page.getByRole('tab',{name:/^Inactive /}).click();await expect(page.locator('[data-staff-row]')).toContainText('Staff Link QA')
 })
+
+test('full Staff Details uses the live account, responsive layout and server actions', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await login(page)
+  const createForm = await page.request.get('/admin/staff/new')
+  const csrf = await page.evaluate(html => new DOMParser().parseFromString(html, 'text/html')
+    .querySelector<HTMLInputElement>('[name=csrf_token]')!.value, await createForm.text())
+  const fullName = 'Details Workflow QA'
+  const email = `staff-detail-${Date.now()}@example.test`
+  const created = await page.request.post('/admin/staff/new', { form: { csrf_token: csrf, full_name: fullName, email } })
+  expect(created.ok()).toBe(true)
+  await page.goto(`/admin/staff/?q=${encodeURIComponent(email)}`)
+  await ready(page)
+  await viewFirst(page)
+  await page.getByRole('link', { name: 'Open Account Page' }).click()
+  await ready(page)
+
+  const root = page.locator('#laundrix-staff')
+  const accountDetails = page.getByRole('region', { name: 'Account details' })
+  const steps = page.getByRole('region', { name: 'Verification progress' }).getByRole('listitem')
+  const activity = page.getByRole('heading', { name: 'Recent activity' })
+  const nextStep = page.getByRole('heading', { name: 'Send an enrollment link' })
+  const danger = page.getByRole('heading', { name: 'Danger zone' })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(fullName)
+  await expect(root.locator('.staff-avatar')).toHaveText('DW')
+  await expect(root).toContainText(email)
+  await expect(root.locator('.staff-status')).toHaveText('Pending Verification')
+  await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText(fullName)
+  await expect(page.getByRole('navigation', { name: 'Breadcrumb' }).getByRole('link', { name: 'Staff Management' })).toHaveAttribute('href', '/admin/staff/')
+  await expect(steps).toHaveCount(4)
+  await expect(steps.nth(0)).toHaveAttribute('data-step-state', 'Completed')
+  await expect(steps.nth(1)).toHaveAttribute('aria-current', 'step')
+  await expect(steps.nth(2)).toHaveAttribute('data-step-state', 'Upcoming')
+  await expect(steps.nth(3)).toContainText('Never signed in')
+  await expect(accountDetails).toContainText('Active until')
+  await expect(root).toContainText('Staff created')
+  await expect(root.getByRole('button', { name: 'Reject Account' })).toBeHidden()
+  await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'dark')
+
+  await page.setViewportSize({ width: 1440, height: 900 })
+  expect((await accountDetails.boundingBox())!.y).toBeLessThan((await activity.boundingBox())!.y)
+  expect((await nextStep.boundingBox())!.x).toBeGreaterThan((await accountDetails.boundingBox())!.x)
+  expect((await danger.boundingBox())!.y).toBeGreaterThan((await nextStep.boundingBox())!.y)
+  await page.screenshot({ path: 'test-results/dashboard/staff-detail-1440.png', fullPage: true })
+  await page.setViewportSize({ width: 390, height: 900 })
+  const positions = await Promise.all([accountDetails, nextStep, activity, danger].map(locator => locator.boundingBox()))
+  expect(positions.map(box => box!.y)).toEqual(positions.map(box => box!.y).sort((a, b) => a - b))
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: 'test-results/dashboard/staff-detail-390.png', fullPage: true })
+
+  await root.getByRole('button', { name: 'Generate New Link' }).click()
+  await dialog(page).getByRole('button', { name: 'Confirm' }).click()
+  await expect(dialog(page).getByRole('heading', { name: 'Enrollment Link Generated' })).toBeVisible()
+  await expect(dialog(page).locator('#staff-enrollment')).toHaveValue(/\/staff\/enroll\//)
+  await dialog(page).getByRole('button', { name: 'Done' }).click()
+  await expect(root.getByRole('button', { name: 'Generate New Link' })).toBeEnabled()
+
+  for (const [label, button, savedStatus] of [
+    ['Reject registration', 'Reject Account', 'Rejected'],
+    ['Deactivate account', 'Deactivate Account', 'Inactive'],
+  ]) {
+    const section = root.locator('details').filter({ has: page.getByText(label, { exact: true }) })
+    await section.locator('summary').click()
+    await section.getByLabel('Reason (required)').fill(`QA ${label}`)
+    await section.getByRole('button', { name: button, exact: true }).click()
+    await expect(dialog(page).getByRole('heading', { name: button })).toBeVisible()
+    await dialog(page).getByRole('button', { name: 'Confirm', exact: true }).click()
+    await expect(root.locator('.staff-status')).toHaveText(savedStatus)
+  }
+  await expect(root.getByRole('heading', { name: 'Danger zone' })).toHaveCount(0)
+  await page.reload()
+  await ready(page)
+  await expect(root.locator('.staff-status')).toHaveText('Inactive')
+  await root.getByRole('link', { name: 'All Staff' }).click()
+  await expect(page).toHaveURL(/\/admin\/staff\/$/)
+
+  await page.emulateMedia({ colorScheme: 'light' })
+  await page.setViewportSize({ width: 320, height: 900 })
+  await page.goto('/admin/staff/?q=staff%40example.test')
+  await ready(page)
+  await viewFirst(page)
+  await page.getByRole('link', { name: 'Open Account Page' }).click()
+  await ready(page)
+  await expect(page.locator('html')).toHaveAttribute('data-lx-theme', 'light')
+  await expect(root.locator('.staff-status')).toHaveText('Active')
+  await expect(steps.nth(2)).toContainText('Not recorded')
+  await expect(steps.nth(3)).toHaveAttribute('data-step-state', 'Completed')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
+for (const [width, theme] of [[320, 'dark'], [1440, 'light']] as const) {
+  test(`Generate New Link confirmation layout and dismissal at ${width}px`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 })
+    await page.emulateMedia({ colorScheme: theme })
+    await login(page)
+    const response = await page.request.get('/admin/staff/new')
+    const csrf = await page.evaluate(html => new DOMParser().parseFromString(html, 'text/html')
+      .querySelector<HTMLInputElement>('[name=csrf_token]')!.value, await response.text())
+    const email = `staff-confirm-${width}@example.test`
+    expect((await page.request.post('/admin/staff/new', {
+      form: { csrf_token: csrf, full_name: 'Confirmation QA', email },
+    })).status()).toBe(200)
+    await page.goto(`/admin/staff/?q=${encodeURIComponent(email)}`)
+    await ready(page)
+    await viewFirst(page)
+    const trigger = page.locator('.staff-sheet').getByRole('button', { name: 'Generate New Link' })
+    const modal = page.getByRole('dialog', { name: 'Generate New Link' })
+    const title = modal.getByRole('heading', { name: 'Generate New Link' })
+    const description = modal.getByText('Generate a replacement enrollment link? The previous link will stop working.')
+    const cancel = modal.getByRole('button', { name: 'Cancel' })
+    const confirm = modal.getByRole('button', { name: 'Confirm' })
+    const close = modal.getByRole('button', { name: 'Close' })
+
+    await trigger.click()
+    await expect(modal).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('generate-new-link.png'), animations: 'disabled' })
+    const [box, heading, copy, cancelBox, confirmBox, closeBox] = await Promise.all(
+      [modal, title, description, cancel, confirm, close].map(async locator => (await locator.boundingBox())!),
+    )
+    expect(box.width).toBe(Math.min(480, width - 32))
+    expect(box.x + box.width / 2).toBeCloseTo(width / 2, 0)
+    expect(box.y + box.height / 2).toBeCloseTo(450, 0)
+    expect(heading.width).toBeGreaterThan(box.width * 0.7)
+    expect(heading.height).toBeLessThanOrEqual(24)
+    expect(copy.x).toBeCloseTo(heading.x, 0)
+    expect(copy.y).toBeGreaterThan(heading.y)
+    expect(copy.width).toBeGreaterThan(box.width * 0.7)
+    expect(closeBox.x).toBeGreaterThan(heading.x + heading.width)
+    expect(cancelBox.y).toBeCloseTo(confirmBox.y, 0)
+    expect(cancelBox.x).toBeLessThan(confirmBox.x)
+    expect(box.x + box.width - confirmBox.x - confirmBox.width).toBeLessThanOrEqual(24)
+    await expect(page.locator('html')).toHaveAttribute('data-lx-theme', theme)
+    await expect(modal).toHaveCSS('background-color', theme === 'dark' ? 'rgb(30, 41, 59)' : 'rgb(255, 255, 255)')
+
+    for (const dismiss of [
+      () => cancel.click(),
+      () => close.click(),
+      () => page.keyboard.press('Escape'),
+      () => page.mouse.click(1, 1),
+    ]) {
+      await dismiss()
+      await expect(modal).toHaveCount(0)
+      await trigger.click()
+    }
+
+    let requests = 0
+    let release!: () => void
+    const pending = new Promise<void>(resolve => { release = resolve })
+    await page.route('**/admin/staff/*/enroll-link', async route => {
+      if (++requests === 1) {
+        await pending
+        await route.fulfill({ status: 503, body: 'Unavailable' })
+      } else {
+        await route.continue()
+      }
+    })
+    await confirm.click()
+    try {
+      await expect(confirm).toBeDisabled()
+      await expect(cancel).toBeDisabled()
+      await expect(confirm.locator('svg')).toBeVisible()
+      await page.keyboard.press('Escape')
+      await expect(modal).toBeVisible()
+      expect(requests).toBe(1)
+    } finally {
+      release()
+    }
+    await expect(modal.getByRole('alert')).toContainText('not confirmed')
+    await expect(confirm).toBeEnabled()
+    await confirm.click()
+    await expect(dialog(page).getByRole('heading', { name: 'Enrollment Link Generated' })).toBeVisible()
+    expect(requests).toBe(2)
+  })
+}

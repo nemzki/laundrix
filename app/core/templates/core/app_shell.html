@@ -32,8 +32,8 @@
       <button
         class="icon-btn lx-topbar__menu"
         type="button"
-        data-bs-toggle="offcanvas"
-        data-bs-target="#appNavDrawer"
+        aria-haspopup="dialog"
+        data-dialog-target="#appNavDrawer"
         aria-controls="appNavDrawer"
         aria-label="Open navigation menu"
       >{{ icon('menu', 22) }}</button>
@@ -42,14 +42,15 @@
     {% endif %}
 
     <main class="content">
-      <div class="page-header">
+      {% block page_header %}<div class="page-header">
         <div>
           <h1>{% block page_title %}{% endblock %}</h1>
           <p class="muted">{% block page_subtitle %}{% endblock %}</p>
         </div>
         <div class="page-actions">{% block page_actions %}{% endblock %}</div>
       </div>
-      {% block content %}{% endblock %}
+      {% endblock %}
+    {% block content %}{% endblock %}
     </main>
   </div>
 
@@ -58,7 +59,6 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('core.static', filename='js/app.js') }}" defer></script>
   {% if current_user.role == 'admin' and request.blueprint not in ['identity', 'staff_auth'] and request.endpoint != 'staff_admin.enroll_link' %}
   <script src="{{ url_for('core.static', filename='js/admin-topbar.js') }}" defer></script>
   {% endif %}

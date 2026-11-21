@@ -2,7 +2,10 @@
   "use strict";
 
   var trigger = document.querySelector("[data-face-login-trigger]");
+  var shell = document.querySelector("[data-face-login-shell]");
   var panel = document.querySelector("[data-face-login-camera]");
+  var heading = document.querySelector("[data-face-login-heading]");
+  var backButton = document.querySelector("[data-face-login-back]");
   var video = document.querySelector("[data-face-login-video]");
   var canvas = document.querySelector("[data-face-login-canvas]");
   var title = document.querySelector("[data-face-login-status]");
@@ -14,7 +17,7 @@
   var cancelButton = document.querySelector("[data-face-login-cancel]");
   var staffPanel = document.querySelector('[data-auth-panel="staff"]');
 
-  if (!trigger || !panel || !video || !canvas || !title || !message ||
+  if (!trigger || !shell || !panel || !heading || !backButton || !video || !canvas || !title || !message ||
       !progress || !stage || !retryButton || !cancelButton || !staffPanel) {
     return;
   }
@@ -36,10 +39,12 @@
   var stream = null;
   var running = false;           // a scan session is active
   var submitting = false;
-  var controller = null;
+  var scan = null;
   var tickTimer = null;
   var timeoutTimer = null;
   var failures = 0;
+  var cooldownUntil = 0;
+  var cooldownTimer = null;
   var detector = null;
   var small = document.createElement("canvas");
   var smallCtx = null;
@@ -50,10 +55,12 @@
     catch (e) { detector = null; }
   }
 
-  function setTitle(text) { title.textContent = text; }
-  function setMessage(text) { message.textContent = text; }
+  function setTitle(text) { if (title.textContent !== text) title.textContent = text; }
+  function setMessage(text) { if (message.textContent !== text) message.textContent = text; }
   function setProgress(fraction) {
-    progress.style.width = Math.max(0, Math.min(1, fraction)) * 100 + "%";
+    var percent = Math.round(Math.max(0, Math.min(1, fraction)) * 100);
+    progress.style.width = percent + "%";
+    progress.parentElement.setAttribute("aria-valuenow", percent);
   }
   function setState(name) { stage.setAttribute("data-state", name); }
 
@@ -88,18 +95,46 @@
     video.removeAttribute("src");
   }
 
-  function clearCapture() { canvas.width = 0; canvas.height = 0; previous = null; }
+  function clearCapture() {
+    canvas.width = canvas.height = small.width = small.height = 0;
+    previous = null;
+  }
 
-  function closePanel() {
-    if (controller) { controller.abort(); controller = null; }
+  function stopScan() {
+    if (scan) { scan.abort(); scan = null; }
     running = false;
-    submitting = false;
     stopCamera();
     clearCapture();
+  }
+
+  function closePanel() {
+    stopScan();
+    if (cooldownTimer) { clearTimeout(cooldownTimer); cooldownTimer = null; }
     panel.hidden = true;
+    shell.hidden = false;
     retryButton.hidden = true;
     setProgress(0);
     setState("idle");
+  }
+
+  function showWaitingState() {
+    var delay = cooldownUntil - Date.now();
+    if (delay <= 0) {
+      if (cooldownUntil) { failures = 0; cooldownUntil = 0; }
+      setTitle("Ready to Scan");
+      setMessage("We’ll use your camera to verify your identity.");
+      retryButton.textContent = "Start Scan";
+      retryButton.hidden = false;
+      return;
+    }
+    setTitle("Please wait before trying again");
+    setMessage("Wait for the cooldown to finish or return to Staff Sign In.");
+    retryButton.hidden = true;
+    clearTimeout(cooldownTimer);
+    cooldownTimer = setTimeout(function () {
+      cooldownTimer = null;
+      if (!panel.hidden) showWaitingState();
+    }, delay);
   }
 
   // ---- frame analysis -----------------------------------------------------------------------
@@ -174,14 +209,26 @@
     });
   }
 
-  function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+  function wait(ms, signal) {
+    return new Promise(function (resolve, reject) {
+      signal.throwIfAborted();
+      function abort() { clearTimeout(timer); reject(signal.reason); }
+      var timer = setTimeout(function () {
+        signal.removeEventListener("abort", abort);
+        resolve();
+      }, ms);
+      signal.addEventListener("abort", abort, { once: true });
+    });
+  }
 
-  async function captureBest() {
+  async function captureBest(signal) {
     var best = null, i;
     for (i = 0; i < BURST_FRAMES; i++) {
+      signal.throwIfAborted();
       var shot = await frameToBlob();
+      signal.throwIfAborted();
       if (shot.blob.size <= MAX_IMAGE_BYTES && (!best || shot.sharp > best.sharp)) best = shot;
-      if (i < BURST_FRAMES - 1) await wait(BURST_GAP_MS);
+      if (i < BURST_FRAMES - 1) await wait(BURST_GAP_MS, signal);
     }
     if (!best) throw new Error("The captured image is too large. Try again.");
     return best.blob;
@@ -202,11 +249,19 @@
 
     var body = new FormData();
     body.append("image", blob, "capture.jpg");
-    controller = new AbortController();
-    var response = await fetch(panel.dataset.faceLoginUrl, {
-      method: "POST", body: body, credentials: "same-origin", signal: controller.signal,
-      headers: { "X-CSRFToken": csrf.value, "Accept": "application/json" }
-    });
+    // Once sent, the request can establish a session even if the scanner view closes.
+    var response;
+    try {
+      response = await fetch(panel.dataset.faceLoginUrl, {
+        method: "POST", body: body, credentials: "same-origin",
+        headers: { "X-CSRFToken": csrf.value, "Accept": "application/json" }
+      });
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new Error("Couldn’t reach the verification service. Check your connection and try again.");
+      }
+      throw error;
+    }
     var result = null;
     try { result = await response.json(); } catch (e) { /* handled below */ }
     if (!response.ok || !result || result.ok !== true) {
@@ -218,59 +273,62 @@
     return result;
   }
 
-  async function verify() {
+  async function verify(signal) {
     submitting = true;
     clearTimers();
     setState("verifying");
-    setTitle("Verifying…");
-    setMessage("Hold still while we check your face.");
+    setTitle("Verifying Your Identity");
+    setMessage("Please wait while we securely verify your identity.");
     setProgress(1);
     try {
-      var blob = await captureBest();
+      var blob = await captureBest(signal);
+      signal.throwIfAborted();
+      stopCamera();
+      clearCapture();
       var result = await submit(blob);
       var target = getSafeRedirect(result.redirect_url);
       if (!target) throw new Error("The sign-in response was invalid. Please try again.");
       setState("success");
-      setTitle("Face verified");
+      setTitle("Identity Verified");
       setMessage("Signing you in…");
-      stopCamera();
-      clearCapture();
+      stopScan();
       window.location.assign(target);
     } catch (error) {
       if (error && error.name === "AbortError") return;
       failures += 1;
       var status = error && error.status;
-      stopCamera();
-      clearCapture();
+      stopScan();
+      if (failures >= MAX_CLIENT_FAILURES) cooldownUntil = Date.now() + COOLDOWN_MS;
+      if (panel.hidden) return;
       setState("failed");
-      setTitle(status === 503 ? "Face Login unavailable" : "Not recognised");
+      setTitle(status === 503 ? "Face Login Unavailable" : "Verification Unsuccessful");
       setMessage(error instanceof Error ? error.message : "Face Login could not be completed.");
-      running = false;
       if (failures >= MAX_CLIENT_FAILURES) {
         retryButton.hidden = true;
         setMessage(message.textContent + " Please wait a moment or use another sign-in method.");
-        setTimeout(function () { failures = 0; if (!panel.hidden) retryButton.hidden = false; }, COOLDOWN_MS);
+        cooldownTimer = setTimeout(function () {
+          cooldownTimer = null;
+          if (!panel.hidden) showWaitingState();
+        }, COOLDOWN_MS);
       } else {
         retryButton.hidden = false;
         retryButton.focus();
       }
     } finally {
       submitting = false;
-      controller = null;
     }
   }
 
   // ---- scan loop ----------------------------------------------------------------------------
-  function startScanLoop() {
-    var steady = 0, busy = false, startedAt = Date.now();
+  function startScanLoop(signal) {
+    var steady = 0, busy = false;
     previous = null;
     setState("scanning");
-    setTitle("Look straight at the camera");
+    setTitle("Position Your Face");
+    setMessage("Look directly at the camera and keep your face inside the oval.");
     timeoutTimer = setTimeout(function () {
       if (!running || submitting) return;
-      clearTimers();
-      stopCamera();
-      running = false;
+      stopScan();
       setState("failed");
       setTitle("Couldn't get a clear view");
       setMessage("Try a brighter spot, remove glasses or a mask, and face the camera.");
@@ -292,9 +350,10 @@
           var f = await checkFace();
           if (!f.ok) problem = f.hint;
         }
-        if (!running || submitting) return;
+        if (signal.aborted || !running || submitting) return;
         if (problem) {
           steady = 0;
+          setTitle("Position Your Face");
           setMessage(problem);
           setProgress(0);
           setState("scanning");
@@ -302,42 +361,48 @@
         }
         steady += 1;
         setState("locked");
-        setMessage("Perfect. Keep still…");
+        setTitle("Scanning Your Face");
+        setMessage("Hold still while we capture a clear image.");
         setProgress(steady / STEADY_TICKS);
-        if (steady >= STEADY_TICKS) { clearInterval(tickTimer); tickTimer = null; await verify(); }
+        if (steady >= STEADY_TICKS) { clearInterval(tickTimer); tickTimer = null; await verify(signal); }
       } finally {
         busy = false;
       }
     }, TICK_MS);
-    void startedAt;
   }
 
   async function startCamera() {
-    if (running || submitting || !cameraIsAvailable() || staffPanel.hidden) return;
+    if (running || submitting || panel.hidden || !cameraIsAvailable()) return;
+    if (Date.now() < cooldownUntil) { showWaitingState(); return; }
+    if (cooldownUntil) { failures = 0; cooldownUntil = 0; }
+    stopScan();
+    scan = new AbortController();
+    var signal = scan.signal;
     running = true;
+    if (document.activeElement === retryButton) heading.focus({ preventScroll: true });
     retryButton.hidden = true;
+    retryButton.textContent = "Scan again";
     setProgress(0);
     setState("starting");
-    setTitle("Starting camera…");
-    setMessage("Allow camera access when your browser asks.");
-    stopCamera();
+    setTitle("Allow Camera Access");
+    setMessage("Please allow camera access when prompted by your browser.");
     try {
       var s = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false
       });
-      if (panel.hidden || staffPanel.hidden) { s.getTracks().forEach(function (t) { t.stop(); }); running = false; return; }
+      if (signal.aborted) { s.getTracks().forEach(function (t) { t.stop(); }); return; }
       stream = s;
       video.srcObject = s;
       await video.play();
-      setTitle("Getting ready…");
+      signal.throwIfAborted();
+      setTitle("Position Your Face");
       setMessage("Adjusting to the light…");
-      await wait(WARMUP_MS);
-      if (!running || panel.hidden) return;
-      startScanLoop();
+      await wait(WARMUP_MS, signal);
+      startScanLoop(signal);
     } catch (error) {
-      running = false;
-      stopCamera();
+      if (signal.aborted) return;
+      stopScan();
       setState("failed");
       setTitle("Camera unavailable");
       setMessage(cameraError(error));
@@ -345,42 +410,69 @@
     }
   }
 
-  function openPanel() {
-    if (trigger.disabled || submitting) return;
-    failures = failures >= MAX_CLIENT_FAILURES ? failures : 0;
+  function openPanel(startImmediately) {
+    shell.hidden = true;
     panel.hidden = false;
-    panel.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    startCamera();
+    window.scrollTo({ top: 0, behavior: "instant" });
+    heading.focus({ preventScroll: true });
+    if (startImmediately) startCamera();
+    else showWaitingState();
   }
 
-  trigger.addEventListener("click", openPanel);
-  retryButton.addEventListener("click", startCamera);
-  cancelButton.addEventListener("click", function () {
+  function returnToSignIn() {
     closePanel();
     hint.textContent = "Face Login cancelled.";
     trigger.focus();
-  });
+    if (history.state && history.state.staffFaceScanner) history.back();
+  }
 
-  new MutationObserver(function () {
-    if (staffPanel.hidden) { closePanel(); hint.textContent = ""; }
-  }).observe(staffPanel, { attributes: true, attributeFilter: ["hidden"] });
+  trigger.addEventListener("click", function () {
+    if (trigger.disabled || submitting || !panel.hidden) return;
+    var loginUrl = new URL(window.location.href);
+    loginUrl.searchParams.set("role", "staff");
+    history.replaceState(history.state, "", loginUrl);
+    var scanUrl = new URL(loginUrl);
+    scanUrl.hash = "face-recognition";
+    history.pushState({ staffFaceScanner: true }, "", scanUrl);
+    openPanel(true);
+  });
+  retryButton.addEventListener("click", startCamera);
+  cancelButton.addEventListener("click", returnToSignIn);
+  backButton.addEventListener("click", returnToSignIn);
+
+  function restoreView() {
+    if (history.state && history.state.staffFaceScanner && cameraIsAvailable()) {
+      if (staffPanel.hidden) document.querySelector('[data-auth-role="staff"]').click();
+      if (panel.hidden) openPanel(false);
+    } else if (!panel.hidden) {
+      closePanel();
+      trigger.focus();
+    }
+  }
+  window.addEventListener("popstate", restoreView);
 
   document.addEventListener("visibilitychange", function () {
     if (document.hidden && running && !submitting) {
-      stopCamera();
-      running = false;
+      stopScan();
       setState("failed");
       setTitle("Camera paused");
       setMessage("The camera stopped while the tab was hidden.");
       retryButton.hidden = false;
     }
   });
-  window.addEventListener("pagehide", stopCamera);
+  window.addEventListener("pagehide", function () {
+    if (!panel.hidden) closePanel();
+    else stopScan();
+  });
+  window.addEventListener("pageshow", function (event) {
+    if (event.persisted) restoreView();
+  });
 
   if (!cameraIsAvailable()) {
     trigger.disabled = true;
     hint.textContent = "Face Login needs a secure (HTTPS) connection and a browser with camera support.";
   } else {
     hint.textContent = "";
+    restoreView();
   }
 })();

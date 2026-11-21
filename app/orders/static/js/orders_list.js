@@ -1,4 +1,4 @@
-/* Manage Orders: original authenticated HTML queries and Bootstrap modals. */
+/* Manage Orders: original authenticated HTML queries and native dialogs. */
 (function () {
   "use strict";
   var root = document.querySelector("[data-manage-orders]");
@@ -84,7 +84,7 @@
     node.textContent = label; node.className = "status status-" + tone;
   }
   var summaryEl = document.getElementById("orderSummaryModal");
-  var summary = bootstrap.Modal.getOrCreateInstance(summaryEl);
+  var summary = window.laundrixDialog(summaryEl);
   var summaryURL, expectedRef, summaryController, summaryTrigger;
   async function loadSummary() {
     var restoreFocus = summaryEl.contains(document.activeElement);
@@ -135,13 +135,13 @@
     loadSummary(); summary.show();
   });
   summaryEl.querySelector("[data-summary-retry]").addEventListener("click", loadSummary);
-  summaryEl.addEventListener("hidden.bs.modal", function () { if (summaryController) summaryController.abort(); summaryController = null; if (summaryTrigger && summaryTrigger.isConnected) summaryTrigger.focus({ preventScroll: true }); });
+  summaryEl.addEventListener("dialog:hidden", function () { if (summaryController) summaryController.abort(); summaryController = null; if (summaryTrigger && summaryTrigger.isConnected) summaryTrigger.focus({ preventScroll: true }); });
   function initConfirmModal() {
     var modalEl = document.getElementById("confirmReceivedModal");
     var form = document.getElementById("confirmReceivedForm");
-    if (!modalEl || !form || typeof bootstrap === "undefined") return;
+    if (!modalEl || !form || typeof window.laundrixDialog === "undefined") return;
 
-    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    var modal = window.laundrixDialog(modalEl);
     var refEl = modalEl.querySelector("[data-confirm-ref]");
     var submitBtn = form.querySelector("[data-confirm-submit]");
     var label = submitBtn && submitBtn.querySelector("[data-label]");
@@ -167,8 +167,8 @@
       setBusy(false);
       var summary = document.getElementById("orderSummaryModal");
       if (summary.classList.contains("show")) {
-        summary.addEventListener("hidden.bs.modal", function () { modal.show(); }, { once: true });
-        bootstrap.Modal.getOrCreateInstance(summary).hide();
+        summary.addEventListener("dialog:hidden", function () { modal.show(); }, { once: true });
+        window.laundrixDialog(summary).hide();
       } else modal.show();
     });
 
@@ -184,7 +184,7 @@
       setBusy(true);
     });
 
-    modalEl.addEventListener("hidden.bs.modal", function () {
+    modalEl.addEventListener("dialog:hidden", function () {
       if (!submitting) {
         form.setAttribute("action", "#");
         if (refEl) refEl.textContent = "—";

@@ -28,7 +28,7 @@
       button.addEventListener("click", function () { primary.value = option.value; primary.dispatchEvent(new Event("change", { bubbles: true })); });
       methodButtons.appendChild(button);
     });
-    primary.classList.add("visually-hidden");
+    primary.classList.add("tw:sr-only");
     primary.tabIndex = -1;
     var configArea = paymentForm.querySelector("[data-payment-gcash]");
     var configStatus = paymentForm.querySelector("[data-payment-config-status]");
@@ -97,7 +97,7 @@
     }
     paymentForm.addEventListener("input", updatePayment);
     paymentForm.addEventListener("change", updatePayment);
-    modal.addEventListener("show.bs.modal", function () { loaded = false; updatePayment(); }, { signal:lifecycle.signal });
+    modal.addEventListener("dialog:show", function () { loaded = false; updatePayment(); }, { signal:lifecycle.signal });
     updatePayment();
     var sending = false;
     var submit = paymentForm.querySelector("button[type=submit]");
@@ -106,7 +106,7 @@
       submit.disabled = true; errors.hidden = false;
       errors.textContent = "No payment methods are enabled. Please check Payment Settings.";
     }
-    modal.addEventListener("hide.bs.modal", function (event) { if (sending) event.preventDefault(); }, { signal:lifecycle.signal });
+    modal.addEventListener("dialog:hide", function (event) { if (sending) event.preventDefault(); }, { signal:lifecycle.signal });
     paymentForm.addEventListener("submit", function (event) {
       event.preventDefault();
       if (sending || !paymentForm.reportValidity()) return;

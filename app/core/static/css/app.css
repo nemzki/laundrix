@@ -266,7 +266,7 @@
 }
 
 .app .lx-nav-drawer {
-  --bs-offcanvas-width: min(100vw - 2.5rem, 320px);
+  --lx-drawer-width: min(100vw - 2.5rem, 320px);
 }
 .app .lx-nav-drawer__user { font-size: 0.86rem; }
 .app .lx-nav-drawer__profile {

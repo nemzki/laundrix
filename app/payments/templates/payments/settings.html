@@ -4,7 +4,7 @@
 {% macro setting_switch(name, title, description) -%}
 <div class="ps-policy-row">
   <div><label for="ps-{{ name }}">{{ title }}</label><p id="ps-{{ name }}-hint">{{ description }}</p></div>
-  <div class="form-check form-switch"><input class="form-check-input" id="ps-{{ name }}" name="{{ name }}" type="checkbox" role="switch" aria-describedby="ps-{{ name }}-hint"{% if values.get(name) %} checked{% endif %}></div>
+  <div class="ps-switch"><input id="ps-{{ name }}" name="{{ name }}" type="checkbox" role="switch" aria-describedby="ps-{{ name }}-hint"{% if values.get(name) %} checked{% endif %}></div>
 </div>
 {%- endmacro %}
 {% macro method_form(prefix, enhanced=false) -%}
@@ -15,10 +15,10 @@
       <input class="input" id="{{ prefix }}-method-name" name="label" minlength="2" maxlength="60" required aria-describedby="{{ prefix }}-method-hint{% if enhanced %} ps-method-error{% endif %}">
       <p class="hint" id="{{ prefix }}-method-hint">Use 2 to 60 characters, for example Bank Transfer.</p>
     </div>
-    <div class="ps-method-reference form-check"><input class="form-check-input" type="checkbox" name="requires_reference" id="{{ prefix }}-method-reference"><label class="form-check-label" for="{{ prefix }}-method-reference">Require a Reference Number</label></div>
+    <div class="ps-method-reference"><input type="checkbox" name="requires_reference" id="{{ prefix }}-method-reference"><label for="{{ prefix }}-method-reference">Require a Reference Number</label></div>
     {% if enhanced %}<p class="ps-form-error" id="ps-method-error" role="alert" hidden></p>{% endif %}
   </div>
-  <div class="ps-method-footer">{% if enhanced %}<button class="btn btn-outline" type="button" data-bs-dismiss="modal">Cancel</button>{% endif %}<button class="btn btn-primary" type="submit">Add Method</button></div>
+  <div class="ps-method-footer">{% if enhanced %}<button class="btn btn-outline" type="button" data-dialog-dismiss="modal">Cancel</button>{% endif %}<button class="btn btn-primary" type="submit">Add Method</button></div>
 </form>
 {%- endmacro %}
 {% block title %}Payment Settings &middot; Laundrix{% endblock %}
@@ -83,7 +83,7 @@
     </section>
     <section class="card ps-card ps-methods-card" aria-labelledby="ps-methods-title">
       <header class="ps-card-heading ps-methods-heading"><span class="ps-icon">{{ icon('receipt',18) }}</span><div><h2 id="ps-methods-title">Payment Methods</h2><p>Manage the methods available when recording payments.</p></div></header>
-      <div class="ps-methods-actions"><button class="btn btn-outline" type="button" data-bs-toggle="modal" data-bs-target="#ps-add-method-modal" data-add-method-trigger hidden>{{ icon('plus',16) }}<span>Add Payment Method</span></button></div>
+      <div class="ps-methods-actions"><button class="btn btn-outline" type="button" aria-haspopup="dialog" data-dialog-target="#ps-add-method-modal" data-add-method-trigger hidden>{{ icon('plus',16) }}<span>Add Payment Method</span></button></div>
       <div class="table-wrap" tabindex="0" role="region" aria-label="Payment methods"><table class="table ps-methods-table">
         <thead><tr><th scope="col">Payment Method</th><th scope="col">Reference Requirement</th><th scope="col">Status</th><th scope="col" class="num">Action</th></tr></thead>
         <tbody>{% for m in methods %}
@@ -96,9 +96,9 @@
     </section>
   </div>
 </div>
-<div class="modal fade ps-modal" id="ps-add-method-modal" tabindex="-1" aria-labelledby="ps-add-method-title" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content">
-  <header class="modal-header"><h2 class="modal-title" id="ps-add-method-title">Add Payment Method</h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></header>
+<dialog class="modal ps-modal" id="ps-add-method-modal" aria-labelledby="ps-add-method-title"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0">
+  <header class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><h2 class="modal-title" id="ps-add-method-title">Add Payment Method</h2><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></header>
   {{ method_form('modal', enhanced=true) }}
-</div></div></div>
+</div></div></dialog>
 {% endblock %}
 {% block page_scripts %}<script src="{{ url_for('core.static', filename='js/payment-settings.js') }}" defer></script>{% endblock %}

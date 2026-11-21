@@ -4,13 +4,47 @@
   var root=document.querySelector("[data-customer-directory]");
   if(!root || !window.fetch || !window.AbortController) return;
   document.documentElement.classList.add("customers-enhanced");
-  // Delegate tooltips so server-paginated rows retain hover and keyboard hints.
-  new bootstrap.Tooltip(root,{selector:"[data-edit-customer]",trigger:"hover focus",container:"body",customClass:"cm-edit-tooltip"});
-  function hideEditHints(dispose) {root.querySelectorAll("[data-edit-customer]").forEach(function(button){var hint=bootstrap.Tooltip.getInstance(button);if(hint){if(dispose) hint.dispose();else hint.hide();}});}
-  document.addEventListener("keydown",function(event){if(event.key==="Escape") hideEditHints(false);});
+  var hint=document.createElement("span"), hintTrigger=null;
+  hint.id="customer-edit-hint";
+  hint.className="cm-edit-tooltip";
+  hint.setAttribute("role","tooltip");
+  hint.hidden=true;
+  document.body.appendChild(hint);
+  function hideEditHints() {
+    if (hintTrigger) hintTrigger.removeAttribute("aria-describedby");
+    hintTrigger=null;
+    hint.hidden=true;
+  }
+  function positionEditHint() {
+    if (!hintTrigger) return;
+    var bounds=hintTrigger.getBoundingClientRect();
+    hint.style.left=(bounds.left+bounds.width/2)+"px";
+    hint.style.top=bounds.top+"px";
+  }
+  function showEditHint(event) {
+    var button=event.target.closest("[data-edit-hint]");
+    if (!button || button===hintTrigger) return;
+    hideEditHints();
+    hintTrigger=button;
+    hint.textContent=button.dataset.editHint;
+    positionEditHint();
+    hint.hidden=false;
+    button.setAttribute("aria-describedby",hint.id);
+  }
+  root.addEventListener("pointerover",showEditHint);
+  root.addEventListener("focusin",showEditHint);
+  root.addEventListener("pointerout",function (event) {
+    if (hintTrigger?.contains(event.target) && !hintTrigger.contains(event.relatedTarget)) hideEditHints();
+  });
+  root.addEventListener("focusout",function (event) {
+    if (event.target===hintTrigger) hideEditHints();
+  });
+  window.addEventListener("scroll",positionEditHint,true);
+  window.addEventListener("resize",positionEditHint);
+  document.addEventListener("keydown",function(event){if(event.key==="Escape") hideEditHints();});
   var search=root.querySelector("[name=q]"), filter=root.querySelector("[name=filter]");
-  var sheet=document.getElementById("customerSheet"), sheetUI=bootstrap.Offcanvas.getOrCreateInstance(sheet);
-  var modal=document.getElementById("customerModal"), modalUI=bootstrap.Modal.getOrCreateInstance(modal);
+  var sheet=document.getElementById("customerSheet"), sheetUI=window.laundrixDialog(sheet);
+  var modal=document.getElementById("customerModal"), modalUI=window.laundrixDialog(modal);
   var form=document.getElementById("customerForm"), submit=form.querySelector("[type=submit]");
   var name=form.elements.full_name, contact=form.elements.contact_number, duplicate=form.elements.confirm_duplicate;
   var directoryController, profileController, editController, debounce, lastURL=new URL(location.href);
@@ -52,7 +86,7 @@
         var bounded=new URL(url);if(Number(results.dataset.pages)>1) bounded.searchParams.set("page",results.dataset.pages);else bounded.searchParams.delete("page");
         return loadDirectory(bounded,push,true);
       }
-      hideEditHints(true);
+      hideEditHints();
       root.querySelector("[data-customer-results]").replaceWith(results);
       document.querySelector("[data-directory-count]").textContent=doc.querySelector("[data-directory-count]").textContent;
       if(!push || document.activeElement!==search) search.value=url.searchParams.get("q") || "";
@@ -73,7 +107,7 @@
     var profile=document.createElement("div");profile.className="cm-profile";
     var header=document.createElement("header");header.className="cm-profile-header";
     var heading=document.createElement("h2");heading.id="customerSheetTitle";heading.textContent="Customer Details";
-    var close=document.createElement("button");close.className="btn-close";close.type="button";close.dataset.bsDismiss="offcanvas";close.setAttribute("aria-label","Close customer details");
+    var close=document.createElement("button");close.className="btn-close";close.type="button";close.dataset.dialogDismiss="offcanvas";close.setAttribute("aria-label","Close customer details");
     header.append(heading,close);
     var body=document.createElement("div");body.className="cm-profile-body";body.setAttribute("role","status");body.textContent=message;
     if(retry){var button=document.createElement("button");button.className="btn btn-outline";button.type="button";button.textContent="Retry";button.addEventListener("click",retry);body.appendChild(button);}
@@ -132,7 +166,7 @@
       submit.textContent=kind==="edit" ? "Save Changes" : "Save Customer";modalReady=false;formReady=kind==="add";enableFields(false);modalUI.show();
       if(kind==="edit") prepareEdit(url,id);
     }
-    if(fromSheet && sheet.classList.contains("show")){sheet.addEventListener("hidden.bs.offcanvas",start,{once:true});sheetUI.hide();}
+    if(fromSheet && sheet.classList.contains("show")){sheet.addEventListener("dialog:hidden",start,{once:true});sheetUI.hide();}
     else start();
   }
   root.addEventListener("click",function(event){
@@ -141,19 +175,19 @@
     if(pageLink && !event.ctrlKey && !event.metaKey && !event.shiftKey && event.button===0){event.preventDefault();loadDirectory(new URL(pageLink.href),true);return;}
     var action=event.target.closest("[data-view-customer], [data-edit-customer]");
     if(!action) return;
-    hideEditHints(false);
+    hideEditHints();
     var row=action.closest("[data-customer-id]"), id=Number(row.dataset.customerId), url=safeURL(row.dataset.customerUrl);
     if(action.hasAttribute("data-view-customer")){viewTrigger=action;selected=null;showSheetStatus("Loading latest customer details...");sheetUI.show();loadProfile(url,id);}
     else openEditor("edit",url,id,false,action);
   });
   document.querySelector("[data-add-customer]").addEventListener("click",function(event){if(event.ctrlKey || event.metaKey || event.shiftKey) return;event.preventDefault();openEditor("add",root.dataset.createUrl,null,false,event.currentTarget);});
   sheet.querySelector("[data-sheet-edit]").addEventListener("click",function(){if(selected) openEditor("edit",profileURL,selected.id,true,null);});
-  sheet.addEventListener("hidden.bs.offcanvas",function(){if(profileController) profileController.abort();profileController=null;if(viewTrigger?.isConnected) viewTrigger.focus();});
-  // Enable editing after Bootstrap finishes its focus transition, so typing cannot
+  sheet.addEventListener("dialog:hidden",function(){if(profileController) profileController.abort();profileController=null;if(viewTrigger?.isConnected) viewTrigger.focus();});
+  // Enable editing after the dialog opens, so typing cannot
   // be redirected to the name field while the modal is still opening.
-  modal.addEventListener("shown.bs.modal",function(){modalReady=true;if(formReady){enableFields(true);name.focus();}});
-  modal.addEventListener("hide.bs.modal",function(event){if(saving) event.preventDefault();else modalReady=false;});
-  modal.addEventListener("hidden.bs.modal",function(){
+  modal.addEventListener("dialog:shown",function(){modalReady=true;if(formReady){enableFields(true);name.focus();}});
+  modal.addEventListener("dialog:hide",function(event){if(saving) event.preventDefault();else modalReady=false;});
+  modal.addEventListener("dialog:hidden",function(){
     if(editController) editController.abort();editController=null;
     if(returnSheet && selected){returnSheet=false;showProfile(selected);sheetUI.show();}
     else if(editTrigger?.isConnected) editTrigger.focus();

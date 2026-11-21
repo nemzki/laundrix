@@ -2,11 +2,11 @@
 {% from 'orders/_customer_icons.html' import customer_icon %}
 {% set customer = profile.customer %}
 <div class="cm-profile" data-customer-profile="{{ customer.id }}">
-  <header class="offcanvas-header cm-profile-header">
+  <header class="offcanvas-header tw:flex tw:items-center tw:justify-between cm-profile-header">
     {{ avatar(customer.full_name) }}<div><h2 id="customerSheetTitle">{{ customer.full_name }}</h2><p>Customer since {{ customer.created_at|localdt('%b %d, %Y') }}</p></div>
-    <button class="btn-close" type="button" data-bs-dismiss="offcanvas" aria-label="Close customer details"></button>
+    <button class="btn-close" type="button" data-dialog-dismiss="offcanvas" aria-label="Close customer details"></button>
   </header>
-  <div class="offcanvas-body cm-profile-body">
+  <div class="offcanvas-body tw:flex-auto tw:overflow-y-auto cm-profile-body">
     <p class="cm-profile-contact">{{ customer_icon('phone') }}<span>{{ customer.contact_number }}</span></p>
     <dl class="cm-profile-stats">
       <div><dt>Orders</dt><dd data-profile-orders>{{ profile.order_count }}</dd></div>

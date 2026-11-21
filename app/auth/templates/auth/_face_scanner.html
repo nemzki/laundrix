@@ -1,0 +1,42 @@
+<div class="lx-face-screen tw:flex tw:min-h-dvh tw:flex-col tw:bg-(--lx-bg)"
+     data-face-login-camera data-face-login-url="{{ url_for('auth.face_login') }}" hidden>
+  <header class="lx-face-screen__header tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-2">
+    <a class="lx-logo lx-logo--auth" href="{{ url_for('landing.index') }}">
+      {{ brand_logo('auth', show_text=False) }}
+      <span class="lx-logo__text lx-face-screen__wordmark" aria-hidden="true">Laundrix</span>
+    </a>
+    <button type="button" class="btn btn-outline lx-face-screen__action tw:enabled:hover:text-(--lx-navy)!" data-face-login-back>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M5 12h14"/></svg>
+      Back to Sign In
+    </button>
+  </header>
+
+  <main class="lx-face-screen__main tw:grid tw:flex-1 tw:place-items-center">
+    <div class="lx-face-screen__content">
+      <h1 id="staff-face-title" data-face-login-heading tabindex="-1">Face Recognition</h1>
+      <p>Position your face inside the oval to sign in securely.</p>
+      <section class="lx-scan tw:border tw:border-solid tw:border-(--lx-border) tw:bg-(--lx-surface)"
+               aria-labelledby="staff-face-scan-title">
+        <h2 id="staff-face-scan-title" class="lx-scan__title" data-face-login-status role="status">Ready to Scan</h2>
+
+        <div class="lx-scan__stage" data-face-login-stage>
+          <video data-face-login-video autoplay muted playsinline aria-label="Live mirrored camera preview"></video>
+          <div class="lx-scan__oval" aria-hidden="true"></div>
+          <div class="lx-scan__beam" aria-hidden="true"></div>
+        </div>
+
+        <canvas data-face-login-canvas hidden></canvas>
+
+        <div class="lx-scan__progress" role="progressbar" aria-label="Scan progress" aria-valuenow="0">
+          <span data-face-login-progress></span>
+        </div>
+        <p class="lx-scan__message" data-face-login-message aria-live="polite">We’ll use your camera to verify your identity.</p>
+
+        <div class="lx-scan__actions tw:flex tw:flex-wrap tw:justify-center tw:gap-2">
+          <button type="button" class="btn btn-primary lx-face-screen__action" data-face-login-start hidden>Scan again</button>
+          <button type="button" class="btn btn-outline lx-face-screen__action tw:enabled:hover:text-(--lx-navy)!" data-face-login-cancel>Cancel</button>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>

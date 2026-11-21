@@ -1,12 +1,15 @@
 {% extends "core/app_shell.html" %}
 {% from "core/_icons.html" import icon %}
 {% block title %}{{ staff.full_name or staff.email }} · Staff Management{% endblock %}
-{% block page_head %}<link rel="stylesheet" href="{{ url_for('staff_admin.static', filename='css/staff_admin.css') }}">{% endblock %}
+{% block page_head %}<link rel="stylesheet" href="{{ url_for('core.static', filename='react-staff/staff.css') }}"><link rel="stylesheet" href="{{ url_for('staff_admin.static', filename='css/staff_admin.css') }}">{% endblock %}
 {% block page_title %}{{ staff.full_name or 'Unnamed staff member' }}{% endblock %}
 {% block page_subtitle %}{{ staff.email }}{% endblock %}
 {% block page_actions %}<a class="btn btn-outline" href="{{ url_for('staff_admin.index') }}">{{ icon('arrow-left', 16) }}<span>All Staff</span></a>{% endblock %}
 
+{% block page_header %}{% endblock %}
 {% block content %}
+<div id="laundrix-staff" class="lx-react lx-staff" data-detail-page data-ready="false" data-index="{{ url_for('staff_admin.index') }}">
+<div class="page-header"><div><h1>{{ self.page_title() }}</h1><p class="muted">{{ self.page_subtitle() }}</p></div><div class="page-actions">{{ self.page_actions() }}</div></div>
 <div class="grid grid-2">
   <div>
     <div class="card">
@@ -126,5 +129,7 @@
     </div>
   </div>
 </div>
+</div>
 {% include 'staff_admin/_detail_data.html' %}
 {% endblock %}
+{% block page_scripts %}<script defer src="{{ url_for('core.static', filename='js/staff-loader.js') }}"></script>{% endblock %}

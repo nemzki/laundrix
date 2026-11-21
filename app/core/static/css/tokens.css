@@ -1,4 +1,4 @@
-/* Laundrix design tokens. Loaded before Bootstrap; --bs-* overrides come after Bootstrap in base.css. */
+/* Laundrix design tokens. */
 :root {
   /* Brand */
   --lx-primary: #2563eb;

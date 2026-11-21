@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client'
 import { flushSync } from 'react-dom'
 import { getPortalContainer } from '@/lib/portal'
 import { Staff } from './Staff'
-import { parseList } from './api'
+import { StaffDetails } from './StaffDetails'
+import { parseList, parseDetail } from './api'
 import '../index.css'
 import './styles.css'
 const host=document.getElementById('laundrix-staff')
@@ -12,7 +13,9 @@ function showStartupError(){if(!host)return;host.replaceChildren();host.dataset.
 try{
  if(!host||getComputedStyle(host).getPropertyValue('--staff-ready').trim()!=='1')throw new Error('Staff Management styles are unavailable.')
  getPortalContainer().classList.add('lx-staff')
- const initial=parseList(document)
- flushSync(()=>createRoot(host).render(<StartupBoundary><Staff initial={initial}/></StartupBoundary>))
+ const view = host.hasAttribute('data-detail-page')
+   ? <StaffDetails initial={parseDetail(document)} index={host.dataset.index!}/>
+   : <Staff initial={parseList(document)}/>
+ flushSync(()=>createRoot(host).render(<StartupBoundary>{view}</StartupBoundary>))
  host.dataset.ready='true'
-}catch{showStartupError()}
+}catch{if (!host?.hasAttribute('data-detail-page')) showStartupError()}

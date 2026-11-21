@@ -199,19 +199,11 @@
   width: 100%;
   min-height: 46px;
   padding: 0.7rem 1rem;
-  border: 1px solid var(--lx-border);
   border-radius: 12px;
-  background: #fff;
-  color: var(--lx-navy);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease, box-shadow 0.15s ease;
-}
-
-.lx-auth__face-login:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .lx-auth__face-status {
@@ -219,6 +211,11 @@
   color: var(--lx-muted);
   font-size: 0.8rem;
   text-align: center;
+}
+
+.lx-auth__face-icon {
+  flex-shrink: 0;
+  color: var(--lx-paint-blue-ink, currentColor);
 }
 
 .lx-auth__fineprint {
@@ -400,8 +397,7 @@ body.lx-auth .flash-stack {
   background: var(--lx-surface, #f5f7fb);
 }
 
-.lx-auth__camera button:focus-visible,
-.lx-auth__face-login:focus-visible {
+.lx-auth__camera button:focus-visible {
   outline: 3px solid rgba(37, 99, 235, 0.3);
   outline-offset: 2px;
 }
@@ -412,32 +408,30 @@ body.lx-auth .flash-stack {
   }
 }
 
-.lx-auth__face-camera {
-  margin-top: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--border-color, #dce3ed);
-  border-radius: 12px;
+.lx-auth:has(.lx-face-screen:not([hidden])) { min-height: 100dvh; }
+.lx-face-screen__header {
+  padding: 0.75rem clamp(1rem, 4vw, 2.5rem);
+  border-bottom: 1px solid var(--lx-border);
+  background: var(--lx-surface);
 }
-
-.lx-auth__face-camera video {
-  display: block;
-  width: 100%;
-  max-width: 480px;
-  margin: 1rem auto;
-  border-radius: 10px;
-  background: #111;
+.lx-auth:has(.lx-face-screen:not([hidden])) > .flash-stack { display: none; }
+.lx-face-screen__header .lx-logo__mark { height: 40px; width: auto; }
+.lx-face-screen__main {
+  min-width: 0;
+  padding: 1rem 1rem max(1rem, env(safe-area-inset-bottom));
 }
-
-.lx-auth__face-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
+.lx-face-screen__content {
+  width: min(100%, 480px);
+  text-align: center;
 }
+.lx-face-screen__content > h1 { margin: 0; font-size: 1.5rem; }
+.lx-face-screen__content > h1:focus { outline: none; }
+.lx-face-screen__content > p { margin: 0.35rem 0 1rem; color: var(--lx-muted); font-size: 0.9rem; }
+.lx-face-screen__action { min-height: 44px; }
 
 /* ---- Live face scanner ------------------------------------------------------------------- */
-.lx-scan { text-align: center; }
-.lx-scan__title { margin: 0; font-weight: 700; color: var(--lx-navy, #0f2a4a); }
+.lx-scan { padding: clamp(0.75rem, 3vw, 1rem); border-radius: var(--lx-radius); }
+.lx-scan__title { margin: 0; font-size: 1rem; font-weight: 700; color: var(--lx-navy); }
 .lx-scan__stage {
   position: relative;
   width: 100%;
@@ -467,19 +461,18 @@ body.lx-auth .flash-stack {
 .lx-scan__beam {
   position: absolute; left: 27%; right: 27%; top: 12%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+  background: linear-gradient(90deg, transparent, var(--lx-info), transparent);
   opacity: 0;
 }
 .lx-scan__stage[data-state="scanning"] .lx-scan__beam,
 .lx-scan__stage[data-state="locked"] .lx-scan__beam,
 .lx-scan__stage[data-state="verifying"] .lx-scan__beam {
   opacity: 1;
-  animation: lx-scan-sweep 1.8s ease-in-out infinite alternate;
+  animation: lx-scan-sweep 1.8s ease-in-out 3 alternate;
 }
-.lx-scan__stage[data-state="locked"] .lx-scan__oval { border-color: #22c55e; }
-.lx-scan__stage[data-state="verifying"] .lx-scan__oval { border-color: #38bdf8; }
-.lx-scan__stage[data-state="success"] .lx-scan__oval { border-color: #22c55e; }
-.lx-scan__stage[data-state="failed"] .lx-scan__oval { border-color: #ef4444; }
+.lx-scan__stage:is([data-state="scanning"], [data-state="verifying"]) .lx-scan__oval { border-color: var(--lx-info); }
+.lx-scan__stage:is([data-state="locked"], [data-state="success"]) .lx-scan__oval { border-color: var(--lx-success); }
+.lx-scan__stage[data-state="failed"] .lx-scan__oval { border-color: var(--lx-danger); }
 @keyframes lx-scan-sweep { from { top: 12%; } to { top: 86%; } }
 .lx-scan__progress {
   height: 4px; max-width: 380px; margin: 0 auto 0.5rem;
@@ -487,10 +480,11 @@ body.lx-auth .flash-stack {
 }
 .lx-scan__progress span {
   display: block; height: 100%; width: 0;
-  background: #22c55e; transition: width 0.25s ease;
+  background: var(--lx-primary); transition: width 0.25s ease;
 }
 .lx-scan__message { margin: 0; min-height: 1.4em; font-size: 0.88rem; color: var(--lx-muted, #64748b); }
-.lx-scan .lx-auth__face-actions { justify-content: center; }
+.lx-scan__actions { margin-top: 0.75rem; }
 @media (prefers-reduced-motion: reduce) {
   .lx-scan__beam { animation: none !important; }
+  .lx-scan__oval, .lx-scan__progress span { transition: none; }
 }

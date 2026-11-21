@@ -21,32 +21,31 @@
   <button
     class="lx-bottom-nav__item"
     type="button"
-    data-bs-toggle="offcanvas"
-    data-bs-target="#appNavDrawer"
-    aria-controls="appNavDrawer"
+    aria-haspopup="dialog"
+    data-dialog-target="#appNavDrawer"
+    aria-controls="appNavDrawer" aria-expanded="false"
   >
     {{ icon('more') }}
     <span>More</span>
   </button>
 </nav>
 
-<div
-  class="offcanvas offcanvas-end lx-nav-drawer"
-  tabindex="-1"
+<dialog
+  class="offcanvas lx-nav-drawer"
   id="appNavDrawer"
   aria-labelledby="appNavDrawerLabel"
 >
-  <div class="offcanvas-header">
+  <div class="offcanvas-header tw:flex tw:items-center tw:justify-between">
     <div>
       <h2 class="offcanvas-title" id="appNavDrawerLabel">Menu</h2>
-      <p class="lx-nav-drawer__user muted mb-0">
+      <p class="lx-nav-drawer__user muted tw:mb-0!">
         {{ current_user.full_name or current_user.email }}
         · {{ 'Admin' if is_admin else 'Staff' }}
       </p>
     </div>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close menu"></button>
+    <button type="button" class="btn-close" data-dialog-dismiss="offcanvas" aria-label="Close menu"></button>
   </div>
-  <div class="offcanvas-body">
+  <div class="offcanvas-body tw:flex-auto tw:overflow-y-auto">
     <div class="lx-nav-drawer__profile">
       {% if current_user.picture_url %}
         <img class="lx-sidebar__avatar" src="{{ current_user.picture_url }}" alt="" referrerpolicy="no-referrer" width="40" height="40">
@@ -64,4 +63,4 @@
     </nav>
     {{ logout_button('lx-nav-drawer__logout') }}
   </div>
-</div>
+</dialog>

@@ -29,6 +29,85 @@ async function darkSurface(page: Page, selector: string) {
   expect(await node.evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(30, 41, 59)')
 }
 
+for (const width of [390, 1440]) {
+  test(`face recognition sign-in follows the theme and opens the scanner at ${width}px`, async ({ page }, testInfo) => {
+    await page.setViewportSize({ width, height: 900 })
+    await page.addInitScript(() => {
+      // Exercise the scanner UI without asking for a camera or capturing frames.
+      navigator.mediaDevices.getUserMedia = async () => { throw new DOMException('Camera denied in test', 'NotAllowedError') }
+    })
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await page.goto('/')
+    await choose(page, 'light')
+    await page.goto('/auth/login?role=staff')
+    const button = page.getByRole('button', { name: 'Sign in with Face Recognition' })
+    const root = page.locator('html')
+    await expect(button).toHaveCSS('background-color', 'rgb(255, 255, 255)')
+    await expect(button).toHaveCSS('color', 'rgb(23, 59, 109)')
+    await expect(button).toHaveCSS('border-radius', '12px')
+    const lightBounds = (await button.boundingBox())!
+    expect(lightBounds.height).toBeGreaterThanOrEqual(46)
+
+    await page.emulateMedia({ colorScheme: 'light' })
+    await page.goto('/')
+    await choose(page, 'dark')
+    await page.goto('/auth/login?role=staff')
+    await expect(button).toHaveCSS('background-color', 'rgb(30, 41, 59)')
+    await expect(button).toHaveCSS('color', 'rgb(241, 245, 249)')
+    await expect(button.locator('svg')).toHaveCSS('stroke', 'rgb(147, 197, 253)')
+    expect((await button.boundingBox())!.width).toBeCloseTo(lightBounds.width)
+    expect((await button.boundingBox())!.height).toBeCloseTo(lightBounds.height)
+
+    await page.goto('/')
+    await choose(page, 'system')
+    await page.goto('/auth/login?role=staff')
+    await expect(root).toHaveAttribute('data-lx-theme', 'light')
+    await expect(button).toHaveCSS('background-color', 'rgb(255, 255, 255)')
+    await page.emulateMedia({ colorScheme: 'dark' })
+    await expect(root).toHaveAttribute('data-lx-theme', 'dark')
+    await expect(button).toHaveCSS('background-color', 'rgb(30, 41, 59)')
+
+    await page.keyboard.press('Tab')
+    await button.focus()
+    await expect(button).toHaveCSS('outline-style', 'solid')
+    await expect(button).toHaveCSS('outline-width', '2px')
+    await button.hover()
+    await expect(button).toHaveCSS('background-color', 'rgb(15, 23, 42)')
+    await page.mouse.down()
+    await expect(button).toHaveCSS('background-color', 'rgb(23, 46, 80)')
+    await page.mouse.up()
+
+    const scanner = page.locator('[data-face-login-camera]')
+    await expect(scanner).toBeVisible()
+    await expect(scanner).toHaveCSS('background-color', 'rgb(15, 23, 42)')
+    await expect(scanner.getByRole('heading', { level: 1 })).toHaveText('Face Recognition')
+    await expect(page.getByRole('tablist', { name: 'Sign-in role' })).toBeHidden()
+    await expect(page.locator('[data-auth-form="staff"]')).toBeHidden()
+    await expect(scanner.locator('.lx-scan')).toHaveCSS('border-top-color', 'rgb(51, 65, 85)')
+    await expect(scanner.getByRole('status')).toHaveText('Camera unavailable')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+    if (width === 1440) expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(900)
+    await page.screenshot({ path: testInfo.outputPath('scanner-dark.png') })
+    await page.emulateMedia({ colorScheme: 'light' })
+    await expect(scanner.locator('.lx-scan')).toHaveCSS('background-color', 'rgb(255, 255, 255)')
+    await page.emulateMedia({ colorScheme: 'dark' })
+    const cancel = scanner.getByRole('button', { name: 'Cancel' })
+    await cancel.hover()
+    await expect(cancel).toHaveCSS('background-color', 'rgb(30, 41, 59)')
+    await expect(cancel).toHaveCSS('color', 'rgb(241, 245, 249)')
+    await cancel.click()
+    await expect(scanner).toBeHidden()
+    await expect(button).toBeFocused()
+    await expect(page).toHaveURL(/role=staff$/)
+
+    await button.evaluate((element: HTMLButtonElement) => { element.disabled = true })
+    await button.hover()
+    await expect(button).toHaveCSS('background-color', 'rgb(30, 41, 59)')
+    await expect(button).toHaveCSS('cursor', 'not-allowed')
+    await expect(button).toHaveCSS('opacity', '0.6')
+  })
+}
+
 test('system default, live OS changes, explicit preference, persistence, keyboard and cross-tab synchronization', async ({ page, context }) => {
   await page.emulateMedia({ colorScheme: 'dark' })
   await login(page)
@@ -106,7 +185,7 @@ for (const role of ['admin', 'staff'] as const) for (const width of [320, 768, 1
         await page.locator('[data-ob-payment]').first().click()
         await darkSurface(page, '#recordPaymentModal .modal-content')
         await expect(page.locator('#recordPaymentModal input[name=amount]').first()).toBeVisible()
-        await page.locator('#recordPaymentModal [data-bs-dismiss=modal]').first().click()
+        await page.locator('#recordPaymentModal [data-dialog-dismiss=modal]').first().click()
       }
       if (route === '/admin/staff/') {
         await page.locator('#staff-action-react').getByRole('button', { name: 'Add Staff', exact: true }).click()

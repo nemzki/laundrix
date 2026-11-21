@@ -3,6 +3,7 @@
   if (!root) return;
 
   const showError = () => {
+    if (root.hasAttribute('data-detail-page')) return;
     root.replaceChildren();
     root.dataset.ready = 'error';
     const panel = document.createElement('div');

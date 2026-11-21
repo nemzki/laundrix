@@ -33,7 +33,7 @@
 <div class="order-detail-head-actions">
   <div class="order-detail-head-actions__btns">
     <a class="btn btn-outline btn-sm" href="{{ url_for('orders.stub', reference=order.reference) }}" target="_blank" rel="noopener">{{ icon('printer', 16) }}<span>Print Stub</span></a>
-    {% if order.is_payment_tracked and order.balance_due > 0 %}<button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#recordPaymentModal">Record Payment</button>{% endif %}
+    {% if order.is_payment_tracked and order.balance_due > 0 %}<button class="btn btn-primary btn-sm" type="button" aria-haspopup="dialog" data-dialog-target="#recordPaymentModal">Record Payment</button>{% endif %}
   </div>
 </div>
 {% endblock %}
@@ -91,9 +91,9 @@
           {% if state == 'is-done' %}{{ icon('check', 14) }}{% else %}{{ loop.index }}{% endif %}
         </span>
         <span class="order-tracker__label">{{ s|status_label }}</span>
-        {% if state == 'is-current' %}<span class="visually-hidden">(current)</span>{% endif %}
-        {% if state == 'is-done' %}<span class="visually-hidden">(completed per history)</span>{% endif %}
-        {% if state == 'is-gap' %}<span class="visually-hidden">(before current; not recorded in history)</span>{% endif %}
+        {% if state == 'is-current' %}<span class="tw:sr-only">(current)</span>{% endif %}
+        {% if state == 'is-done' %}<span class="tw:sr-only">(completed per history)</span>{% endif %}
+        {% if state == 'is-gap' %}<span class="tw:sr-only">(before current; not recorded in history)</span>{% endif %}
       </li>
       {% endfor %}
     </ol>
@@ -381,7 +381,7 @@
         <h2 id="tracking-heading" class="order-detail__section-title">QR Tracking</h2>
         <img data-tracking-image alt="QR code for tracking order {{ order.reference }}" width="160" height="160" hidden>
         <p class="hint" data-qr-status role="status">Loading the existing order tracking QR...</p>
-        <label class="visually-hidden" for="order-tracking-link">Public tracking link</label>
+        <label class="tw:sr-only" for="order-tracking-link">Public tracking link</label>
         <input class="input" id="order-tracking-link" type="text" readonly value="{{ config['APP_BASE_URL'] ~ url_for('tracking.view_order', token=order.tracking_token) }}">
         <div class="order-detail__tracking-actions">
           <button type="button" class="btn btn-outline btn-sm" data-copy-tracking>Copy Tracking Link</button>
@@ -394,15 +394,15 @@
 </section>
 
 {% include 'payments/_record_payment_modal.html' %}
-<div class="modal fade" id="statusUpdateModal" tabindex="-1" aria-labelledby="statusUpdateModalLabel" aria-hidden="true">
+<dialog class="modal" id="statusUpdateModal" aria-labelledby="statusUpdateModalLabel">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content order-detail-modal">
+    <div class="modal-content tw:flex tw:flex-col tw:min-w-0 order-detail-modal">
       <form id="statusUpdateForm" method="post" action="{{ url_for('orders.update_status', reference=order.reference) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="status" id="statusUpdateValue" value="">
-        <div class="modal-header">
-          <h2 class="modal-title h5" id="statusUpdateModalLabel">Update order status</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between">
+          <h2 class="modal-title tw:text-xl" id="statusUpdateModalLabel">Update order status</h2>
+          <button type="button" class="btn-close" data-dialog-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <dl class="order-detail-modal__meta">
@@ -421,8 +421,8 @@
             <p class="hint" data-note-hint>Optional note for this status change.</p>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+        <div class="modal-footer tw:flex tw:items-center tw:shrink-0 tw:justify-end tw:flex-wrap">
+          <button type="button" class="btn btn-outline" data-dialog-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary" data-submit-btn>
             <span data-label>Confirm status update</span>
             <span data-busy hidden>Updating…</span>
@@ -431,23 +431,23 @@
       </form>
     </div>
   </div>
-</div>
+</dialog>
 
-<div class="modal fade" id="confirmReceivedModal" tabindex="-1" aria-labelledby="confirmReceivedModalLabel" aria-hidden="true">
+<dialog class="modal" id="confirmReceivedModal" aria-labelledby="confirmReceivedModalLabel">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content order-detail-modal">
+    <div class="modal-content tw:flex tw:flex-col tw:min-w-0 order-detail-modal">
       <form id="confirmReceivedForm" method="post" action="#">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="modal-header">
-          <h2 class="modal-title h5" id="confirmReceivedModalLabel">Confirm Laundry Received</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between">
+          <h2 class="modal-title tw:text-xl" id="confirmReceivedModalLabel">Confirm Laundry Received</h2>
+          <button type="button" class="btn-close" data-dialog-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <p>Confirm that the laundry for <strong class="mono">{{ order.reference }}</strong> has been received by the shop?</p>
           <p class="muted">This records receipt on the order. It does not change payment.</p>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+        <div class="modal-footer tw:flex tw:items-center tw:shrink-0 tw:justify-end tw:flex-wrap">
+          <button type="button" class="btn btn-outline" data-dialog-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary" data-submit-btn>
             <span data-label>Confirm received</span>
             <span data-busy hidden>Confirming…</span>
@@ -456,23 +456,23 @@
       </form>
     </div>
   </div>
-</div>
+</dialog>
 
 {% if sms.can_retry %}
-<div class="modal fade" id="smsRetryModal" tabindex="-1" aria-labelledby="smsRetryModalLabel" aria-hidden="true">
+<dialog class="modal" id="smsRetryModal" aria-labelledby="smsRetryModalLabel">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content order-detail-modal">
+    <div class="modal-content tw:flex tw:flex-col tw:min-w-0 order-detail-modal">
       <form id="smsRetryForm" method="post" action="#">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="modal-header">
-          <h2 class="modal-title h5" id="smsRetryModalLabel">SMS Notification</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between">
+          <h2 class="modal-title tw:text-xl" id="smsRetryModalLabel">SMS Notification</h2>
+          <button type="button" class="btn-close" data-dialog-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <p>Send the ready-for-pickup SMS for <strong class="mono">{{ order.reference }}</strong> to the number saved on this order?</p>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+        <div class="modal-footer tw:flex tw:items-center tw:shrink-0 tw:justify-end tw:flex-wrap">
+          <button type="button" class="btn btn-outline" data-dialog-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary" data-submit-btn>
             <span data-label>Confirm</span>
             <span data-busy hidden>Sending…</span>
@@ -481,18 +481,18 @@
       </form>
     </div>
   </div>
-</div>
+</dialog>
 {% endif %}
 
 {% if is_admin %}
-<div class="modal fade" id="reversePaymentModal" tabindex="-1" aria-labelledby="reversePaymentModalLabel" aria-hidden="true">
+<dialog class="modal" id="reversePaymentModal" aria-labelledby="reversePaymentModalLabel">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content order-detail-modal">
+    <div class="modal-content tw:flex tw:flex-col tw:min-w-0 order-detail-modal">
       <form id="reversePaymentForm" method="post" action="#">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="modal-header">
-          <h2 class="modal-title h5" id="reversePaymentModalLabel">Reverse payment</h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between">
+          <h2 class="modal-title tw:text-xl" id="reversePaymentModalLabel">Reverse payment</h2>
+          <button type="button" class="btn-close" data-dialog-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <p>
@@ -506,8 +506,8 @@
             <input class="input" id="reverseReason" name="reason" maxlength="255" required placeholder="Reason for reversal">
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-bs-dismiss="modal">Cancel</button>
+        <div class="modal-footer tw:flex tw:items-center tw:shrink-0 tw:justify-end tw:flex-wrap">
+          <button type="button" class="btn btn-outline" data-dialog-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-danger" data-submit-btn>
             <span data-label>Reverse payment</span>
             <span data-busy hidden>Reversing…</span>
@@ -516,7 +516,7 @@
       </form>
     </div>
   </div>
-</div>
+</dialog>
 {% endif %}
 {% endblock %}
 

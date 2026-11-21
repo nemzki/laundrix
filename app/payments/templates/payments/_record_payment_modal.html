@@ -1,7 +1,7 @@
 {% if order.is_payment_tracked and order.balance_due > 0 %}
-<div class="modal fade payment-modal" id="recordPaymentModal" tabindex="-1" aria-labelledby="recordPaymentTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content order-detail-modal">
-    <div class="modal-header"><div><h2 class="modal-title h5" id="recordPaymentTitle">Record Payment</h2><p class="hint">{{ order.reference }} &middot; {{ order.customer_name }}</p></div><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button></div>
+<dialog class="modal payment-modal" id="recordPaymentModal" aria-labelledby="recordPaymentTitle">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0 order-detail-modal">
+    <div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><div><h2 class="modal-title tw:text-xl" id="recordPaymentTitle">Record Payment</h2><p class="hint">{{ order.reference }} &middot; {{ order.customer_name }}</p></div><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></div>
         <form data-payment-form data-settings-url="{{ url_for('orders.new_order') }}" id="record-payment" method="post" action="{{ url_for('orders.record_payment', reference=order.reference) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
@@ -57,8 +57,8 @@
             <input class="input" id="pn" name="notes" maxlength="255">
           </div>
           <p class="hint">Balance due: {{ order.balance_due|peso }}. Amounts above the balance are rejected.</p>
-          </div><div class="modal-footer"><button class="btn btn-outline" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" type="submit">Record Payment</button></div>
+          </div><div class="modal-footer tw:flex tw:items-center tw:shrink-0 tw:justify-end tw:flex-wrap"><button class="btn btn-outline" type="button" data-dialog-dismiss="modal">Cancel</button><button class="btn btn-primary" type="submit">Record Payment</button></div>
         </form>
   </div></div>
-</div>
+</dialog>
 {% endif %}
