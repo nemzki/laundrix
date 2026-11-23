@@ -28,6 +28,7 @@ class NotReliable(ValueError):
 
 
 def get_active_run():
+    """Return the newest active trained model for the live system data, or None if there is none."""
     return db.session.execute(
         db.select(UnclaimedModelRun)
         .where(UnclaimedModelRun.data_source == SYSTEM, UnclaimedModelRun.is_active.is_(True))

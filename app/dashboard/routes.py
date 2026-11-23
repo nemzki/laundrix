@@ -1,3 +1,5 @@
+"""Dashboard routes: the Admin Dashboard and the Staff Dashboard."""
+
 from flask import abort, render_template
 from flask_login import current_user, login_required
 
@@ -8,6 +10,7 @@ from app.orders.services import dashboard_stats
 
 
 def _render(admin_area: bool):
+    """Render the shared dashboard page with the right title and the current statistics."""
     return render_template(
         "dashboard/index.html",
         dashboard_title="Admin Dashboard" if admin_area else "Staff Dashboard",
@@ -35,6 +38,7 @@ def index():
 @login_required
 @role_required(Role.ADMIN)
 def admin_dashboard():
+    """Admin dashboard page (admins only)."""
     return _render(True)
 
 
@@ -42,4 +46,5 @@ def admin_dashboard():
 @login_required
 @role_required(Role.STAFF)
 def staff_dashboard():
+    """Staff dashboard page."""
     return _render(False)

@@ -1,3 +1,5 @@
+"""Database model for sign-in and account-management events."""
+
 from app.extensions import db
 from app.models.staff_credential import utcnow
 

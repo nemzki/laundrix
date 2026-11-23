@@ -19,11 +19,15 @@ class WebhookError(Exception):
     """Raised for any webhook that must be rejected. `reason` is for logs, never for the sender."""
 
     def __init__(self, reason: str):
+        """Store the short reason code for why the webhook was rejected."""
         super().__init__(reason)
         self.reason = reason
 
 
 def _shorten_floats(data):
+    """Turn whole-number floats into ints (1.0 -> 1) throughout nested data.
+
+    Needed so our JSON text matches what Didit signed."""
     if isinstance(data, dict):
         return {k: _shorten_floats(v) for k, v in data.items()}
     if isinstance(data, list):
@@ -34,6 +38,7 @@ def _shorten_floats(data):
 
 
 def canonical_json(data) -> str:
+    """Turn data into one fixed JSON text (sorted keys, no spaces) so signatures can be compared."""
     return json.dumps(
         _shorten_floats(data),
         sort_keys=True,
@@ -44,6 +49,7 @@ def canonical_json(data) -> str:
 
 
 def compute_signature_v2(body: dict, secret: str) -> str:
+    """Compute the HMAC-SHA256 signature of a webhook body using the shared secret."""
     return hmac.new(
         secret.encode("utf-8"), canonical_json(body).encode("utf-8"), hashlib.sha256
     ).hexdigest()
@@ -86,6 +92,7 @@ def verify_signature_v2(
 
 
 def _reject_constant(name):
+    """Refuse JSON constants such as NaN or Infinity while parsing."""
     raise ValueError(f"invalid JSON constant: {name}")
 
 

@@ -1,3 +1,5 @@
+"""Orders blueprint: creating, listing and tracking laundry orders and the customer directory."""
+
 from flask import Blueprint
 
 bp = Blueprint(

@@ -1,3 +1,5 @@
+"""Command-line commands for staff accounts (create-staff, new-enroll-link, set-password...)."""
+
 import click
 
 from app.extensions import db
@@ -7,6 +9,7 @@ from getpass import getpass
 from werkzeug.security import generate_password_hash
 
 def _find_staff(email):
+    """Find a staff user by email, or print an error and exit if there is none."""
     user = db.session.execute(
         db.select(User).filter_by(email=email.strip().lower())
     ).scalar_one_or_none()
@@ -17,11 +20,13 @@ def _find_staff(email):
 
 
 def _print_link(app, token):
+    """Print the one-time enrollment link, showing how many hours it stays valid."""
     hours = app.config["STAFF_ENROLL_TOKEN_HOURS"]
     click.echo(f"  Enrollment link ({hours}h, single-use): {app.config['APP_BASE_URL']}/staff/enroll/{token}")
 
 
 def register_staff_commands(app):
+    """Attach the staff-account `flask ...` commands to the app."""
     @app.cli.command("create-staff")
     @click.argument("email")
     @click.option("--name", default=None, help="Full name")

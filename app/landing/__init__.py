@@ -1,3 +1,5 @@
+"""Landing blueprint: the public home page."""
+
 from flask import Blueprint
 
 bp = Blueprint(

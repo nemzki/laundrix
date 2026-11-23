@@ -1,3 +1,5 @@
+"""Command-line commands for identity verification (idv-status, idv-reconcile...)."""
+
 from datetime import timedelta
 
 import click
@@ -9,6 +11,7 @@ from app.models.staff_credential import utcnow
 
 
 def register_identity_commands(app):
+    """Attach the identity-verification `flask ...` commands to the app."""
     @app.cli.command("idv-status")
     @click.argument("email")
     def idv_status(email):

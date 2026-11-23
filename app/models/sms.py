@@ -1,3 +1,5 @@
+"""Database model for SMS notifications and their delivery states."""
+
 from app.extensions import db
 from app.models.staff_credential import utcnow
 

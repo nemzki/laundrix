@@ -1,3 +1,5 @@
+"""Catalog blueprint: admin pages for managing services, packages and extras."""
+
 from flask import Blueprint
 
 bp = Blueprint(

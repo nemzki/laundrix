@@ -83,6 +83,7 @@ PAYMENT_HEADERS = [
 
 
 def order_row(order, ready_at, picked_at, disposed):
+    """Build one CSV row for an order (reference, customer, status, money totals, payment info and key dates)."""
     methods = sorted({p.method_label for p in order.payments if p.kind == PaymentKind.PAYMENT})
     services = "; ".join(i.name for i in order.items)
     return [
@@ -95,6 +96,7 @@ def order_row(order, ready_at, picked_at, disposed):
 
 
 def item_row(order, item):
+    """Build one CSV row for an order line item (name, quantity, unit price and line total)."""
     return [
         order.reference, order.created_at, item.item_type, item.name, item.quantity, item.unit,
         item.unit_price, item.line_total, item.customer_supplied,
@@ -102,6 +104,7 @@ def item_row(order, item):
 
 
 def payment_row(payment, reference):
+    """Build one CSV row for a payment (id, order reference, kind, method, amount and date)."""
     return [
         payment.id, reference, payment.kind, payment.method_label, payment.amount,
         payment.paid_at, payment.reference,
@@ -110,14 +113,17 @@ def payment_row(payment, reference):
 
 # --------------------------------------------------------------------------- queries
 def _bounds(start, end):
+    """Turn a start day and end day into UTC start/end datetimes that cover both whole days."""
     return local_day_bounds_utc(start)[0], local_day_bounds_utc(end)[1]
 
 
 def _order_query(start_utc, end_utc):
+    """Select the orders created between two UTC datetimes."""
     return db.select(Order).where(Order.created_at >= start_utc, Order.created_at < end_utc)
 
 
 def count_rows(dataset, start, end):
+    """Count how many rows an export of 'orders', 'items' or 'payments' would contain for a date range."""
     start_utc, end_utc = _bounds(start, end)
     if dataset == "payments":
         stmt = db.select(db.func.count(Payment.id)).where(Payment.paid_at >= start_utc, Payment.paid_at < end_utc)

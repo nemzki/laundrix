@@ -1,3 +1,5 @@
+"""Staff portal routes: sign-in, one-time enrollment link, consent and Didit identity verification."""
+
 import time
 from werkzeug.security import generate_password_hash
 
@@ -99,6 +101,10 @@ def login():
 @bp.route("/enroll/<token>", methods=["GET", "POST"])
 @limiter.limit("10 per minute")
 def enroll(token):
+    """Open a staff member's one-time enrollment link (GET shows the consent page, POST accepts it).
+
+    Rejects invalid or locked links, requires the consent checkbox, lets a new account set its
+    password (never overwrites an existing one) and then moves on to identity verification."""
     cred = find_credential_by_token(token)
     if cred is None:
         return render_template("staff_auth/enroll_invalid.html"), 404
@@ -162,6 +168,9 @@ def enroll(token):
 
 
 def _enroll_session():
+    """Return the staff credential for the current enrollment session, or None.
+
+    The session must hold unexpired consent and the link must still be valid and the account active."""
     data = session.get(ENROLL_KEY)
     if not data or data.get("exp", 0) < time.time() or not data.get("consent"):
         return None
@@ -174,6 +183,7 @@ def _enroll_session():
 
 @bp.route("/enroll/verify")
 def enroll_verify():
+    """Show the page that explains the identity-verification step (needs a valid enrollment session)."""
     if _enroll_session() is None:
         return render_template("staff_auth/enroll_invalid.html"), 403
     return render_template("staff_auth/enroll_verify.html")
@@ -182,6 +192,7 @@ def enroll_verify():
 @bp.route("/enroll/start", methods=["POST"])
 @limiter.limit("5 per minute; 20 per hour")
 def enroll_start():
+    """Start the Didit identity verification and redirect the staff member to it."""
     cred = _enroll_session()
     if cred is None:
         return render_template("staff_auth/enroll_invalid.html"), 403
@@ -242,4 +253,5 @@ def enroll_return():
 
 @bp.route("/enroll/done")
 def enroll_done():
+    """Show the 'enrollment complete' page."""
     return render_template("staff_auth/enroll_done.html")

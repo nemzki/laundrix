@@ -28,10 +28,16 @@ DISABLED_MESSAGE = "This account is not active. Please contact your administrato
 
 
 def _is_static(endpoint: str) -> bool:
+    """Return True if the endpoint is a static-file route (CSS, JS, images)."""
     return endpoint == "static" or endpoint.endswith(".static")
 
 
 def enforce_account_status():
+    """Check the signed-in user's account state before every request.
+
+    Blocked accounts (suspended, deactivated, rejected, disabled) are logged out right away.
+    Accounts still pending verification may only visit the identity pages; they are redirected
+    there (or get a 403 for non-GET requests). Active users and visitors pass through."""
     endpoint = request.endpoint
     if endpoint is None:
         return None                                   # unknown URL: let Flask answer 404/405

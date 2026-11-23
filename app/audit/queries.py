@@ -17,6 +17,7 @@ _CONTROL = re.compile(r"[\x00-\x1f\x7f]")
 
 @dataclass
 class AuditFilters:
+    """The filters chosen on the audit log page (name, action, module, status and date range)."""
     q: str = ""            # staff / admin name
     action: str = ""
     module: str = ""
@@ -37,10 +38,12 @@ class AuditFilters:
 
     @property
     def active(self) -> bool:
+        """True if any filter is applied."""
         return bool(self.params)
 
 
 def _to_utc(local_dt: datetime) -> datetime:
+    """Convert a timezone-aware datetime to a naive UTC datetime for database comparison."""
     return local_dt.astimezone(timezone.utc).replace(tzinfo=None)
 
 
@@ -118,10 +121,12 @@ def parse_filters(args) -> AuditFilters:
 
 
 def _like_escape(text: str) -> str:
+    """Escape the % and _ wildcard characters so a search term is matched literally."""
     return text.replace("\\", "\\\\").replace("%", r"\%").replace("_", r"\_")
 
 
 def build_query(f: AuditFilters):
+    """Build the database query for audit logs from the chosen filters (newest first)."""
     q = db.select(AuditLog)
     if f.q:
         q = q.where(AuditLog.actor_name.ilike(f"%{_like_escape(f.q)}%", escape="\\"))
@@ -146,6 +151,7 @@ def diff_rows(row):
 
 
 def page_number(args) -> int:
+    """Read the page number from the URL and keep it within a safe range."""
     try:
         return min(max(int(args.get("page", 1)), 1), MAX_PAGE)
     except (TypeError, ValueError):

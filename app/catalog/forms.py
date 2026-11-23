@@ -11,6 +11,9 @@ MAX_PRICE = Decimal("99999.99")
 
 
 def _text(form, name, *, required=False, max_len=255, label=None):
+    """Read a text field from the form: collapse extra spaces and check required and maximum length.
+
+    Returns (value, error_message_or_None)."""
     value = " ".join((form.get(name) or "").split())
     label = label or name.replace("_", " ").capitalize()
     if required and not value:
@@ -21,10 +24,12 @@ def _text(form, name, *, required=False, max_len=255, label=None):
 
 
 def _price(form):
+    """Read and validate the price field (0 up to the maximum, 2 decimal places)."""
     return parse_number(form.get("price"), "Price", Decimal("0"), MAX_PRICE, 2)
 
 
 def _image_url(form, errors):
+    """Validate the optional image URL: only local paths starting with a single '/' are allowed."""
     value = (form.get("image_url") or "").strip()
     if not value:
         return None
@@ -36,6 +41,7 @@ def _image_url(form, errors):
 
 
 def _icon(form, errors, default):
+    """Validate the chosen icon key against the allowed list."""
     value = form.get("icon_key") or default
     if value not in ICON_KEYS:
         errors["icon_key"] = "Choose a valid icon."
@@ -43,10 +49,14 @@ def _icon(form, errors, default):
 
 
 def _checked(form, name):
+    """Return True if a checkbox was ticked."""
     return form.get(name) in ("on", "1", "true")
 
 
 def parse_service(form, existing=None):
+    """Validate the service form and return (clean_data, errors).
+
+    For a new service it also checks the code format and that the code is not already used."""
     errors, data = {}, {}
     data["name"], e = _text(form, "name", required=True, max_len=120)
     e and errors.__setitem__("name", e)
@@ -80,6 +90,9 @@ def parse_service(form, existing=None):
 
 
 def parse_addon(form, existing=None):
+    """Validate the extra (add-on) form and return (clean_data, errors).
+
+    An extra must be chargeable, customer-suppliable, or both."""
     errors, data = {}, {}
     data["name"], e = _text(form, "name", required=True, max_len=120)
     e and errors.__setitem__("name", e)
@@ -107,6 +120,9 @@ def parse_addon(form, existing=None):
 
 
 def parse_package(form, existing=None):
+    """Validate the package form and return (clean_data, errors).
+
+    Checks the name, category, measure type, minimum/maximum range, price and the services it covers."""
     errors, data = {}, {}
     data["name"], e = _text(form, "name", required=True, max_len=120)
     e and errors.__setitem__("name", e)

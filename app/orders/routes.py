@@ -1,3 +1,5 @@
+"""Order pages and JSON endpoints: order list, new-order wizard, quote, confirmation, customer directory and status updates."""
+
 import secrets
 
 from flask import abort, current_app, flash, jsonify, redirect, render_template, request, url_for
@@ -24,10 +26,12 @@ def _require_operational_user():
 
 
 def _peso(value):
+    """Format a number as pesos (₱1,234.50) for JSON replies."""
     return f"\u20b1{value:,.2f}"
 
 
 def _get_order_or_404(reference):
+    """Load an order by its reference code, or return a 404 page if it does not exist."""
     order = db.session.execute(db.select(Order).filter_by(reference=reference)).scalar_one_or_none()
     if order is None:
         abort(404)
@@ -37,6 +41,7 @@ def _get_order_or_404(reference):
 # ----------------------------------------------------------------------------- list
 @bp.route("/")
 def index():
+    """Order list page with search, status and payment filters, and pagination."""
     term = request.args.get("q", "").strip()
     status = request.args.get("status", "")
     payment = request.args.get("payment", "")
@@ -55,6 +60,9 @@ def index():
 # ----------------------------------------------------------------------------- wizard
 @bp.route("/new")
 def new_order():
+    """Show the new-order wizard with the active services, packages (grouped by category), extras and payment options.
+
+    Also creates a one-time submission token so a double-click can only save one order."""
     svc = db.session.execute(
         db.select(Service).where(Service.is_active.is_(True)).order_by(Service.category, Service.id)
     ).scalars().all()
@@ -77,6 +85,9 @@ def new_order():
 
 @bp.post("/new/quote")
 def quote():
+    """Price an order as the wizard is filled in and return the result as JSON.
+
+    Returns the priced lines, totals, any errors and, when requested, the customer and payment checks."""
     payload = request.get_json(silent=True)
     q = build_quote(payload)
     errors = {k: list(v) for k, v in q.errors.items()}
@@ -107,6 +118,9 @@ def quote():
 
 @bp.post("/new/confirm")
 def confirm():
+    """Save the order from the wizard.
+
+    On success returns the confirmation page URL as JSON; on validation problems returns the errors with status 422."""
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict):
         return jsonify(ok=False, errors={"_general": ["Invalid request."]}), 400
@@ -118,6 +132,7 @@ def confirm():
 
 @bp.get("/customers/search")
 def customer_search():
+    """Search customers by name or phone number for the wizard's customer picker (JSON)."""
     found = services.search_customers(request.args.get("q", ""))
     return jsonify(results=[
         {"id": c.id, "full_name": c.full_name, "contact_number": c.contact_number} for c in found
@@ -128,6 +143,7 @@ def customer_search():
 @bp.route("/customers")
 @role_required(Role.ADMIN)
 def customers():
+    """Customer directory page with search, an owing/settled filter and pagination."""
     term = request.args.get("q", "").strip()
     page = request.args.get("page", 1, type=int)
     # Approved customer-directory integration: stable paging and existing ledger eligibility.
@@ -150,6 +166,7 @@ def customers():
 
 
 def _directory_customer_response(customer):
+    """Return a customer's data and rendered profile card as JSON."""
     profile = services.directory_profiles([customer])[customer.id]
     return jsonify(ok=True, customer={
         "id": customer.id, "full_name": customer.full_name, "contact_number": customer.contact_number,
@@ -162,6 +179,7 @@ def _directory_customer_response(customer):
 @bp.post("/customers")
 @role_required(Role.ADMIN)
 def create_customer():
+    """Add a new customer from the directory (JSON); returns validation errors with status 422."""
     customer, errors, duplicates = services.save_directory_customer(request.get_json(silent=True), current_user)
     if errors:
         return jsonify(ok=False, errors=errors, duplicates=duplicates), 422
@@ -171,6 +189,7 @@ def create_customer():
 @bp.route("/customers/<int:customer_id>", methods=["GET", "POST"])
 @role_required(Role.ADMIN)
 def directory_customer(customer_id):
+    """View a customer's profile (GET) or save edits to it (POST), as JSON."""
     customer = db.get_or_404(Customer, customer_id)
     if request.method == "POST":
         customer, errors, duplicates = services.save_directory_customer(request.get_json(silent=True), current_user, customer)
@@ -182,6 +201,7 @@ def directory_customer(customer_id):
 # ----------------------------------------------------------------------------- single order
 @bp.route("/<reference>")
 def detail(reference):
+    """Order detail page: items, payments, allowed status changes and the SMS panel."""
     order = _get_order_or_404(reference)
     return render_template(
         "orders/detail.html", order=order, transitions=services.allowed_transitions(order, current_user),
@@ -193,11 +213,15 @@ def detail(reference):
 
 @bp.route("/<reference>/confirmation")
 def confirmation(reference):
+    """Page shown after an order is saved."""
     return render_template("orders/confirmation.html", order=_get_order_or_404(reference))
 
 
 @bp.route("/<reference>/stub")
 def stub(reference):
+    """Printable claim stub for an order.
+
+    Includes a QR code that links to the public tracking page and a customer-safe payment summary."""
     order = _get_order_or_404(reference)
 
     tracking_path = url_for(
@@ -230,6 +254,7 @@ def stub(reference):
 
 @bp.post("/<reference>/status")
 def update_status(reference):
+    """Change an order's status from the detail page and flash the result."""
     order = _get_order_or_404(reference)
     updated, error = services.change_status(
         order.id, request.form.get("status", ""), current_user, request.form.get("note")

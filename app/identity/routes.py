@@ -1,3 +1,5 @@
+"""Identity verification routes: status page, consent, start, refresh and the Didit webhook."""
+
 from flask import (
     abort, current_app, flash, jsonify, redirect, render_template, request, url_for,
 )
@@ -18,7 +20,9 @@ def _feature_gate():
 
 @bp.app_context_processor
 def _inject_summary():
+    """Make `idv_summary()` available in every template so pages can show the verification status."""
     def idv_summary():
+        """Return the signed-in user's verification summary, or None if verification is off or nobody is signed in."""
         if not current_app.config["IDV_ENABLED"] or not current_user.is_authenticated:
             return None
         return services.summary_for(current_user)
@@ -29,6 +33,7 @@ def _inject_summary():
 @bp.route("/")
 @login_required
 def index():
+    """Show the user's identity-verification status and attempt history."""
     ctx = services.summary_for(current_user)
     return render_template(
         "identity/status.html", history=services.history_for(current_user), is_latest=True, **ctx
@@ -56,6 +61,10 @@ def attempt(public_id):
 @limiter.limit("5 per minute; 20 per hour", methods=["POST"])
 @login_required
 def start():
+    """Start identity verification.
+
+    GET shows the consent page (or explains why a new attempt is blocked). POST needs the consent
+    checkbox, creates the Didit session and redirects the user to Didit's hosted page."""
     if request.method == "POST":
         result = services.start_verification(current_user, request.form.get("consent") == "on")
         if result.redirect_url:
@@ -95,6 +104,7 @@ def return_from_provider():
 @login_required
 @limiter.limit("10 per minute")
 def refresh():
+    """Ask Didit for the latest result of the user's open verification (the 'Check status' button)."""
     v = services.latest_verification(current_user)
     if v is not None:
         result = services.reconcile(v)
@@ -110,6 +120,10 @@ def refresh():
 @csrf.exempt  # authenticated by an HMAC signature instead of a browser CSRF token
 @limiter.limit("120 per minute")
 def didit_webhook():
+    """Receive Didit's server-to-server notification about a verification result.
+
+    Rejects bad JSON (400) and bad signatures (401), ignores Didit's test deliveries and otherwise
+    applies the result. Errors return 500 so Didit retries later."""
     cfg = current_app.config
     raw = request.get_data(cache=False)  # size already capped by MAX_CONTENT_LENGTH
 

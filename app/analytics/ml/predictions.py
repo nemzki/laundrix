@@ -6,6 +6,7 @@ from app.models import OrderStatus
 
 
 def risk_band(score):
+    """Turn a disposal-risk score into 'High', 'Medium' or 'Low' using the policy thresholds (None if there is no score)."""
     if score is None:
         return None
     if score >= HIGH_RISK:

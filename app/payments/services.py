@@ -35,6 +35,7 @@ _CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
 
 
 def peso(value) -> str:
+    """Format a number as pesos, e.g. ₱1,234.50."""
     return f"\u20b1{Decimal(value):,.2f}"
 
 
@@ -50,6 +51,7 @@ def get_settings() -> PaymentSettings:
 
 
 def active_methods():
+    """Return the active payment methods in display order."""
     return db.session.scalars(
         db.select(PaymentMethod).where(PaymentMethod.is_active.is_(True))
         .order_by(PaymentMethod.sort_order, PaymentMethod.id)
@@ -57,6 +59,7 @@ def active_methods():
 
 
 def _method_by_code(code):
+    """Find an active payment method by its code (None if there is none)."""
     if not isinstance(code, str):
         return None
     return db.session.execute(
@@ -87,6 +90,7 @@ def net_received(order_id) -> Decimal:
 
 
 def derive_status(total, received, tracked=True) -> str:
+    """Work out paid / partial / unpaid (or not tracked) from the order total and the amount received."""
     if not tracked:
         return PaymentStatus.NOT_TRACKED
     total, received = Decimal(total), Decimal(received)
@@ -98,6 +102,7 @@ def derive_status(total, received, tracked=True) -> str:
 
 
 def _lock_order(order_id):
+    """Load an order with a database lock so two payments cannot be recorded at the same time."""
     return db.session.execute(
         db.select(Order).where(Order.id == order_id).with_for_update()
         .execution_options(populate_existing=True)
@@ -107,6 +112,7 @@ def _lock_order(order_id):
 # ----------------------------------------------------------------------------- parsing / planning
 @dataclass
 class PlanEntry:
+    """One part of a payment plan: the method, the amount, and an optional reference and notes."""
     method: PaymentMethod
     amount: Decimal
     reference: str = None
@@ -115,24 +121,29 @@ class PlanEntry:
 
 @dataclass
 class PaymentPlan:
+    """The validated payment plan for an order: its entries, errors, amount received, balance and status."""
     total: Decimal
     arrangement: str = None
     entries: list = field(default_factory=list)
     errors: dict = field(default_factory=dict)
 
     def err(self, key, message):
+        """Add an error message under a key."""
         self.errors.setdefault(key, []).append(message)
 
     @property
     def received(self) -> Decimal:
+        """Total amount received across all entries."""
         return money(sum((e.amount for e in self.entries), Decimal("0")))
 
     @property
     def balance(self) -> Decimal:
+        """Amount still unpaid (order total minus received)."""
         return money(Decimal(self.total) - self.received)
 
     @property
     def status(self) -> str:
+        """Paid / partial / unpaid, based on the received amount."""
         return derive_status(self.total, self.received)
 
     def preview(self) -> dict:
@@ -148,6 +159,7 @@ class PaymentPlan:
 
 
 def _clean_text(value, limit=MAX_TEXT):
+    """Remove control characters from text; returns (clean_text, is_too_long)."""
     text = _CONTROL.sub("", str(value or "")).strip()
     return text, (len(text) > limit)
 
@@ -259,6 +271,7 @@ def add_payment_rows(order, entries, user, key_base=None, balance_before=None):
 
 
 def _existing_for_key(key):
+    """Find payments already saved for an idempotency key (used to stop duplicate submissions)."""
     escaped = key.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     return db.session.scalars(
         db.select(Payment).where(Payment.idempotency_key.like(f"{escaped}:%", escape="\\"))
@@ -361,6 +374,7 @@ def reverse_payment(payment_id, reason, user):
 
 # ----------------------------------------------------------------------------- settings (admin)
 def _flag(value):
+    """Return True if a form or JSON value means 'on' (True, 'on', '1', 'true' or 1)."""
     return value in (True, "on", "1", "true", "True", 1)
 
 
@@ -383,6 +397,10 @@ def parse_settings(data):
 
 
 def update_settings(data, user):
+    """Validate and save the payment settings.
+
+    Logs which settings changed. Switches are logged as before/after, but free-text values such as
+    account details are only listed by name so they never enter the audit trail."""
     values, errors = parse_settings(data)
     if errors:
         return None, errors
@@ -403,6 +421,7 @@ def update_settings(data, user):
 
 
 def create_method(label, requires_reference, user):
+    """Create a payment method from a label (builds a code from the name and rejects duplicates)."""
     label, too_long = _clean_text(label, 60)
     if len(label) < 2 or too_long:
         return None, "Enter a method name (2 to 60 characters)."
@@ -419,6 +438,7 @@ def create_method(label, requires_reference, user):
 
 
 def toggle_method(method_id, user):
+    """Switch a payment method on or off, but never leave the shop without an active method."""
     method = db.session.get(PaymentMethod, method_id) if isinstance(method_id, int) else None
     if method is None:
         return None, "Payment method not found."
@@ -431,10 +451,12 @@ def toggle_method(method_id, user):
 
 # ----------------------------------------------------------------------------- reporting queries
 def _signed():
+    """SQL expression: a payment counts as +amount and a reversal as -amount."""
     return case((Payment.kind == PaymentKind.PAYMENT, Payment.amount), else_=-Payment.amount)
 
 
 def _net_subquery():
+    """SQL subquery giving the net amount paid for each order."""
     return (
         db.select(Payment.order_id.label("order_id"), func.sum(_signed()).label("net"))
         .group_by(Payment.order_id).subquery()
@@ -476,6 +498,7 @@ def outstanding_summary():
 
 
 def collections_total(start, end):
+    """Total money collected between two times (payments minus reversals)."""
     value = db.session.scalar(
         db.select(func.coalesce(func.sum(_signed()), 0)).where(Payment.paid_at >= start, Payment.paid_at < end)
     )
@@ -483,6 +506,7 @@ def collections_total(start, end):
 
 
 def collections_by_method(start, end):
+    """Money collected per payment method between two times."""
     rows = db.session.execute(
         db.select(Payment.method_label, func.sum(_signed()))
         .where(Payment.paid_at >= start, Payment.paid_at < end)
@@ -493,6 +517,9 @@ def collections_by_method(start, end):
 
 
 def collections_by_staff(start, end):
+    """Money collected per staff member between two times.
+
+    A reversal is credited to the staff member who recorded the original payment."""
     from app.models import User
     from sqlalchemy.orm import aliased
 

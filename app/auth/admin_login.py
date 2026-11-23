@@ -16,6 +16,10 @@ LOGIN_LIMIT = "10 per minute; 40 per hour"
 @bp.route("/admin", methods=["GET", "POST"])
 @limiter.limit(LOGIN_LIMIT, methods=["POST"])
 def admin_login():
+    """Administrator username-and-password sign-in page (the /auth/admin page).
+
+    Returns 404 when this login method is switched off. On POST it checks the credentials,
+    signs the admin in and sends them to the dashboard; on failure it shows the error message."""
     if not current_app.config.get("ADMIN_PASSWORD_LOGIN_ENABLED"):
         abort(404)
     if current_user.is_authenticated:

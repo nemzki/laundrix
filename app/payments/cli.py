@@ -1,9 +1,12 @@
+"""Command-line command to create the default payment methods (seed-payments)."""
+
 import click
 
 from app.payments.seed import seed_payments
 
 
 def register_payment_commands(app):
+    """Attach the payments `flask ...` command to the app."""
     @app.cli.command("seed-payments")
     def seed_payments_command():
         """Create the default payment methods (Cash, GCash) and settings row if missing."""

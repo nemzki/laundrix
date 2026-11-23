@@ -54,17 +54,22 @@ START_MESSAGES = {
 
 @dataclass
 class StartResult:
+    """What happened when starting a verification.
+
+    Holds the Didit page to redirect to, or an error code (with a readable `message`)."""
     redirect_url: Optional[str] = None
     error: Optional[str] = None
     verification: Optional[IdentityVerification] = None
 
     @property
     def message(self):
+        """The user-friendly text for the error code (None when there is no error)."""
         return START_MESSAGES.get(self.error, START_MESSAGES["provider_error"]) if self.error else None
 
 
 @dataclass
 class ReconcileResult:
+    """The outcome of re-checking a verification with the provider (changed, cooldown, provider_error...)."""
     outcome: str                      # an st.* outcome, "cooldown", "not_open" or "provider_error"
     error_code: Optional[str] = None
 
@@ -76,6 +81,7 @@ def user_ref(user_id: int) -> str:
 
 
 def latest_verification(user: User, purpose: str = PURPOSE_KYC) -> Optional[IdentityVerification]:
+    """Return the user's most recent verification attempt for a purpose, or None."""
     return db.session.execute(
         db.select(IdentityVerification).filter_by(user_id=user.id, purpose=purpose)
         .order_by(IdentityVerification.id.desc()).limit(1)
@@ -99,6 +105,7 @@ def get_owned_verification(
 
 
 def history_for(user: User, limit: int = 10, purpose: Optional[str] = PURPOSE_KYC):
+    """Return the user's latest verification attempts (newest first), optionally for one purpose."""
     q = db.select(IdentityVerification).filter_by(user_id=user.id)
     if purpose:
         q = q.filter_by(purpose=purpose)
@@ -106,12 +113,16 @@ def history_for(user: User, limit: int = 10, purpose: Optional[str] = PURPOSE_KY
 
 
 def _by_session_id(session_id: str) -> Optional[IdentityVerification]:
+    """Find the verification row that belongs to a Didit session id."""
     return db.session.execute(
         db.select(IdentityVerification).filter_by(provider_session_id=session_id)
     ).scalar_one_or_none()
 
 
 def attempts_in_window(user: User) -> int:
+    """Count the user's verification attempts inside the allowed time window.
+
+    Attempts that failed on our side before a session was created are not counted."""
     cutoff = utcnow() - timedelta(hours=current_app.config["IDV_ATTEMPT_WINDOW_HOURS"])
     return db.session.execute(
         db.select(func.count()).select_from(IdentityVerification).where(
@@ -140,6 +151,7 @@ def start_block_reason(user: User, allow_reverify: bool = False) -> Optional[str
 
 # ----------------------------------------------------------------------------- display
 def summary_for(user: User) -> dict:
+    """Build everything the status page needs: current status, display text, hint and which buttons to show."""
     latest = latest_verification(user)
     status = latest.status if latest else st.IdvStatus.NOT_STARTED
     copy = st.STATUS_COPY[status]
@@ -160,6 +172,7 @@ def summary_for(user: User) -> dict:
 
 # ----------------------------------------------------------------------------- starting
 def _audit(v, *, source, provider_status, from_status, to_status, outcome, event_id=None):
+    """Add a row to the verification event log describing a status change and where it came from."""
     db.session.add(IdentityVerificationEvent(
         verification_id=v.id, event_id=event_id, source=source, provider_status=provider_status,
         from_status=from_status, to_status=to_status, outcome=outcome,
@@ -189,6 +202,10 @@ def _record_provider_failure(user: User, latest, error_code: str):
 def start_verification(
     user: User, consent_given: bool, callback_path: Optional[str] = None, allow_reverify: bool = False
 ) -> StartResult:
+    """Create a Didit verification session for a user.
+
+    Checks consent and the attempt limits, asks Didit for a hosted session, saves the attempt
+    and returns a StartResult with the redirect URL or an error."""
     if not consent_given:
         return StartResult(error="consent_required")
     block = start_block_reason(user, allow_reverify=allow_reverify)
@@ -229,6 +246,7 @@ def start_verification(
 
 # ----------------------------------------------------------------------------- sign-in face check
 def biometric_sessions_last_hour(user: User) -> int:
+    """Count the user's face-login (biometric) sessions in the last hour, for rate limiting."""
     cutoff = utcnow() - timedelta(hours=1)
     return db.session.execute(
         db.select(func.count()).select_from(IdentityVerification).where(
@@ -341,6 +359,7 @@ def apply_provider_status(
 
 
 def _from_epoch(value) -> Optional[datetime]:
+    """Convert a Unix timestamp from Didit to a naive UTC datetime (None if it is not valid)."""
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
     try:
@@ -403,6 +422,7 @@ BIOMETRIC_OPEN_STATUSES = (st.IdvStatus.IN_PROGRESS, st.IdvStatus.PENDING_REVIEW
 
 
 def open_statuses_for(purpose: str):
+    """Return the statuses that count as still 'open' (unfinished) for a verification purpose."""
     return BIOMETRIC_OPEN_STATUSES if purpose == PURPOSE_BIOMETRIC else OPEN_STATUSES
 
 

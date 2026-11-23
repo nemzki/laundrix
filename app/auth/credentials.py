@@ -34,6 +34,10 @@ AWAITING_APPROVAL = "Your account is awaiting administrator approval."
 
 @dataclass
 class AuthOutcome:
+    """The result of a password sign-in attempt.
+
+    `kind` says what happened (ok, wrong password, locked...), `user` is the matched account,
+    and `message` is the text to show the person."""
     kind: str
     user: object = None
     message: str = ""
@@ -41,14 +45,19 @@ class AuthOutcome:
 
     @property
     def ok(self) -> bool:
+        """True if the sign-in succeeded."""
         return self.kind == OK
 
     @property
     def http_status(self) -> int:
+        """The HTTP status code that matches this outcome (200, 401, 423...)."""
         return HTTP_STATUS[self.kind]
 
 
 def _find_user(identifier, only_role):
+    """Look up a user by email or username (a '@' means email), optionally limited to one role.
+
+    Returns (user_or_None, cleaned_identifier)."""
     ident = (identifier or "").strip().lower()[:254]
     if not ident:
         return None, ident
@@ -60,6 +69,9 @@ def _find_user(identifier, only_role):
 
 
 def _password_enabled(user, cred) -> bool:
+    """Return True if this user is allowed to sign in with a password.
+
+    Admins need a stored password and the admin password login switched on; staff need staff credentials."""
     if user is None:
         return False
     if user.role == Role.ADMIN:
@@ -79,6 +91,9 @@ def _may_try_password(user) -> bool:
 
 
 def _register_admin_failure(user) -> bool:
+    """Count a failed admin login and lock the account when the limit is reached.
+
+    Returns True if this failure caused the lockout."""
     cfg = current_app.config
     user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
     locked = user.failed_login_attempts >= cfg["STAFF_MAX_FAILED_ATTEMPTS"]

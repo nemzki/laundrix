@@ -1,3 +1,5 @@
+"""Database models for orders, their items and their status history."""
+
 from app.extensions import db
 from app.models.staff_credential import utcnow
 import secrets
@@ -8,6 +10,10 @@ from sqlalchemy import false
 from app.models.payment import PaymentKind, PaymentStatus
 
 class OrderStatus:
+    """The order workflow stages with their labels and badge colours.
+
+    Orders move one step at a time through FLOW: received -> pending -> processing ->
+    ready for pickup -> picked up -> completed."""
     RECEIVED = "order_received"
     PENDING = "pending_processing"
     PROCESSING = "processing"
@@ -32,12 +38,17 @@ class OrderStatus:
 
 
 class ItemType:
+    """The kinds of line items an order can contain: service, package or add-on."""
     SERVICE = "service"
     PACKAGE = "package"
     ADDON = "addon"
 
 
 class Order(db.Model):
+    """A laundry order placed for a customer.
+
+    Keeps a snapshot of the customer's name/contact, the money totals, the current status and a
+    secret tracking token used for the public tracking link."""
     __tablename__ = "orders"
     __table_args__ = (db.CheckConstraint("total >= 0", name="ck_orders_total_nonneg"),)
 
@@ -90,15 +101,18 @@ class Order(db.Model):
 
     @property
     def status_label(self) -> str:
+        """Readable name of the order's current status."""
         return OrderStatus.LABELS.get(self.status, self.status)
 
     # --- payment ledger (derived; the browser can never set these) -----------------------
     @property
     def is_payment_tracked(self) -> bool:
+        """True if a payment arrangement was recorded (older orders may not have one)."""
         return self.payment_arrangement is not None
 
     @property
     def is_received(self) -> bool:
+        """True once the order has a received_at time."""
         return self.received_at is not None
 
     @property
@@ -111,10 +125,14 @@ class Order(db.Model):
 
     @property
     def balance_due(self) -> Decimal:
+        """Amount still unpaid: the total minus what has been paid."""
         return Decimal(self.total) - self.amount_paid
 
     @property
     def payment_status(self) -> str:
+        """Work out paid / partial / unpaid / not tracked from the payments recorded so far.
+
+        Calculated every time and never stored, so it always matches the payment records."""
         if not self.is_payment_tracked:
             return PaymentStatus.NOT_TRACKED
         paid = self.amount_paid
@@ -153,6 +171,7 @@ class OrderItem(db.Model):
 
 
 class OrderStatusHistory(db.Model):
+    """One row each time an order changes status (who changed it, when and an optional note)."""
     __tablename__ = "order_status_history"
 
     id = db.Column(db.Integer, primary_key=True)

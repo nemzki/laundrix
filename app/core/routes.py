@@ -27,6 +27,9 @@ def _audit_context():
 
 
 def _settings(status=200, **context):
+    """Render the personal settings page (status code and form errors are optional).
+
+    The response is marked private/no-store so the browser does not cache account details."""
     response = make_response(render_template(
         'core/personal_settings.html', account_labels=AccountStatus.LABELS, audit=_audit_context(),
         profile_errors=context.get('profile_errors', {}),
@@ -40,6 +43,7 @@ def _settings(status=200, **context):
 @login_required
 @role_required(Role.ADMIN, Role.STAFF)
 def personal_settings():
+    """Show the signed-in user's personal settings page (GET /settings)."""
     return _settings()
 
 
@@ -48,6 +52,11 @@ def personal_settings():
 @role_required(Role.ADMIN, Role.STAFF)
 @limiter.limit('20 per minute')
 def update_profile():
+    """Save changes to the signed-in user's own name and profile picture (POST /settings/profile).
+
+    Validates the name and the upload, rejects any unexpected form fields, replaces or removes
+    the picture, records an audit log entry and commits. On a database/file error it rolls
+    back and cleans up the new file."""
     errors = {}
     raw_name = request.form.get('full_name', '')
     name = ' '.join(raw_name.split())
@@ -104,6 +113,7 @@ def update_profile():
 @login_required
 @role_required(Role.ADMIN, Role.STAFF)
 def profile_avatar(filename):
+    """Send the user's own profile picture file (only their current picture is allowed)."""
     if profile_avatars.stored_name(current_user.picture_url) != filename:
         abort(404)
     path = profile_avatars.path_for(filename)

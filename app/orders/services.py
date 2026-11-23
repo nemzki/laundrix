@@ -42,6 +42,7 @@ def normalize_contact(raw: str):
 
 
 def search_customers(term: str, limit: int = 8):
+    """Find customers by name or phone digits (needs at least 2 characters) and return up to `limit` matches."""
     term = (term or "").strip()
     if len(term) < 2:
         return []
@@ -55,6 +56,7 @@ def search_customers(term: str, limit: int = 8):
 
 
 def _like_escape(text: str) -> str:
+    """Escape the % and _ wildcard characters so a search term is matched literally."""
     return text.replace("\\", "\\\\").replace("%", r"\%").replace("_", r"\_")
 
 
@@ -166,6 +168,7 @@ def directory_profiles(customers):
 
 # ----------------------------------------------------------------------------- creation
 def _new_reference() -> str:
+    """Create a new order reference like LX-YYMMDD-ABCDE (today's date plus 5 random characters)."""
     suffix = "".join(secrets.choice(_REF_ALPHABET) for _ in range(5))
     return f"LX-{local_date_code()}-{suffix}"
 
@@ -174,6 +177,9 @@ _TOKEN_RE = re.compile(r"^[A-Za-z0-9_-]{16,64}$")
 
 
 def _clean_submission_token(payload):
+    """Validate the one-time submission token sent with an order.
+
+    Returns (token, None), (None, None) when absent, or (None, error_message) when invalid."""
     raw = payload.get("submission_token") if isinstance(payload, dict) else None
     if raw in (None, ""):
         return None, None
@@ -183,6 +189,7 @@ def _clean_submission_token(payload):
 
 
 def _order_for_token(token):
+    """Find an order that was already saved with this submission token."""
     return db.session.execute(db.select(Order).filter_by(submission_token=token)).scalar_one_or_none()
 
 
@@ -398,6 +405,7 @@ PAGE_SIZE = 15
 
 
 def order_query(term=None, status=None, payment=None):
+    """Build the order list query: filter by search text, status and payment status, newest first."""
     # Reuse the original ledger-derived predicate before pagination. No client-side
     # filtering and no change to recording/reversal or payment-status rules.
     q = (payment_services.orders_by_payment_status(payment)
@@ -416,6 +424,7 @@ def order_query(term=None, status=None, payment=None):
 
 
 def status_counts():
+    """Count orders per status (every status is included, even if the count is 0)."""
     rows = db.session.execute(
         db.select(Order.status, func.count(Order.id)).group_by(Order.status)
     ).all()
@@ -425,6 +434,10 @@ def status_counts():
 
 
 def dashboard_stats():
+    """Collect the numbers shown on the dashboard.
+
+    Includes order counts, orders created today, recent and popular items, how much is owed and
+    how much was collected today."""
     start, end = local_today_bounds_utc()
     counts = status_counts()
     today = db.session.scalar(

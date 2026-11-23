@@ -29,6 +29,10 @@ def get_recent_disposals(limit=10):
 
 
 def get_analytics_report(days):
+    """Build everything the Analytics & Reports page needs.
+
+    Loads the history, makes sure a trained model exists, scores the orders still waiting for pickup,
+    and returns the charts, the model summary, the waiting orders with their risk and recent disposals."""
     records, today = load_records()
     run, status, message, info = ensure_model(records, today)
     waiting = get_waiting_orders(run, today, records)

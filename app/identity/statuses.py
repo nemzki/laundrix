@@ -10,6 +10,7 @@ from typing import Iterable, Optional
 
 
 class IdvStatus:
+    """All identity-verification statuses (not started, in progress, verified, rejected...) with their meaning."""
     NOT_STARTED = "not_started"        # no attempt yet (derived: user has no record)
     IN_PROGRESS = "in_progress"        # session created; user is (or may be) in the provider flow
     PENDING_REVIEW = "pending_review"  # provider flagged it for a human reviewer
@@ -64,15 +65,18 @@ UNKNOWN = "unknown_status"             # provider sent a status we don't recogni
 
 @dataclass(frozen=True)
 class TransitionPlan:
+    """The decision made for an incoming status update: its outcome and the new status (if any)."""
     outcome: str
     new_status: Optional[str] = None
 
 
 def map_provider_status(provider_status: Optional[str]) -> Optional[str]:
+    """Translate Didit's status text (e.g. 'Approved') into our own status (None if unknown)."""
     return PROVIDER_STATUS_MAP.get(provider_status or "")
 
 
 def can_transition(current: str, new: str) -> bool:
+    """Return True if moving from the current status to the new one is allowed."""
     return current == new or new in ALLOWED_TRANSITIONS.get(current, set())
 
 

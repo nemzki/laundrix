@@ -6,6 +6,7 @@ SHOP_TZ = timezone(timedelta(hours=8))
 
 
 def to_local(dt):
+    """Convert a stored UTC datetime (naive) to the shop's local time (UTC+8)."""
     if dt is None:
         return None
     return dt.replace(tzinfo=timezone.utc).astimezone(SHOP_TZ)
@@ -21,9 +22,11 @@ def local_today_bounds_utc():
 
 
 def local_date_code():
+    """Return today's shop-local date as YYMMDD text (used in order reference codes)."""
     return datetime.now(SHOP_TZ).strftime("%y%m%d")
 
 def _to_utc_naive(d):
+    """Convert a timezone-aware datetime to a naive UTC datetime for database comparisons."""
     return d.astimezone(timezone.utc).replace(tzinfo=None)
 
 

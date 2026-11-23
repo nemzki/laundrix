@@ -1,3 +1,5 @@
+"""Command-line commands for administrator accounts (bootstrap-admin, rotate-admin-password)."""
+
 import click
 
 from app.auth import bootstrap
@@ -6,6 +8,7 @@ from app.models import Role, User
 
 
 def register_auth_commands(app):
+    """Attach the administrator-account `flask ...` commands to the app."""
     @app.cli.command("bootstrap-admin")
     @click.option("--allow-additional", is_flag=True,
                   help="Create the initial administrator even if another administrator already exists.")

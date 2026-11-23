@@ -1,3 +1,8 @@
+"""Command-line commands for the app (run with the `flask` command).
+
+Registers every command group (staff, identity, catalog, payments, auth) and defines
+the `check-db` and `create-user` commands."""
+
 import click
 from sqlalchemy import text
 
@@ -7,6 +12,10 @@ from app.models import Role, User
 
 
 def register_commands(app):
+    """Attach all the custom `flask ...` commands to the app.
+
+    Each feature folder has its own register function; this one calls them all and then
+    defines `check-db` and `create-user` directly."""
     from app.staff_auth.cli import register_staff_commands
 
     register_staff_commands(app)

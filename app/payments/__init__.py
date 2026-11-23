@@ -1,3 +1,5 @@
+"""Payments blueprint: manual payment recording, outstanding balances, collections summary and payment settings."""
+
 from flask import Blueprint
 
 bp = Blueprint("payments", __name__, template_folder="templates")

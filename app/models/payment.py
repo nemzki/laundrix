@@ -5,6 +5,7 @@ from app.models.staff_credential import utcnow
 
 
 class PaymentKind:
+    """Whether a payment row is a normal payment or a reversal (an admin correction that cancels one)."""
     PAYMENT = "payment"
     REVERSAL = "reversal"      # an Admin correction that cancels one earlier payment row
     ALL = (PAYMENT, REVERSAL)
@@ -104,6 +105,7 @@ class Payment(db.Model):
 
     @property
     def is_reversal(self) -> bool:
+        """True if this row cancels an earlier payment."""
         return self.kind == PaymentKind.REVERSAL
 
 

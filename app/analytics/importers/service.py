@@ -1,3 +1,5 @@
+"""Saves the validated historical CSV rows into the database."""
+
 from pathlib import Path
 
 from sqlalchemy.exc import SQLAlchemyError

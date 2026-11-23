@@ -1,3 +1,5 @@
+"""Database model that stores each trained version of the unclaimed-order model."""
+
 from app.extensions import db
 from app.models.staff_credential import utcnow
 

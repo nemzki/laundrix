@@ -20,6 +20,11 @@ CSP = {
 
 
 def create_app(config_class=None):
+    """Application factory: build and return a fully configured Flask app.
+
+    Steps: load and validate the config, set up proxy support, connect the extensions,
+    add the account-status check to every request, register the blueprints and CLI
+    commands, then set up logging."""
     app = Flask(__name__)
     config_class = config_class or get_config()
     config_class.validate()
@@ -39,6 +44,10 @@ def create_app(config_class=None):
 
 
 def _init_extensions(app):
+    """Connect every extension (database, CSRF, limiter, login, security headers, Google OAuth) to the app.
+
+    Also sets the security headers (HTTPS, CSP, camera permission) and tells Flask-Login how to
+    load a user from the id stored in the session."""
     db.init_app(app)
     migrate.init_app(app, db)
     csrf.init_app(app)
@@ -73,10 +82,14 @@ def _init_extensions(app):
 
     @login_manager.user_loader
     def load_user(user_id):
+        """Flask-Login callback: load the User row for the id saved in the session cookie."""
         return db.session.get(User, int(user_id))
 
 
 def _register_blueprints(app):
+    """Register every feature blueprint and give each one its URL prefix.
+
+    For example the orders blueprint is served under /orders and analytics under /admin/analytics."""
     from app.audit import bp as audit_bp
     from app.analytics import bp as analytics_bp
     from app.auth import bp as auth_bp
@@ -106,6 +119,7 @@ def _register_blueprints(app):
     app.register_blueprint(tracking_bp)
 
 def _register_cli(app):
+    """Register the custom `flask ...` commands defined in app/cli.py."""
     from app.cli import register_commands
 
     register_commands(app)
@@ -113,6 +127,9 @@ def _register_cli(app):
 
 
 def _configure_logging(app):
+    """Send log messages to the console at INFO level.
+
+    Skipped in debug and testing modes, where Flask's own logging is enough."""
     if app.debug or app.testing:
         return
 

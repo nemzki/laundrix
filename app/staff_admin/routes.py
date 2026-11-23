@@ -22,6 +22,7 @@ FILTERS = [("", "All")] + [
 
 
 def _staff_or_404(user_id):
+    """Load a staff user by id, or return a 404 page if it does not exist or is not staff."""
     user = db.session.get(User, user_id)
     if user is None or user.role != Role.STAFF:
         abort(404)
@@ -38,6 +39,7 @@ def _no_store(response):
 @bp.route("/")
 @admin_only
 def index():
+    """Staff list page with status filter, search, sorting and pagination."""
     status = request.args.get("status", "")
     term = request.args.get("q", "").strip()[:100]
     sort = request.args.get("sort", "newest")
@@ -55,6 +57,10 @@ def index():
 @bp.route("/new", methods=["GET", "POST"])
 @admin_only
 def new():
+    """Create-staff page.
+
+    GET shows the form. POST creates the account and shows the one-time enrollment link once
+    (the link is never stored or redirected to, so this response is the only place it appears)."""
     if request.method == "GET":
         return render_template("staff_admin/new.html", values={}, error=None)
     values = {"full_name": request.form.get("full_name", ""), "email": request.form.get("email", "")}
@@ -70,6 +76,7 @@ def new():
 @bp.route("/<int:user_id>")
 @admin_only
 def detail(user_id):
+    """Staff detail page: status, identity-verification result, enrollment link state and recent activity."""
     user = _staff_or_404(user_id)
     label, tone, verification = services.identity_summary(user)
     cred = user.staff_credential
@@ -87,6 +94,7 @@ def detail(user_id):
 
 
 def _act(user_id, success_message, fn, *args):
+    """Run one admin action on a staff account, flash the result and return to the detail page."""
     _staff_or_404(user_id)
     try:
         fn(user_id, current_user, *args)
@@ -99,18 +107,21 @@ def _act(user_id, success_message, fn, *args):
 @bp.post("/<int:user_id>/approve")
 @admin_only
 def approve(user_id):
+    """Approve a staff account that is waiting for approval."""
     return _act(user_id, "Account approved. The staff member can now sign in.", services.approve)
 
 
 @bp.post("/<int:user_id>/reject")
 @admin_only
 def reject(user_id):
+    """Reject a pending staff account (a reason is required)."""
     return _act(user_id, "Account rejected.", services.reject, request.form.get("reason"))
 
 
 @bp.post("/<int:user_id>/suspend")
 @admin_only
 def suspend(user_id):
+    """Suspend an active staff account (a reason is required)."""
     return _act(user_id, "Account suspended. Their session ends on their next request.",
                 services.suspend, request.form.get("reason"))
 
@@ -118,12 +129,14 @@ def suspend(user_id):
 @bp.post("/<int:user_id>/reactivate")
 @admin_only
 def reactivate(user_id):
+    """Lift the suspension of a staff account."""
     return _act(user_id, "Account reactivated.", services.reactivate)
 
 
 @bp.post("/<int:user_id>/deactivate")
 @admin_only
 def deactivate(user_id):
+    """Deactivate a staff account while keeping its order and payment history (a reason is required)."""
     return _act(user_id, "Account deactivated. Order and payment history is kept.",
                 services.deactivate, request.form.get("reason"))
 
@@ -131,6 +144,7 @@ def deactivate(user_id):
 @bp.post("/<int:user_id>/enroll-link")
 @admin_only
 def enroll_link(user_id):
+    """Issue a new one-time enrollment link for a staff member and show it once."""
     user = _staff_or_404(user_id)
     try:
         url, expires = services.issue_enrollment_link(user_id, current_user)

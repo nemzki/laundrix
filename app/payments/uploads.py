@@ -18,6 +18,7 @@ NAME_RE = re.compile(r"^qr-[0-9a-f]{32}\.png$")
 
 
 def upload_dir() -> Path:
+    """Return the folder where payment QR images are stored, creating it if needed."""
     configured = current_app.config.get("PAYMENT_UPLOAD_DIR")
     base = Path(configured) if configured else Path(current_app.instance_path) / "uploads" / "payment_qr"
     base.mkdir(parents=True, exist_ok=True)
@@ -72,6 +73,7 @@ def save_qr_image(file_storage):
 
 
 def delete_qr(filename):
+    """Delete a stored QR image file; logs a warning instead of crashing if it cannot be removed."""
     path = qr_path(filename)
     if path is not None:
         try:

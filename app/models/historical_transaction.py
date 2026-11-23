@@ -1,3 +1,5 @@
+"""Database model for past laundry transactions imported for analytics and the disposal model."""
+
 from app.extensions import db
 from app.models.staff_credential import utcnow
 

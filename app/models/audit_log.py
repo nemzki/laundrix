@@ -1,3 +1,5 @@
+"""Database model for the append-only audit log (records can never be edited or deleted)."""
+
 from sqlalchemy import event
 
 from app.extensions import db
@@ -44,9 +46,11 @@ class AuditLog(db.Model):
 
 @event.listens_for(AuditLog, "before_update")
 def _block_update(mapper, connection, target):
+    """Safety hook: raise an error whenever code tries to modify an existing audit record."""
     raise AuditLogImmutableError("Audit records cannot be modified.")
 
 
 @event.listens_for(AuditLog, "before_delete")
 def _block_delete(mapper, connection, target):
+    """Safety hook: raise an error whenever code tries to delete an audit record."""
     raise AuditLogImmutableError("Audit records cannot be deleted.")

@@ -17,12 +17,17 @@ from app.payments import bp, forms, services, uploads
 
 
 def staff_allowed(view):
+    """Decorator that marks a view as usable by staff too (every other payments view is admin-only)."""
     view.staff_allowed = True
     return view
 
 
 @bp.before_request
 def _default_deny():
+    """Run before every payments request: block anything not explicitly allowed.
+
+    Needs a signed-in, active user. Views marked staff_allowed accept admins and staff; all other
+    payments views accept admins only (403 otherwise)."""
     if request.endpoint is None:          # unknown URL/method: let Flask answer 404/405
         return None
     if not current_user.is_authenticated:
@@ -40,6 +45,7 @@ def _default_deny():
 
 
 def _json(ok, status=200, **extra):
+    """Build a JSON reply with an `ok` flag, a status code and any extra fields."""
     return jsonify(ok=ok, **extra), status
 
 
@@ -48,6 +54,7 @@ PAGE_SIZE = 15
 
 
 def _parse_day(text):
+    """Turn a YYYY-MM-DD text into a date (None if it is not a valid date)."""
     try:
         return date.fromisoformat((text or "").strip())
     except ValueError:
@@ -121,6 +128,9 @@ def summary():
 # ----------------------------------------------------------------------------- corrections
 @bp.post("/<int:payment_id>/reverse")
 def reverse(payment_id):
+    """Reverse (cancel) a payment with a reason.
+
+    The original entry is kept; a reversal row is added. Works for both the page form and JSON requests."""
     body = forms.body_from_request(request)
     row, error = services.reverse_payment(payment_id, body.get("reason"), current_user)
     if request.is_json:
@@ -141,6 +151,7 @@ def _is_ui():
 
 
 def _settings_context(values=None, errors=None):
+    """Collect what the payment settings page needs: current settings, form values, errors and methods."""
     s = services.get_settings()
     base = {k: getattr(s, k) for k in (
         "partial_enabled", "pay_later_enabled", "gcash_account_name", "gcash_account_number",
@@ -152,17 +163,20 @@ def _settings_context(values=None, errors=None):
 
 
 def _back(ok, message):
+    """Flash a success or error message and return to the payment settings page."""
     flash(message, "success" if ok else "error")
     return redirect(url_for("payments.settings"))
 
 
 @bp.get("/settings")
 def settings():
+    """Show the payment settings page."""
     return render_template("payments/settings.html", **_settings_context())
 
 
 @bp.post("/settings")
 def update_settings():
+    """Save the payment settings (partial payment, pay later, GCash details, notices...)."""
     data = forms.body_from_request(request)
     saved, errors = services.update_settings(data, current_user)
     if _is_ui():
@@ -175,6 +189,7 @@ def update_settings():
 
 @bp.post("/methods")
 def create_method():
+    """Add a new payment method."""
     body = forms.body_from_request(request)
     method, error = services.create_method(body.get("label"), body.get("requires_reference"), current_user)
     if _is_ui():
@@ -185,6 +200,7 @@ def create_method():
 
 @bp.post("/methods/<int:method_id>/toggle")
 def toggle_method(method_id):
+    """Enable or disable a payment method (at least one must stay active)."""
     method, error = services.toggle_method(method_id, current_user)
     if _is_ui():
         return _back(error is None, error or f"{method.label} {'enabled' if method.is_active else 'disabled'}.")
@@ -228,6 +244,7 @@ def qr():
 
 @bp.post("/settings/qr")
 def upload_qr():
+    """Replace the payment QR image shown on order stubs, then delete the old file."""
     name, error = uploads.save_qr_image(request.files.get("image"))
     if error:
         if _is_ui():
@@ -247,6 +264,7 @@ def upload_qr():
 
 @bp.post("/settings/qr/remove")
 def remove_qr():
+    """Remove the payment QR image and delete its file."""
     settings = services.get_settings()
     old, settings.qr_filename = settings.qr_filename, None
     settings.updated_by_id = current_user.id

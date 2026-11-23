@@ -1,3 +1,5 @@
+"""Staff Management blueprint (admin-only pages for approving and managing staff accounts)."""
+
 from flask import Blueprint
 
 bp = Blueprint(

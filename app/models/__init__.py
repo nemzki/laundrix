@@ -1,3 +1,8 @@
+"""Imports every database model in one place.
+
+This lets the rest of the app write `from app.models import Order, User`, and makes sure
+every table is known to SQLAlchemy and the migrations."""
+
 from app.models.user import AccountStatus, Role, User
 from app.models.staff_credential import StaffCredential
 from app.models.auth_event import AuthEvent

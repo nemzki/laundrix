@@ -40,6 +40,7 @@ _PLACEHOLDER = re.compile(r"^(paste|your|changeme|xxx)", re.I)
 
 @dataclass
 class Outcome:
+    """The result of an SMS action: whether it worked, the message to show and the new status."""
     ok: bool
     message: str
     status: str = None
@@ -71,6 +72,7 @@ def get_client():
 
 # ----------------------------------------------------------------------------- message
 def _clean_name(name) -> str:
+    """Strip unsafe characters from a customer name and cap it at 60 characters (default 'Customer')."""
     text = re.sub(r"[^\w .,'\-]", "", str(name or ""), flags=re.UNICODE)
     return " ".join(text.split())[:60] or "Customer"
 
@@ -129,6 +131,7 @@ def ineligible_reason(notification, order):
 
 # ----------------------------------------------------------------------------- sending
 def _lock(notification_id):
+    """Load a notification row with a database lock so two requests cannot change it at the same time."""
     return db.session.execute(
         db.select(SMSNotification).where(SMSNotification.id == notification_id)
         .with_for_update().execution_options(populate_existing=True)
@@ -182,6 +185,10 @@ def submit_notification(notification_id) -> Outcome:
 
 
 def _apply_send_result(nid, result) -> Outcome:
+    """Save the provider's send result on the notification and return an Outcome.
+
+    Accepted -> queued/sent/failed from the provider status. Rejected -> failed. Ambiguous -> unknown
+    (never retried automatically)."""
     n = _lock(nid)
     now = utcnow()
     if result.outcome == prov.ACCEPTED:
@@ -250,6 +257,7 @@ def refresh_status(notification_id) -> Outcome:
 
 # ----------------------------------------------------------------------------- presentation (no secrets, no full numbers)
 def view(order) -> dict:
+    """Build the data the order page needs to show the SMS panel (status label, masked number, buttons and help text)."""
     n = order.sms_notification
     enabled = sms_enabled()
     data = {

@@ -52,6 +52,9 @@ def is_trusted_hosted_url(url: str) -> bool:
 
 
 class DiditProvider(IdentityProvider):
+    """The Didit implementation of the identity provider.
+
+    Creates hosted verification sessions and reads decisions over Didit's HTTPS API."""
     name = "didit"
 
     def __init__(
@@ -66,6 +69,9 @@ class DiditProvider(IdentityProvider):
         http: Optional[requests.Session] = None,
         sleep=time.sleep,
     ):
+        """Store the API key, workflow id and timeouts.
+
+        Refuses any base URL that is not the official https Didit host, so the key can never be sent elsewhere."""
         parsed = urlparse(base_url)
 
         if (
@@ -99,6 +105,10 @@ class DiditProvider(IdentityProvider):
         retries: int = 0,
         not_found_is_session=False,
     ):
+        """Send one request to the Didit API and return the JSON reply.
+
+        Adds the API key, uses timeouts and never follows redirects. Temporary failures are retried a
+        limited number of times, and error replies are turned into specific ProviderError types."""
         url = self._base + path
         headers = {"x-api-key": self._api_key, "Accept": "application/json"}
         if files is not None:
@@ -180,6 +190,9 @@ class DiditProvider(IdentityProvider):
     def create_session(
         self, user_ref: str, callback_url: str, workflow_id: Optional[str] = None
     ) -> VerificationSession:
+        """Create a hosted verification session and return its id and URL.
+
+        Refuses a URL that is not on a trusted Didit host."""
         body = {
             "workflow_id": workflow_id or self._workflow_id,
             "vendor_data": user_ref,
@@ -225,6 +238,7 @@ class DiditProvider(IdentityProvider):
 
     @staticmethod
     def _validate_vendor_data(vendor_data: Optional[str]) -> Optional[str]:
+        """Check the optional vendor_data value (a non-empty text of at most 256 characters) and return it trimmed."""
         if vendor_data is None:
             return None
         if not isinstance(vendor_data, str) or not vendor_data.strip():
@@ -290,6 +304,9 @@ class DiditProvider(IdentityProvider):
 
 
     def get_decision(self, session_id: str) -> Decision:
+        """Fetch the current decision for a session.
+
+        Validates the session id as a UUID first, so a crafted id cannot change the request path."""
         try:
             canonical = str(uuid.UUID(session_id))  # blocks path tricks like "../"
         except (ValueError, AttributeError, TypeError):

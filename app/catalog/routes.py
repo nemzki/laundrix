@@ -1,3 +1,5 @@
+"""Admin pages for services, packages and extras: list, create, edit and activate/deactivate."""
+
 from flask import abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
@@ -19,6 +21,7 @@ def _admin_only():
 
 
 def _get_or_404(model, pk):
+    """Load a row by id, or return a 404 page if it does not exist."""
     obj = db.session.get(model, pk)
     if obj is None:
         abort(404)
@@ -26,6 +29,7 @@ def _get_or_404(model, pk):
 
 
 def _apply(obj, data):
+    """Copy the validated form values onto the database object."""
     for key, value in data.items():
         setattr(obj, key, value)
 
@@ -39,10 +43,12 @@ ADDON_FIELDS = ("name", "description", "price", "is_chargeable", "allow_customer
 
 
 def _audit_label(kind, obj):
+    """Build the label shown in the audit log, e.g. 'Service: Wash'."""
     return f"{kind.capitalize()}: {getattr(obj, 'display_name', None) or obj.name}"
 
 
 def _audit_created(kind, obj, fields):
+    """Write an audit log entry for a newly created item."""
     db.session.flush()                                   # assigns obj.id for the audit record
     audit.record(audit.AuditAction.CREATE, audit.AuditModule.SERVICES,
                  f"Created {kind} {getattr(obj, 'display_name', None) or obj.name}",
@@ -51,6 +57,9 @@ def _audit_created(kind, obj, fields):
 
 
 def _audit_edited(kind, obj, before, fields):
+    """Write an audit log entry for an edit.
+
+    Only changed fields are logged; a price change is logged as its own action with the old and new price."""
     old, new = audit.changes(before, audit.snapshot(obj, fields))
     if not new:
         return
@@ -65,6 +74,7 @@ def _audit_edited(kind, obj, before, fields):
 
 
 def _audit_toggled(kind, obj):
+    """Write an audit log entry when an item is activated or deactivated."""
     on = bool(obj.is_active)
     audit.record(audit.AuditAction.REACTIVATE if on else audit.AuditAction.DEACTIVATE,
                  audit.AuditModule.SERVICES,
@@ -75,6 +85,7 @@ def _audit_toggled(kind, obj):
 
 @bp.route("/")
 def index():
+    """Catalog page with tabs for services, packages and extras."""
     tab = request.args.get("tab", "services")
     if tab not in ("services", "packages", "addons"):
         tab = "services"
@@ -89,12 +100,14 @@ def index():
 
 
 def _form_ctx(**extra):
+    """Return the extra values every catalog form template needs (icons, units, measures)."""
     return dict(icon_keys=ICON_KEYS, units=PricingUnit, measures=PackageMeasure, **extra)
 
 
 # ----------------------------------------------------------------------------- services
 @bp.route("/services/new", methods=["GET", "POST"])
 def service_new():
+    """Create a service (GET shows the form, POST saves it)."""
     if request.method == "POST":
         data, errors = forms.parse_service(request.form)
         if not errors:
@@ -112,6 +125,7 @@ def service_new():
 
 @bp.route("/services/<int:pk>/edit", methods=["GET", "POST"])
 def service_edit(pk):
+    """Edit a service. Existing orders keep the price they were charged."""
     obj = _get_or_404(Service, pk)
     if request.method == "POST":
         data, errors = forms.parse_service(request.form, existing=obj)
@@ -134,6 +148,7 @@ def service_edit(pk):
 
 @bp.post("/services/<int:pk>/toggle")
 def service_toggle(pk):
+    """Activate or deactivate a service."""
     obj = _get_or_404(Service, pk)
     obj.is_active = not obj.is_active
     _audit_toggled("service", obj)
@@ -145,6 +160,7 @@ def service_toggle(pk):
 # ----------------------------------------------------------------------------- packages
 @bp.route("/packages/new", methods=["GET", "POST"])
 def package_new():
+    """Create a package (GET shows the form, POST saves it)."""
     all_services = db.session.scalars(db.select(Service).order_by(Service.id)).all()
     if request.method == "POST":
         data, errors = forms.parse_package(request.form)
@@ -165,6 +181,7 @@ def package_new():
 
 @bp.route("/packages/<int:pk>/edit", methods=["GET", "POST"])
 def package_edit(pk):
+    """Edit a package. Existing orders keep the price they were charged."""
     obj = _get_or_404(ServicePackage, pk)
     all_services = db.session.scalars(db.select(Service).order_by(Service.id)).all()
     if request.method == "POST":
@@ -192,6 +209,7 @@ def package_edit(pk):
 
 @bp.post("/packages/<int:pk>/toggle")
 def package_toggle(pk):
+    """Activate or deactivate a package."""
     obj = _get_or_404(ServicePackage, pk)
     obj.is_active = not obj.is_active
     _audit_toggled("package", obj)
@@ -203,6 +221,7 @@ def package_toggle(pk):
 # ----------------------------------------------------------------------------- add-ons
 @bp.route("/addons/new", methods=["GET", "POST"])
 def addon_new():
+    """Create an extra (GET shows the form, POST saves it)."""
     if request.method == "POST":
         data, errors = forms.parse_addon(request.form)
         if not errors:
@@ -220,6 +239,7 @@ def addon_new():
 
 @bp.route("/addons/<int:pk>/edit", methods=["GET", "POST"])
 def addon_edit(pk):
+    """Edit an extra. Existing orders keep the price they were charged."""
     obj = _get_or_404(ServiceAddon, pk)
     if request.method == "POST":
         data, errors = forms.parse_addon(request.form, existing=obj)
@@ -244,6 +264,7 @@ def addon_edit(pk):
 
 @bp.post("/addons/<int:pk>/toggle")
 def addon_toggle(pk):
+    """Activate or deactivate an extra."""
     obj = _get_or_404(ServiceAddon, pk)
     obj.is_active = not obj.is_active
     _audit_toggled("extra", obj)

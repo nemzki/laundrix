@@ -1,3 +1,5 @@
+"""Tracking blueprint: the public order-tracking page that customers open from their QR code."""
+
 from flask import Blueprint
 
 bp = Blueprint(

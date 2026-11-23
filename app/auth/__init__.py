@@ -1,3 +1,5 @@
+"""Authentication blueprint: Google sign-in, face login and administrator password login."""
+
 from flask import Blueprint
 
 bp = Blueprint(

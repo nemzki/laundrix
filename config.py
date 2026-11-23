@@ -11,6 +11,10 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 
 def _bool(name: str, default: bool = False) -> bool:
+    """Read an environment variable as True/False.
+
+    Returns True when the value is 1, true, yes or on (any letter case); anything else
+    (or a missing variable) falls back to `default`."""
     return os.getenv(name, str(default)).strip().lower() in {"1", "true", "yes", "on"}
 
 
@@ -24,6 +28,10 @@ def _float(name: str, default: float) -> float:
 
 
 def _database_uri() -> str:
+    """Build the MySQL connection URL from the DB_* environment variables.
+
+    Uses SQLAlchemy's URL.create so special characters in the password are escaped safely
+    instead of breaking the URL."""
     # URL.create safely escapes special characters in passwords.
     return URL.create(
         drivername="mysql+pymysql",
@@ -37,6 +45,10 @@ def _database_uri() -> str:
 
 
 def _database_engine_options() -> dict:
+    """Build the extra options SQLAlchemy uses when it connects to the database.
+
+    pool_pre_ping tests a connection before using it, and pool_recycle replaces connections
+    before the server closes them. If DB_SSL_CA is set, the SSL (TLS) options are added too."""
     options = {
         "pool_pre_ping": True,
         "pool_recycle": 280,
@@ -55,6 +67,10 @@ def _database_engine_options() -> dict:
 
 
 class BaseConfig:
+    """Settings shared by every environment.
+
+    Each value is read from an environment variable (your .env file), so secrets stay out
+    of the code. The Development, Production and Testing classes below extend this one."""
     ENV_NAME = "development"
 
     # --- Core ---
@@ -149,6 +165,10 @@ class BaseConfig:
 
     @classmethod
     def validate(cls):
+        """Stop the app at startup if required settings are missing.
+
+        Raises a clear error listing every missing environment variable, then runs the extra
+        identity-verification and SMS checks."""
         missing = [k for k in cls.REQUIRED_ENV if os.getenv(k) is None]
         if missing:
             raise RuntimeError(
@@ -170,6 +190,10 @@ class BaseConfig:
 
     @classmethod
     def _validate_identity_verification(cls):
+        """Check the Didit identity-verification settings.
+
+        Only runs when IDV_ENABLED is on. It makes sure the API key, workflow id and webhook
+        secret exist, the environment is 'sandbox' or 'live', and the base URL uses https."""
         if not cls.IDV_ENABLED:
             return
         if cls.IDV_PROVIDER != "didit":
@@ -189,10 +213,14 @@ class BaseConfig:
 
 
 class DevelopmentConfig(BaseConfig):
+    """Settings for working on your own computer (debug mode on)."""
     DEBUG = True
 
 
 class ProductionConfig(BaseConfig):
+    """Settings for the live site (for example on Render).
+
+    Debug is off, cookies are HTTPS-only and every request is forced onto HTTPS."""
     ENV_NAME = "production"
     DEBUG = False
     SESSION_COOKIE_SECURE = True
@@ -201,6 +229,10 @@ class ProductionConfig(BaseConfig):
 
     @classmethod
     def validate(cls):
+        """Run the base checks plus extra production-only safety checks.
+
+        Requires an https APP_BASE_URL, requires Didit to be in 'live' mode and refuses to start
+        if a Didit sandbox test scenario is still set."""
         super().validate()
         if not cls.APP_BASE_URL.startswith("https://"):
             raise RuntimeError("APP_BASE_URL must be an https:// URL in production.")
@@ -214,6 +246,10 @@ class ProductionConfig(BaseConfig):
 
 
 class TestingConfig(BaseConfig):
+    """Settings used by the automated tests.
+
+    Uses an in-memory SQLite database, turns off CSRF, the rate limiter and real SMS, and
+    pins fixed fake keys so a developer's .env can never change a test result."""
     ENV_NAME = "testing"
     TESTING = True
     SECRET_KEY = "test-secret-key"
@@ -237,6 +273,7 @@ class TestingConfig(BaseConfig):
 
     @classmethod
     def validate(cls):
+        """Skip the environment checks, because tests use the fake values defined above."""
         pass
 
 
@@ -248,4 +285,7 @@ CONFIGS = {
 
 
 def get_config():
+    """Pick the config class that matches the APP_ENV environment variable.
+
+    'production' and 'testing' map to their classes; anything else uses DevelopmentConfig."""
     return CONFIGS.get(os.getenv("APP_ENV", "development").lower(), DevelopmentConfig)

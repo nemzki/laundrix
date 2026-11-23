@@ -132,6 +132,9 @@ def _user_id_from_vendor_data(value):
 
 
 def _threshold(name, default):
+    """Read a 0-100 similarity setting from the config.
+
+    Falls back to `default` if the value is missing, not a number or outside 0-100."""
     try:
         value = float(current_app.config.get(name, default))
     except (TypeError, ValueError, RuntimeError):

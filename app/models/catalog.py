@@ -18,6 +18,7 @@ class PricingUnit:
 
 
 class PackageMeasure:
+    """How a package is measured: by weight (kg) or by number of pieces."""
     WEIGHT = "weight"   # range in kilograms
     PIECES = "pieces"   # range in number of pieces
     ALL = (WEIGHT, PIECES)
@@ -31,11 +32,13 @@ ICON_KEYS = (
 
 
 class _Timestamps:
+    """Mixin that adds created_at and updated_at columns to a model."""
     created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=utcnow, onupdate=utcnow)
 
 
 class Service(_Timestamps, db.Model):
+    """A single laundry service (wash, dry, fold...) with its price and pricing unit."""
     __tablename__ = "services"
     __table_args__ = (db.CheckConstraint("price >= 0", name="ck_services_price_nonneg"),)
 
@@ -53,14 +56,19 @@ class Service(_Timestamps, db.Model):
 
     @property
     def is_orderable(self) -> bool:
+        """True if the service is active and has a pricing unit, so it can be added to an order."""
         return bool(self.is_active and self.pricing_unit)
 
     @property
     def unit_label(self) -> str:
+        """Readable pricing unit, e.g. 'per kg' (or 'unit not set')."""
         return PricingUnit.LABELS.get(self.pricing_unit, "unit not set")
 
 
 class ServicePackage(_Timestamps, db.Model):
+    """A fixed-price package for a weight or piece range (e.g. Clothes 3KG-5KG).
+
+    `covers_codes` lists the services the package already includes so they are not charged twice."""
     __tablename__ = "service_packages"
     __table_args__ = (
         db.UniqueConstraint("category", "description", name="uq_package_category_description"),
@@ -85,14 +93,17 @@ class ServicePackage(_Timestamps, db.Model):
 
     @property
     def covered_codes(self) -> set:
+        """The service codes this package includes, as a set."""
         return {c.strip() for c in (self.covers_codes or "").split(",") if c.strip()}
 
     @property
     def unit_label(self) -> str:
+        """Short unit text for the package: 'kg' or 'pcs'."""
         return PackageMeasure.UNIT_LABEL[self.measure_type]
 
     @property
     def range_label(self) -> str:
+        """Readable range, e.g. '3–5 kg' (a single number when min equals max)."""
         lo, hi = Decimal(self.min_value).normalize(), Decimal(self.max_value).normalize()
         lo, hi = f"{lo:f}", f"{hi:f}"
         rng = lo if lo == hi else f"{lo}\u2013{hi}"
@@ -100,6 +111,7 @@ class ServicePackage(_Timestamps, db.Model):
 
     @property
     def display_name(self) -> str:
+        """Name shown in the UI, e.g. 'Clothes · 3KG-5KG'."""
         return f"{self.category} \u00b7 {self.description}"
 
 

@@ -1,3 +1,5 @@
+"""Database model for recording that an unclaimed order was disposed of."""
+
 from app.extensions import db
 from app.models.staff_credential import utcnow
 

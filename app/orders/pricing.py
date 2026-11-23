@@ -23,6 +23,7 @@ MAX_TEXT = 255
 
 
 def money(value) -> Decimal:
+    """Round a value to 2 decimal places (centavos), rounding halves up."""
     return Decimal(value).quantize(CENT, rounding=ROUND_HALF_UP)
 
 
@@ -48,6 +49,7 @@ def parse_number(raw, label, lo, hi, places):
 
 
 def _id(raw):
+    """Turn a value from the browser into an integer id (None if it is not a valid whole number)."""
     if isinstance(raw, bool):
         return None
     try:
@@ -58,6 +60,7 @@ def _id(raw):
 
 @dataclass
 class QuoteLine:
+    """One priced line of a quote: what was ordered, the quantity, unit price and line total."""
     key: str
     item_type: str
     name: str
@@ -77,6 +80,7 @@ class QuoteLine:
 
 @dataclass
 class Quote:
+    """The priced result for an order: its lines, any errors, the subtotal and the total."""
     lines: list = field(default_factory=list)
     errors: dict = field(default_factory=dict)
     subtotal: Decimal = Decimal("0.00")
@@ -85,13 +89,16 @@ class Quote:
 
     @property
     def ok(self) -> bool:
+        """True when no errors were found."""
         return not self.errors
 
     def err(self, key, message):
+        """Add an error message under a key (for example the line it belongs to)."""
         self.errors.setdefault(key, []).append(message)
 
 
 def _instructions(raw, quote, key):
+    """Validate the optional special-instructions text; add an error if it is too long."""
     if raw in (None, ""):
         return None
     text = str(raw).strip()
@@ -102,10 +109,16 @@ def _instructions(raw, quote, key):
 
 
 def _as_list(value):
+    """Return the value if it is a list, otherwise an empty list."""
     return value if isinstance(value, list) else []
 
 
 def build_quote(payload) -> Quote:
+    """Validate an order request from the browser and work out the prices.
+
+    Prices always come from the database, never from the browser. Packages are processed first so
+    services they already include are not charged twice; then services and extras are added.
+    Returns a Quote with the lines, totals and any error messages."""
     quote = Quote()
     if not isinstance(payload, dict):
         quote.err(GENERAL, "Invalid request.")
@@ -151,6 +164,7 @@ def build_quote(payload) -> Quote:
 
 
 def _add_package(quote, raw, seen, selected_packages):
+    """Validate one selected package (still active, no duplicate, valid weight/pieces and quantity) and add its priced line."""
     pid = _id(raw.get("id"))
     key = f"package:{pid}"
     pkg = db.session.get(ServicePackage, pid) if pid else None
@@ -187,6 +201,7 @@ def _add_package(quote, raw, seen, selected_packages):
 
 
 def _add_service(quote, raw, seen, covered, selected_codes):
+    """Validate one selected service (active, priced, not already covered by a package, valid quantity) and add its priced line."""
     sid = _id(raw.get("id"))
     key = f"service:{sid}"
     svc = db.session.get(Service, sid) if sid else None
@@ -222,6 +237,9 @@ def _add_service(quote, raw, seen, covered, selected_codes):
 
 
 def _add_extra(quote, raw, seen):
+    """Validate one selected extra and add its line.
+
+    An extra is either paid (uses the extra's price) or customer-supplied (price 0), if allowed."""
     if not isinstance(raw, dict):
         quote.err(GENERAL, "One of the selected extras is invalid.")
         return

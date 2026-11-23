@@ -12,6 +12,7 @@ from app.models import Role
 
 @bp.before_request
 def _admin_only():
+    """Allow only signed-in, active administrators; others get the login page or a 403."""
     if not current_user.is_authenticated:
         return current_app.login_manager.unauthorized()
     if current_user.role != Role.ADMIN or not current_user.is_active:
@@ -21,4 +22,5 @@ def _admin_only():
 
 @bp.get("/")
 def index():
+    """Redirect the old Audit Logs URL to the Audit Logs card in Personal Settings."""
     return redirect(url_for("core.personal_settings", _anchor="audit-logs", **request.args.to_dict()), code=302)

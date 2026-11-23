@@ -57,10 +57,12 @@ def identity_summary(user):
 
 
 def _clean(text, limit):
+    """Remove control characters from text and cut it to the length limit."""
     return _CONTROL.sub("", str(text or "")).strip()[:limit + 1]
 
 
 def _reason(value):
+    """Validate an admin-entered reason (3 to 255 characters) and return the cleaned text."""
     reason = _clean(value, 255)
     if len(reason) < 3 or len(reason) > 255:
         raise ActionError("Enter a reason (3 to 255 characters).")
@@ -68,6 +70,7 @@ def _reason(value):
 
 
 def _acting_admin(actor):
+    """Make sure the person performing the action is an active administrator."""
     if getattr(actor, "role", None) != Role.ADMIN or not actor.is_operational:
         raise ActionError("Only an active administrator can manage staff accounts.")
 
@@ -86,6 +89,7 @@ def _locked_target(user_id, actor):
 
 
 def _set_status(target, actor, status, *, reason=None, is_active):
+    """Change an account's status and active flag, and record the reason, time and who changed it."""
     target.account_status = status
     target.is_active = is_active
     target.status_reason = reason
@@ -94,24 +98,29 @@ def _set_status(target, actor, status, *, reason=None, is_active):
 
 
 def _revoke_enrollment(target):
+    """Cancel the staff member's enrollment link so it can no longer be used."""
     cred = target.staff_credential
     if cred is not None:
         cred.enroll_token_hash = cred.enroll_token_expires_at = None
 
 
 def _enrollment_url(token):
+    """Build the full enrollment URL for a token using APP_BASE_URL."""
     base = (current_app.config.get("APP_BASE_URL") or "").rstrip("/")
     return f"{base}/staff/enroll/{token}"
 
 
 def _finish(action, actor, target, detail):
+    """Write the audit/auth event for an action, commit the change and return the target user."""
     record_event(action, actor=actor, target=target, detail=detail)
     db.session.commit()
     return target
 
 
 def _transaction(fn):
+    """Decorator that rolls the database session back if the wrapped action raises an error."""
     def wrapper(*args, **kwargs):
+        """Call the action; on any error roll back the database changes and re-raise."""
         try:
             return fn(*args, **kwargs)
         except Exception:
@@ -167,6 +176,9 @@ def mark_identity_verified(user):
 # ----------------------------------------------------------------------------- lifecycle actions
 @_transaction
 def approve(user_id, actor):
+    """Approve a staff account (pending approval -> active).
+
+    Requires completed identity verification. Records who approved it and when."""
     target = _locked_target(user_id, actor)
     if target.account_status != AccountStatus.PENDING_APPROVAL:
         raise ActionError("Only accounts awaiting approval can be approved.")
@@ -179,6 +191,7 @@ def approve(user_id, actor):
 
 @_transaction
 def reject(user_id, actor, reason):
+    """Reject a pending account with a reason and cancel its enrollment link."""
     target = _locked_target(user_id, actor)
     reason = _reason(reason)
     if target.account_status not in AccountStatus.PENDING:
@@ -190,6 +203,7 @@ def reject(user_id, actor, reason):
 
 @_transaction
 def suspend(user_id, actor, reason):
+    """Suspend an active account with a reason and cancel its enrollment link."""
     target = _locked_target(user_id, actor)
     reason = _reason(reason)
     if target.account_status != AccountStatus.ACTIVE:
@@ -201,6 +215,7 @@ def suspend(user_id, actor, reason):
 
 @_transaction
 def reactivate(user_id, actor):
+    """Lift a suspension (suspended -> active). Only allowed if the identity is verified."""
     target = _locked_target(user_id, actor)
     if target.account_status != AccountStatus.SUSPENDED:
         raise ActionError("Only suspended accounts can be reactivated.")
@@ -224,6 +239,7 @@ def deactivate(user_id, actor, reason):
 
 # ----------------------------------------------------------------------------- queries
 def status_counts():
+    """Count staff accounts per status (plus total and suspended+deactivated) for the filter tabs."""
     rows = db.session.execute(
         db.select(User.account_status, db.func.count(User.id)).where(User.role == Role.STAFF)
         .group_by(User.account_status)
@@ -236,6 +252,9 @@ def status_counts():
 
 
 def staff_query(status=None, term=None, sort="newest"):
+    """Build the database query for the staff list.
+
+    Filters by status and a search term (name or email, with wildcards escaped) and applies the chosen sort."""
     q = db.select(User).where(User.role == Role.STAFF)
     if status in AccountStatus.ALL:
         q = q.where(User.account_status == status)

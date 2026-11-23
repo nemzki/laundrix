@@ -1,3 +1,5 @@
+"""Dashboard blueprint: the admin and staff home pages."""
+
 from flask import Blueprint
 
 bp = Blueprint(

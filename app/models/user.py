@@ -1,3 +1,5 @@
+"""Database model for user accounts (admins and staff) and their roles and account status."""
+
 from datetime import datetime, timezone
 
 from flask_login import UserMixin
@@ -6,6 +8,7 @@ from app.extensions import db
 
 
 class Role:
+    """The two user roles: admin and staff."""
     ADMIN = "admin"
     STAFF = "staff"
     ALL = (ADMIN, STAFF)
@@ -35,10 +38,15 @@ class AccountStatus:
 
 
 def _utcnow():
+    """Return the current UTC time without timezone info (the format stored in the database)."""
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class User(UserMixin, db.Model):
+    """A person who can sign in to Laundrix (an admin or a staff member).
+
+    Holds identity details (email, name, Google id, picture), the role, whether the account is
+    active, its approval/lifecycle status, and failed-login lockout fields."""
 
     __tablename__ = "users"
 
@@ -81,6 +89,7 @@ class User(UserMixin, db.Model):
 
     @property
     def is_admin(self) -> bool:
+        """True if the user's role is admin."""
         return self.role == Role.ADMIN
 
     @property
@@ -90,7 +99,9 @@ class User(UserMixin, db.Model):
 
     @property
     def is_locked(self) -> bool:
+        """True while the account is temporarily locked after too many failed logins."""
         return self.locked_until is not None and self.locked_until > _utcnow()
 
     def __repr__(self):
+        """Short text shown when the user is printed in the console or logs."""
         return f"<User {self.email} ({self.role})>"

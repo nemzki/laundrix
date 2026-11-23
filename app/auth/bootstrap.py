@@ -51,6 +51,10 @@ def password_problems(password, username=""):
 
 
 def check_admin_password(user, password) -> bool:
+    """Check a password against an administrator's stored hash.
+
+    When the user does not exist (or has no password) a dummy hash is still checked, so the
+    response takes about the same time and does not reveal which usernames exist."""
     stored = user.password_hash if user is not None and user.password_hash else dummy_hash()
     ok = check_password_hash(stored, password or "")
     return bool(ok and user is not None and user.password_hash)
@@ -58,12 +62,20 @@ def check_admin_password(user, password) -> bool:
 
 @dataclass
 class BootstrapResult:
+    """The outcome of trying to create the first administrator.
+
+    `status` is created, exists, skipped_other_admin or invalid, `message` explains it, and
+    `user` is the account when there is one."""
     status: str          # created | exists | skipped_other_admin | invalid
     message: str
     user: object = None
 
 
 def create_initial_admin(username, password, email=None, allow_additional=False) -> BootstrapResult:
+    """Create the very first administrator account from the .env values.
+
+    Validates the username and password, refuses to touch an existing account, and by default
+    does nothing if another admin already exists. Returns a BootstrapResult describing what happened."""
     username = (username or "").strip().lower()
     if not USERNAME_RE.match(username):
         return BootstrapResult("invalid", "INITIAL_ADMIN_USERNAME must be 3-40 characters: "

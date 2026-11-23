@@ -49,6 +49,10 @@ def bucket_revenue(payment_rows, days, today):
 
 
 def get_chart_data(days):
+    """Collect the data for the Analytics page charts over the last `days` days.
+
+    Counts orders per day, revenue per day (payments minus reversals), the most-used services and
+    the current number of orders per status."""
     today = shop_today()
     start_utc = local_day_bounds_utc(today - timedelta(days=days - 1))[0]
     end_utc = local_day_bounds_utc(today)[1]

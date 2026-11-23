@@ -1,3 +1,5 @@
+"""Database models for identity-verification attempts and their event log."""
+
 import uuid
 
 from app.extensions import db
@@ -5,6 +7,7 @@ from app.models.staff_credential import utcnow
 
 
 def _public_id():
+    """Create a random hex id that is safe to show in URLs (it hides the real row number)."""
     return uuid.uuid4().hex
 
 

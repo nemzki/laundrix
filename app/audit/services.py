@@ -33,6 +33,7 @@ from app.models import AuditLog, User
 
 # ----------------------------------------------------------------------------- vocabulary
 class AuditAction:
+    """The kinds of actions that can be logged, with a readable label and badge colour for each."""
     LOGIN, LOGIN_FAILED, LOGOUT = "login", "login_failed", "logout"
     CREATE, UPDATE, DELETE = "create", "update", "delete"
     STATUS_CHANGE, PRICE_CHANGE = "status_change", "price_change"
@@ -62,6 +63,7 @@ class AuditAction:
 
 
 class AuditModule:
+    """The areas of the system an action belongs to (auth, accounts, orders, payments...), with labels."""
     AUTH, ACCOUNTS, ORDERS, CUSTOMERS = "auth", "accounts", "orders", "customers"
     PAYMENTS, SERVICES, SETTINGS = "payments", "services", "settings"
 
@@ -88,6 +90,7 @@ MAX_JSON_BYTES = 4000
 
 
 def _is_sensitive_key(key) -> bool:
+    """Return True if a field name looks sensitive (password, token, secret...) so its value is hidden."""
     low = str(key).lower()
     if any(part in low for part in _SENSITIVE_PARTS):
         return True
@@ -95,16 +98,22 @@ def _is_sensitive_key(key) -> bool:
 
 
 def mask_phone(text: str) -> str:
+    """Hide all but the last 4 digits of a phone number."""
     digits = re.sub(r"\D", "", text)
     return ("\u2022" * 4 + digits[-4:]) if len(digits) > 4 else "\u2022" * len(digits)
 
 
 def mask_email(text: str) -> str:
+    """Hide most of an email address (a***@domain)."""
     local, _, domain = text.partition("@")
     return f"{local[:1]}***@{domain}" if domain else text
 
 
 def _clean_value(value, key="", depth=0):
+    """Make one value safe to store in the audit log.
+
+    Converts dates and decimals to text, limits nesting and length, removes control characters
+    and masks phone numbers and emails."""
     if value is None or isinstance(value, bool):
         return value
     if isinstance(value, int):
@@ -161,10 +170,12 @@ _UNSET = object()
 
 
 def _text(value, limit):
+    """Remove control characters from text and cut it to the length limit."""
     return _CONTROL.sub("", str(value or "")).strip()[:limit]
 
 
 def _current_actor():
+    """Return the signed-in User performing the action, or None outside a request."""
     if not has_request_context():
         return None
     user = current_user._get_current_object()
@@ -249,6 +260,7 @@ AUTH_EVENTS = {
 
 
 def _label(user, fallback="an unknown account"):
+    """Return a readable name for a user (full name or email), or the fallback text."""
     return _text(user.full_name or user.email, 150) if user is not None else fallback
 
 

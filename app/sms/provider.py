@@ -40,27 +40,34 @@ def safe_text(value, secret=None, limit=140):
 
 
 class SendResult:
+    """The result of trying to send an SMS: accepted, rejected or ambiguous, plus provider details."""
     def __init__(self, outcome, provider_status=None, reference_id=None, error=None, http_status=None):
+        """Store the outcome, provider status, reference id, error text and HTTP status."""
         self.outcome, self.provider_status = outcome, provider_status
         self.reference_id, self.error, self.http_status = reference_id, error, http_status
 
 
 class StatusResult:
+    """The result of asking the provider for a message's delivery status."""
     def __init__(self, ok, provider_status=None, reference_id=None, error=None, fail_reason=None,
                  http_status=None, not_found=False):
+        """Store whether the lookup worked, the provider status, reference id, error and failure reason."""
         self.ok, self.provider_status, self.reference_id = ok, provider_status, reference_id
         self.error, self.fail_reason = error, fail_reason
         self.http_status, self.not_found = http_status, not_found
 
 
 class UniSMSClient:
+    """Small client for the UniSMS HTTP API (send a message, check a message's status)."""
     def __init__(self, api_key, sender_id="Unisoft", base_url="https://unismsapi.com/api",
                  connect_timeout=3.05, read_timeout=10.0):
+        """Store the API key, sender id, base URL and request timeouts."""
         self.api_key, self.sender_id = api_key, sender_id
         self.base_url = base_url.rstrip("/")
         self.timeout = (connect_timeout, read_timeout)
 
     def _auth(self):
+        """Return the HTTP Basic credentials (the API key as username) used for every request."""
         return HTTPBasicAuth(self.api_key, "")
 
     def _reason(self, response):
@@ -80,6 +87,10 @@ class UniSMSClient:
 
     # ------------------------------------------------------------------ send
     def send(self, recipient, content, metadata=None) -> SendResult:
+        """Send one SMS and classify the result.
+
+        200/201 -> accepted. Authentication, credit, rate-limit and other 4xx errors -> rejected.
+        Timeouts, connection errors and 5xx -> ambiguous (the message may still have been queued)."""
         body = {"recipient": recipient, "content": content, "sender_id": self.sender_id}
         if metadata:
             body["metadata"] = {str(k): str(v) for k, v in metadata.items()}
@@ -110,6 +121,9 @@ class UniSMSClient:
                           error="The SMS provider reported a server error. The message may or may not have been queued.")
 
     def _parse_accepted(self, response) -> SendResult:
+        """Read the provider's success reply and pull out the reference id and status.
+
+        If the reply is not in the expected shape the result is ambiguous, not a failure."""
         try:
             data = response.json()
             message = data["message"]
@@ -130,6 +144,7 @@ class UniSMSClient:
 
     # ------------------------------------------------------------------ status
     def get_status(self, reference_id) -> StatusResult:
+        """Ask the provider for the delivery status of a message by its reference id."""
         if not isinstance(reference_id, str) or not _REFERENCE_RE.match(reference_id):
             return StatusResult(False, error="The stored provider reference is not valid.")
         try:

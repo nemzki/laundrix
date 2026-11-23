@@ -16,11 +16,13 @@ NAME = re.compile(r'avatar-[0-9a-f]{32}\.png\Z')
 
 
 def directory():
+    """Return the folder where profile pictures are stored (PROFILE_AVATAR_DIR or the instance folder)."""
     configured = current_app.config.get('PROFILE_AVATAR_DIR')
     return Path(configured) if configured else Path(current_app.instance_path) / 'uploads' / 'profile_avatars'
 
 
 def stored_name(url):
+    """Extract the safe file name from a picture URL, or None if the URL is not one of ours."""
     if not isinstance(url, str):
         return None
     name = url.rsplit('/', 1)[-1]
@@ -28,6 +30,9 @@ def stored_name(url):
 
 
 def path_for(name):
+    """Return the full path of a stored picture, or None if the name is invalid or the file is missing.
+
+    Resolves the path and checks it stays inside the avatar folder (blocks path tricks)."""
     if not isinstance(name, str) or not NAME.fullmatch(name):
         return None
     root = directory().resolve()
@@ -36,6 +41,7 @@ def path_for(name):
 
 
 def delete(name):
+    """Delete a stored picture file; logs a warning instead of crashing if it cannot be removed."""
     path = path_for(name)
     if path is not None:
         try:
@@ -45,6 +51,11 @@ def delete(name):
 
 
 def save(upload):
+    """Validate an uploaded picture and save a cleaned copy.
+
+    Checks the extension, size, real image type, dimensions and that it is not animated, then
+    re-saves it as a 512x512 PNG with a random name. Returns (file_name, None) on success or
+    (None, error_message) when the image is rejected."""
     extension = Path(upload.filename or '').suffix.lower()
     if extension not in FORMATS:
         return None, 'Choose a PNG, JPEG, or WebP image.'

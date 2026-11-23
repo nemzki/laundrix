@@ -34,6 +34,7 @@ CLAIMED, DISPOSED = "claimed", "disposed"
 
 
 def shop_today():
+    """Return today's date in the shop's local timezone."""
     return datetime.now(SHOP_TZ).date()
 
 

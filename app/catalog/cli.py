@@ -1,9 +1,12 @@
+"""Command-line command to load the starting service catalog (seed-catalog)."""
+
 import click
 
 from app.catalog.seed import seed_catalog
 
 
 def register_catalog_commands(app):
+    """Attach the catalog `flask ...` command to the app."""
     @app.cli.command("seed-catalog")
     def seed_catalog_command():
         """Insert the confirmed WASH UP! catalog if missing (never overwrites existing rows)."""

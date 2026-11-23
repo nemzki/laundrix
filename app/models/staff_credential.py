@@ -1,9 +1,12 @@
+"""Database model for staff-portal credentials (also holds the shared utcnow helper)."""
+
 from datetime import datetime, timezone
 
 from app.extensions import db
 
 
 def utcnow():
+    """Return the current UTC time without timezone info (the format stored in the database)."""
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
@@ -38,4 +41,5 @@ class StaffCredential(db.Model):
 
     @property
     def is_locked(self) -> bool:
+        """True while the account is temporarily locked after too many failed logins."""
         return self.locked_until is not None and self.locked_until > utcnow()

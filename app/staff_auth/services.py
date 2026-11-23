@@ -24,14 +24,17 @@ EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]+\.[^@\s]+$")
 
 # ---- normalisation / tokens ---------------------------------------------------------------
 def normalize_email(value) -> str:
+    """Trim, lowercase and cap an email address at 255 characters."""
     return (value or "").strip().lower()[:255]
 
 
 def valid_email(value: str) -> bool:
+    """Return True if the text looks like a valid email address."""
     return bool(EMAIL_RE.match(value))
 
 
 def hash_token(token: str) -> str:
+    """Return the SHA-256 hash of a token (only the hash is stored, never the token itself)."""
     return hashlib.sha256(token.encode()).hexdigest()
 
 
@@ -55,12 +58,19 @@ def is_enrolled(user: User) -> bool:
 
 # ---- provisioning (used by the CLI now, an admin dashboard later) -------------------------
 def _new_token_fields():
+    """Create a new random enrollment token.
+
+    Returns the token, its hash and its expiry time (based on STAFF_ENROLL_TOKEN_HOURS)."""
     token = secrets.token_urlsafe(32)
     hours = current_app.config["STAFF_ENROLL_TOKEN_HOURS"]
     return token, hash_token(token), utcnow() + timedelta(hours=hours)
 
 
 def create_staff(email: str, full_name=None, account_status=None):
+    """Create a staff user with a one-time enrollment link.
+
+    Validates the email and status, saves the user with its credentials and returns (user, raw_token).
+    Raises ValueError if the email is invalid or already used."""
     email = normalize_email(email)
     if not valid_email(email):
         raise ValueError("Invalid email address.")
@@ -83,6 +93,7 @@ def create_staff(email: str, full_name=None, account_status=None):
 
 
 def _credential_or_error(user: User) -> StaffCredential:
+    """Return the user's staff credentials, or raise ValueError if the user is not staff."""
     if user.staff_credential is None:
         raise ValueError("This user is not a staff member.")
     return user.staff_credential
@@ -108,6 +119,9 @@ def deactivate_staff(user: User):
 
 # ---- audit + lockout ----------------------------------------------------------------------
 def log_event(event: str, success: bool, user=None, email=None):
+    """Record a sign-in event in the auth events table and the audit log, then commit.
+
+    Stores the event name, success flag, IP address and browser (user agent)."""
     db.session.add(AuthEvent(
         user_id=user.id if user else None,
         email=email or (user.email if user else None),
@@ -133,6 +147,7 @@ def register_failure(cred: StaffCredential) -> bool:
 
 
 def register_success(cred: StaffCredential):
+    """Reset the failed-attempt counter and lock, and remember when the staff member last verified."""
     cred.failed_attempts, cred.locked_until = 0, None
     cred.last_verified_at = utcnow()
     db.session.commit()

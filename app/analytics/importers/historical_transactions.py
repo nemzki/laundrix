@@ -1,3 +1,7 @@
+"""Reads and validates the historical transactions CSV file before it is imported.
+
+Checks the required columns, each amount and date, and reports clear line-numbered errors."""
+
 import csv
 import hashlib
 from datetime import date
@@ -47,6 +51,9 @@ class HistoricalCsvError(ValueError):
 
 
 def _parse_amount(value, line_number, column):
+    """Convert a CSV amount to a Decimal.
+
+    Rejects empty, non-numeric, negative, too-large or more-than-2-decimal values, naming the line and column."""
     value = value.strip()
 
     if not value:
@@ -83,6 +90,7 @@ def _parse_amount(value, line_number, column):
 
 
 def _parse_optional_date(value, line_number, column):
+    """Convert a YYYY-MM-DD CSV value to a date; an empty value gives None and a bad value raises a clear error."""
     value = value.strip()
     if not value:
         return None

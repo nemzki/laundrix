@@ -1,3 +1,8 @@
+"""Shared Flask extension objects (database, login, security, rate limiting...).
+
+They are created here WITHOUT an app so any file can import them. The app factory connects
+them to the real app later with init_app(), which avoids circular imports."""
+
 from authlib.integrations.flask_client import OAuth
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address

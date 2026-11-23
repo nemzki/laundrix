@@ -1,3 +1,5 @@
+"""Sign-in routes: login page, Google OAuth, face login, callback and logout."""
+
 from sqlalchemy.exc import SQLAlchemyError
 from authlib.integrations.base_client.errors import OAuthError
 from flask import (
@@ -77,6 +79,7 @@ def face_login():
     """Authenticate an enrolled staff member using passive liveness and face search."""
 
     def response(message, status):
+        """Build the JSON reply for the face-login request (ok is True only for status 200)."""
         return jsonify({"ok": status == 200, "message": message}), status
 
     if current_user.is_authenticated:
@@ -181,6 +184,7 @@ def face_login():
 @bp.route("/google")
 @limiter.limit("20 per minute")
 def google_login():
+    """Start Google sign-in: redirect the browser to Google's account chooser."""
     redirect_uri = url_for("auth.callback", _external=True)
 
     return oauth.google.authorize_redirect(
@@ -192,6 +196,10 @@ def google_login():
 @bp.route("/callback")
 @limiter.limit("20 per minute")
 def callback():
+    """Finish Google sign-in after Google sends the person back.
+
+    Reads the Google profile, checks the account is allowed, clears the old session (prevents session
+    fixation), signs the user in and redirects to their dashboard. Failures flash an error and return to login."""
     try:
         token = oauth.google.authorize_access_token()
     except OAuthError as exc:
@@ -240,6 +248,9 @@ def callback():
 @bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
+    """Sign the user out, clear the session and return to the landing page.
+
+    The audit record is best-effort: if it fails, the person is still signed out."""
     # Signing out must always work, so a failure to write this one record is logged, not raised.
     try:
         record_event("logout", actor=current_user._get_current_object(),

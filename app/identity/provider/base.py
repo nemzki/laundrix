@@ -7,6 +7,7 @@ from typing import List, Optional
 
 
 class ProviderError(Exception):
+    """Base error for any problem talking to the identity provider."""
     code = "provider_error"
     retryable = False
 
@@ -18,9 +19,11 @@ class ProviderUnavailable(ProviderError):
 
 
 class ProviderRateLimited(ProviderUnavailable):
+    """The provider says we are sending too many requests (may include a retry-after time)."""
     code = "provider_rate_limited"
 
     def __init__(self, message="rate limited", retry_after: Optional[int] = None):
+        """Create the error and remember how many seconds to wait before retrying, if known."""
         super().__init__(message)
         self.retry_after = retry_after
 
@@ -42,11 +45,13 @@ class FaceNotDetected(ProviderRejectedRequest):
 
 
 class SessionNotFound(ProviderError):
+    """The provider has no verification session with that id."""
     code = "session_not_found"
 
 
 @dataclass(frozen=True)
 class VerificationSession:
+    """A verification session created at the provider: its id, the hosted page URL and its status."""
     session_id: str
     url: str            # hosted page the user is redirected to
     status: str         # provider status string, e.g. "Not Started"
@@ -54,11 +59,16 @@ class VerificationSession:
 
 @dataclass(frozen=True)
 class Decision:
+    """The provider's decision for a session: its status text and the raw response (kept in memory only)."""
     status: str                                   # provider status string, e.g. "Approved"
     raw: dict = field(default_factory=dict, repr=False)  # in memory only; never persisted/logged
 
 
 class IdentityProvider(ABC):
+    """Blueprint that every identity provider must follow.
+
+    Concrete providers (such as Didit) implement these methods, so the rest of the app does not
+    depend on one specific company."""
     name = "abstract"
 
     @abstractmethod

@@ -1,3 +1,5 @@
+"""Chooses which identity-verification provider the app uses (currently Didit)."""
+
 from flask import current_app
 
 from app.identity.provider.base import IdentityProvider

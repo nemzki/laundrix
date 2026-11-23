@@ -1,8 +1,13 @@
+"""Database model for laundry customers."""
+
 from app.extensions import db
 from app.models.staff_credential import utcnow
 
 
 class Customer(db.Model):
+    """A customer of the laundry shop.
+
+    Stores the name, the contact number as typed, and a digits-only copy (09XXXXXXXXX) used for matching."""
     __tablename__ = "customers"
 
     id = db.Column(db.Integer, primary_key=True)
