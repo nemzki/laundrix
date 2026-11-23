@@ -5,7 +5,7 @@ CREATE DATABASE IF NOT EXISTS laundrix_db
 
 -- Recommended: a dedicated least-privilege user instead of root.
 -- Replace the password, then put these values in your .env file.
-CREATE USER IF NOT EXISTS 'laundrix_user'@'localhost' IDENTIFIED BY 'sharkforever17';
+CREATE USER IF NOT EXISTS 'laundrix_user'@'localhost' IDENTIFIED BY 'CHANGE_ME_TO_A_STRONG_UNIQUE_PASSWORD';
 GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP, REFERENCES
   ON laundrix_db.* TO 'laundrix_user'@'localhost';
 FLUSH PRIVILEGES;
