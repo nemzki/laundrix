@@ -1,58 +1,6 @@
-/* Connect role choices, password visibility, and submission feedback to the sign-in page. */
+/* Connect password visibility and submission feedback to the sign-in page. */
 (function () {
   "use strict";
-
-  /* Make only the active role tab focusable and enable only its sign-in fields. */
-  function setRole(role) {
-    var tabs = document.querySelectorAll("[data-auth-role]");
-    var panels = document.querySelectorAll("[data-auth-panel]");
-    tabs.forEach(function (tab) {
-      var on = tab.getAttribute("data-auth-role") === role;
-      tab.classList.toggle("is-active", on);
-      tab.setAttribute("aria-selected", on ? "true" : "false");
-      tab.tabIndex = on ? 0 : -1;
-    });
-    panels.forEach(function (panel) {
-      var on = panel.getAttribute("data-auth-panel") === role;
-      panel.classList.toggle("is-active", on);
-      if (on) panel.removeAttribute("hidden");
-      else panel.setAttribute("hidden", "");
-      panel.querySelectorAll("input, button[type='submit']").forEach(function (el) {
-        if (el.hasAttribute("data-password-toggle")) return;
-        if (el.classList.contains("lx-auth__toggle")) return;
-        el.disabled = !on;
-      });
-      // Password toggles stay enabled only on the active panel
-      panel.querySelectorAll("[data-password-toggle]").forEach(function (btn) {
-        btn.disabled = !on;
-      });
-    });
-  }
-
-  /* Give mouse and keyboard users the same way to switch sign-in roles. */
-  function initRoles() {
-    var tabs = Array.prototype.slice.call(document.querySelectorAll("[data-auth-role]"));
-    if (!tabs.length) return;
-
-    tabs.forEach(function (tab, index) {
-      tab.tabIndex = tab.classList.contains("is-active") ? 0 : -1;
-      tab.addEventListener("click", function () {
-        setRole(tab.getAttribute("data-auth-role"));
-      });
-      tab.addEventListener("keydown", function (event) {
-        var key = event.key;
-        var next = index;
-        if (key === "ArrowRight" || key === "ArrowDown") next = (index + 1) % tabs.length;
-        else if (key === "ArrowLeft" || key === "ArrowUp") next = (index - 1 + tabs.length) % tabs.length;
-        else if (key === "Home") next = 0;
-        else if (key === "End") next = tabs.length - 1;
-        else return;
-        event.preventDefault();
-        tabs[next].focus();
-        setRole(tabs[next].getAttribute("data-auth-role"));
-      });
-    });
-  }
 
   function initPasswordToggles() {
     document.querySelectorAll("[data-password-toggle]").forEach(function (btn) {
@@ -118,7 +66,6 @@
     });
   }
 
-  initRoles();
   initPasswordToggles();
   initSubmitLoading();
   initGoogle();

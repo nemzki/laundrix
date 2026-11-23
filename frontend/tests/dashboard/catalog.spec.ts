@@ -2,10 +2,10 @@ import { expect,test,type Page } from '@playwright/test'
 import type { CatalogData } from '../../src/catalog/api'
 
 async function login(page:Page,staff=false) {
-  await page.goto('/auth/login');if(staff)await page.getByRole('tab',{name:'Staff',exact:true}).click()
-  await page.locator(staff?'#staff-identifier':'#admin-identifier').fill(staff?'staff@example.test':'browseradmin')
-  await page.locator(staff?'#staff-password':'#admin-password').fill('Browser-Test-Password!42')
-  await page.locator(`form[data-auth-form=${staff?'staff':'admin'}] button[type=submit]`).click();await expect(page).toHaveURL(/dashboard/)
+  await page.goto('/auth/login')
+  await page.locator('#identifier').fill(staff?'staff@example.test':'browseradmin')
+  await page.locator('#password').fill('Browser-Test-Password!42')
+  await page.locator(`form[data-auth-form] button[type=submit]`).click();await expect(page).toHaveURL(/dashboard/)
 }
 async function ready(page:Page){await expect(page.locator('#laundrix-catalog')).toHaveAttribute('data-ready','true')}
 async function data(page:Page):Promise<CatalogData> {

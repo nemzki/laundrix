@@ -30,9 +30,9 @@ test('shared Geist loads once across public, Admin, Staff, React and receipt lay
     await checkGeist(page)
   }
   await page.goto('/auth/login')
-  await page.locator('#admin-identifier').fill('browseradmin')
-  await page.locator('#admin-password').fill('Browser-Test-Password!42')
-  await page.locator('[data-auth-form=admin] button[type=submit]').click()
+  await page.locator('#identifier').fill('browseradmin')
+  await page.locator('#password').fill('Browser-Test-Password!42')
+  await page.locator('[data-auth-form] button[type=submit]').click()
   await expect(page).toHaveURL(/dashboard/)
   for (const path of ['/dashboard/', '/orders/', '/orders/new', '/orders/customers', '/admin/services/', '/payments/outstanding', '/payments/', '/payments/summary', '/payments/settings', '/admin/staff/', '/admin/staff/new']) {
     const response = await page.goto(path)
@@ -69,10 +69,9 @@ test('shared Geist loads once across public, Admin, Staff, React and receipt lay
   // A separate authenticated Staff session exercises the retained Jinja shell.
   await page.context().clearCookies()
   await page.goto('/auth/login')
-  await page.getByRole('tab', { name: 'Staff', exact: true }).click()
-  await page.locator('#staff-identifier').fill('staff@example.test')
-  await page.locator('#staff-password').fill('Browser-Test-Password!42')
-  await page.locator('[data-auth-form=staff] button[type=submit]').click()
+  await page.locator('#identifier').fill('staff@example.test')
+  await page.locator('#password').fill('Browser-Test-Password!42')
+  await page.locator('[data-auth-form] button[type=submit]').click()
   await expect(page).toHaveURL(/dashboard/)
   for (const path of ['/dashboard/', '/orders/', '/orders/new']) {
     await page.goto(path)

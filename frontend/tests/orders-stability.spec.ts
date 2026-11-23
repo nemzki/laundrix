@@ -3,9 +3,9 @@ import { expect, test, type Page } from '@playwright/test'
 const columns = ['Order Reference', 'Customer', 'Contact Number', 'Date Created', 'Laundry Status', 'Payment Status', 'Action']
 async function signIn(page: Page) {
   await page.goto('/auth/login')
-  await page.locator('#admin-identifier').fill('browseradmin')
-  await page.locator('#admin-password').fill('Browser-Test-Password!42')
-  await page.locator('[data-auth-form=admin] button[type=submit]').click()
+  await page.locator('#identifier').fill('browseradmin')
+  await page.locator('#password').fill('Browser-Test-Password!42')
+  await page.locator('[data-auth-form] button[type=submit]').click()
   await expect(page).toHaveURL(/dashboard/)
 }
 async function mounted(page: Page) {

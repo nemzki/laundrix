@@ -3,10 +3,9 @@ import { expect, test, type Page } from '@playwright/test'
 async function login(page: Page, role: 'admin' | 'staff' = 'admin') {
   await page.goto('/auth/login', { waitUntil: 'domcontentloaded' })
   await expect(page.locator('html')).toHaveAttribute('data-theme-preference', /light|dark|system/)
-  if (role === 'staff') await page.getByRole('tab', { name: 'Staff', exact: true }).click()
-  await page.locator(`#${role}-identifier`).fill(role === 'admin' ? 'browseradmin' : 'staff@example.test')
-  await page.locator(`#${role}-password`).fill('Browser-Test-Password!42')
-  await page.locator(`form[data-auth-form=${role}] button[type=submit]`).click()
+  await page.locator(`#identifier`).fill(role === 'admin' ? 'browseradmin' : 'staff@example.test')
+  await page.locator(`#password`).fill('Browser-Test-Password!42')
+  await page.locator(`form[data-auth-form] button[type=submit]`).click()
   await expect(page).toHaveURL(/dashboard/)
   await expect(page.locator('#laundrix-dashboard')).toHaveAttribute('data-ready', 'true')
 }
@@ -29,6 +28,36 @@ async function darkSurface(page: Page, selector: string) {
   expect(await node.evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(30, 41, 59)')
 }
 
+test('unified sign-in fits all supported widths and can reveal the password', async ({ page }) => {
+  await page.goto('/auth/login')
+  const form = page.locator('[data-auth-form]')
+  const password = page.getByLabel('Password', { exact: true })
+  const face = page.getByRole('button', { name: 'Sign in with Face Recognition' })
+  const google = page.getByRole('link', { name: 'Continue with Google' })
+  await expect(form).toHaveCount(1)
+  await expect(page.getByRole('tab')).toHaveCount(0)
+  await expect(google).toHaveAttribute('href', '/auth/google')
+  await page.getByRole('button', { name: 'Show password' }).click()
+  await expect(password).toHaveAttribute('type', 'text')
+  await page.getByRole('button', { name: 'Hide password' }).click()
+  await expect(password).toHaveAttribute('type', 'password')
+
+  const widths = [320, 375, 390, 430, 768, 1024, 1440]
+  for (const { width, height } of [...widths.map(width => ({ width, height: 900 })), { width: 667, height: 375 }]) {
+    await page.setViewportSize({ width, height })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
+    const bounds = (await form.boundingBox())!
+    expect(bounds.x + bounds.width / 2).toBeCloseTo(width / 2)
+    for (const action of [page.getByLabel('Email or Username'), password, form.getByRole('button', { name: 'Sign In' }), face, google]) {
+      const buttonBounds = (await action.boundingBox())!
+      expect(buttonBounds.width).toBeCloseTo(bounds.width)
+      expect(buttonBounds.height).toBeGreaterThanOrEqual(44)
+    }
+    await google.scrollIntoViewIfNeeded()
+    await expect(google).toBeInViewport()
+  }
+})
+
 for (const width of [390, 1440]) {
   test(`face recognition sign-in follows the theme and opens the scanner at ${width}px`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height: 900 })
@@ -39,7 +68,7 @@ for (const width of [390, 1440]) {
     await page.emulateMedia({ colorScheme: 'dark' })
     await page.goto('/')
     await choose(page, 'light')
-    await page.goto('/auth/login?role=staff')
+    await page.goto('/auth/login')
     const button = page.getByRole('button', { name: 'Sign in with Face Recognition' })
     const root = page.locator('html')
     await expect(button).toHaveCSS('background-color', 'rgb(255, 255, 255)')
@@ -51,7 +80,7 @@ for (const width of [390, 1440]) {
     await page.emulateMedia({ colorScheme: 'light' })
     await page.goto('/')
     await choose(page, 'dark')
-    await page.goto('/auth/login?role=staff')
+    await page.goto('/auth/login')
     await expect(button).toHaveCSS('background-color', 'rgb(30, 41, 59)')
     await expect(button).toHaveCSS('color', 'rgb(241, 245, 249)')
     await expect(button.locator('svg')).toHaveCSS('stroke', 'rgb(147, 197, 253)')
@@ -60,7 +89,7 @@ for (const width of [390, 1440]) {
 
     await page.goto('/')
     await choose(page, 'system')
-    await page.goto('/auth/login?role=staff')
+    await page.goto('/auth/login')
     await expect(root).toHaveAttribute('data-lx-theme', 'light')
     await expect(button).toHaveCSS('background-color', 'rgb(255, 255, 255)')
     await page.emulateMedia({ colorScheme: 'dark' })
@@ -81,8 +110,8 @@ for (const width of [390, 1440]) {
     await expect(scanner).toBeVisible()
     await expect(scanner).toHaveCSS('background-color', 'rgb(15, 23, 42)')
     await expect(scanner.getByRole('heading', { level: 1 })).toHaveText('Face Recognition')
-    await expect(page.getByRole('tablist', { name: 'Sign-in role' })).toBeHidden()
-    await expect(page.locator('[data-auth-form="staff"]')).toBeHidden()
+    await expect(page.getByRole('tablist', { name: 'Sign-in role' })).toHaveCount(0)
+    await expect(page.locator('[data-auth-form]')).toBeHidden()
     await expect(scanner.locator('.lx-scan')).toHaveCSS('border-top-color', 'rgb(51, 65, 85)')
     await expect(scanner.getByRole('status')).toHaveText('Camera unavailable')
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width)
@@ -98,7 +127,7 @@ for (const width of [390, 1440]) {
     await cancel.click()
     await expect(scanner).toBeHidden()
     await expect(button).toBeFocused()
-    await expect(page).toHaveURL(/role=staff$/)
+    await expect(page).toHaveURL(/\/auth\/login$/)
 
     await button.evaluate((element: HTMLButtonElement) => { element.disabled = true })
     await button.hover()
@@ -207,9 +236,9 @@ test('server dashboard has prepaint theme and selector before React loads', asyn
   await page.emulateMedia({ colorScheme: 'dark' })
   await page.route('**/react-dashboard/dashboard.js', route => route.abort())
   await page.goto('/auth/login', { waitUntil: 'domcontentloaded' })
-  await page.locator('#admin-identifier').fill('browseradmin')
-  await page.locator('#admin-password').fill('Browser-Test-Password!42')
-  await page.locator('form[data-auth-form=admin] button[type=submit]').click()
+  await page.locator('#identifier').fill('browseradmin')
+  await page.locator('#password').fill('Browser-Test-Password!42')
+  await page.locator('form[data-auth-form] button[type=submit]').click()
   await expect(page.locator('#laundrix-dashboard')).toHaveAttribute('data-renderer', 'server')
   await darkSurface(page, '.dashboard-card')
   await choose(page, 'light')

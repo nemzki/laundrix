@@ -6,7 +6,7 @@ import pytest
 from werkzeug.security import generate_password_hash
 
 from app.auth import services as google_auth
-from app.extensions import db
+from app.extensions import db, oauth
 from app.models import AccountStatus, AuthEvent, IdentityVerification, Role, User
 from app.models.staff_credential import utcnow
 from app.staff_auth.services import create_staff
@@ -48,8 +48,11 @@ def test_one_clean_login_page(app):
     page = c.get("/auth/login").get_data(as_text=True)
     for text in ("Sign In", "Welcome to Laundrix. Sign in to continue.", "Continue with Google", "or",
                  "Email or Username", "Password", "authorized by your administrator",
-                 'name="identifier"', 'name="password"', 'name="csrf_token"', "Admin", "Staff"):
+                 'name="identifier"', 'name="password"', 'name="csrf_token"', "Sign in with Face Recognition"):
         assert text in page, text
+    assert page.count('name="identifier"') == page.count('name="password"') == 1
+    assert 'action="/auth/login"' in page
+    assert 'data-auth-role' not in page
     for gone in ("/staff/login", "/auth/admin", "Staff Portal", "Administrator sign-in", "Back to Home"):
         assert gone not in page, gone
     assert "lx-logo--mark-only" in page
@@ -234,6 +237,23 @@ def test_csrf_is_enforced_on_the_login_form():
         db.drop_all()
 
 
+def test_unified_password_form_is_rate_limited():
+    class RateLimitOn(TestingConfig):
+        RATELIMIT_ENABLED = True
+
+    app = _make_app(RateLimitOn)
+    with app.app_context():
+        db.create_all()
+        try:
+            c = app.test_client()
+            for _ in range(10):
+                assert sign_in(c, "", "").status_code == 401
+            assert sign_in(c, "", "").status_code == 429
+        finally:
+            db.session.remove()
+            db.drop_all()
+
+
 # ----------------------------------------------------------------------------- legacy pages share the same rules
 def test_legacy_staff_page_uses_the_same_rules(app):
     make_staff("w@example.com", status=S.PENDING_APPROVAL)
@@ -244,6 +264,18 @@ def test_legacy_staff_page_uses_the_same_rules(app):
 
 
 # ----------------------------------------------------------------------------- Google sign-in is unchanged
+def test_google_callback_redirects_authorized_admin(app, make_user, monkeypatch):
+    admin = make_user("owner@example.com", role=Role.ADMIN)
+    monkeypatch.setattr(oauth.google, "authorize_access_token", lambda: {
+        "userinfo": {"sub": "g-callback", "email": admin.email, "email_verified": True},
+    })
+    c = app.test_client()
+    response = c.get("/auth/callback")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/dashboard/admin")
+    assert signed_in(c)
+
+
 def test_google_still_resolves_only_existing_authorized_accounts(app, make_user):
     admin = make_user("owner@example.com", role=Role.ADMIN)
     before = db.session.scalar(db.select(db.func.count(User.id)))

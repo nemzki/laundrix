@@ -2,9 +2,9 @@ import { expect, test } from '@playwright/test'
 
 test('central laundry colors, customer icons and one stable search focus indicator', async ({ page }) => {
   await page.goto('/auth/login')
-  await page.locator('#admin-identifier').fill('browseradmin')
-  await page.locator('#admin-password').fill('Browser-Test-Password!42')
-  await page.locator('form[data-auth-form=admin] button[type=submit]').click()
+  await page.locator('#identifier').fill('browseradmin')
+  await page.locator('#password').fill('Browser-Test-Password!42')
+  await page.locator('form[data-auth-form] button[type=submit]').click()
   await expect(page).toHaveURL(/dashboard/)
   const palette = {
     order_received: ['rgb(224, 242, 254)', 'rgb(7, 89, 133)'],

@@ -112,9 +112,7 @@
 /* Authentication uses the same palette; layout and original Light colors stay intact. */
 @media screen {
   html[data-lx-theme=light] { color-scheme: light; }
-  html[data-lx-theme=dark] .lx-auth__roles,
   html[data-lx-theme=dark] .lx-auth .lx-auth__input { background:var(--lx-paint-muted); }
-  html[data-lx-theme=dark] .lx-auth__roles .lx-segmented__btn.is-active,
   html[data-lx-theme=dark] .lx-auth .lx-auth__input:focus,
   html[data-lx-theme=dark] :is(.lx-auth__google, .google-btn, .auth-form input) { background:var(--lx-surface);color:var(--lx-text);border-color:var(--lx-border); }
   html[data-lx-theme=dark] :is(.lx-auth__google, .google-btn):hover { background:var(--lx-paint-muted);color:var(--lx-text); }

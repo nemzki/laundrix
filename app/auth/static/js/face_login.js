@@ -16,10 +16,9 @@
   var stage = document.querySelector("[data-face-login-stage]");
   var retryButton = document.querySelector("[data-face-login-start]");
   var cancelButton = document.querySelector("[data-face-login-cancel]");
-  var staffPanel = document.querySelector('[data-auth-panel="staff"]');
 
   if (!trigger || !shell || !panel || !heading || !backButton || !video || !canvas || !title || !message ||
-      !progress || !stage || !retryButton || !cancelButton || !staffPanel) {
+      !progress || !stage || !retryButton || !cancelButton) {
     return;
   }
 
@@ -252,7 +251,7 @@
 
   /* Attach the captured image and request token before sending the verification request. */
   async function submit(blob) {
-    var form = document.querySelector('[data-auth-form="staff"]');
+    var form = document.querySelector('[data-auth-form]');
     var csrf = form ? form.querySelector('input[name="csrf_token"]') : null;
     if (!csrf || !csrf.value) throw new Error("Unable to verify this sign-in request. Reload the page.");
 
@@ -439,10 +438,7 @@
 
   trigger.addEventListener("click", function () {
     if (trigger.disabled || submitting || !panel.hidden) return;
-    var loginUrl = new URL(window.location.href);
-    loginUrl.searchParams.set("role", "staff");
-    history.replaceState(history.state, "", loginUrl);
-    var scanUrl = new URL(loginUrl);
+    var scanUrl = new URL(window.location.href);
     scanUrl.hash = "face-recognition";
     history.pushState({ staffFaceScanner: true }, "", scanUrl);
     openPanel(true);
@@ -453,7 +449,6 @@
 
   function restoreView() {
     if (history.state && history.state.staffFaceScanner && cameraIsAvailable()) {
-      if (staffPanel.hidden) document.querySelector('[data-auth-role="staff"]').click();
       if (panel.hidden) openPanel(false);
     } else if (!panel.hidden) {
       closePanel();

@@ -3,9 +3,9 @@ import { expect, test } from '@playwright/test'
 test('3/1/2/0-result fixtures retain columns and natural height through repeated filters and searches', async ({ page }, testInfo) => {
   test.setTimeout(90000)
   await page.goto('/auth/login')
-  await page.locator('#admin-identifier').fill('browseradmin')
-  await page.locator('#admin-password').fill('Browser-Test-Password!42')
-  await page.locator('[data-auth-form=admin] button[type=submit]').click()
+  await page.locator('#identifier').fill('browseradmin')
+  await page.locator('#password').fill('Browser-Test-Password!42')
+  await page.locator('[data-auth-form] button[type=submit]').click()
   await expect(page).toHaveURL(/dashboard/)
 
   const urls = ['/orders/?q=no-match', '/orders/?status=pending_processing', '/orders/?status=completed']

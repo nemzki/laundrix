@@ -7,9 +7,9 @@ for (const width of [1920, 1440, 1024, 768, 390]) test(`Admin workspace alignmen
   page.setDefaultTimeout(10000)
   await page.setViewportSize({ width, height: 1000 })
   await page.goto('/auth/login')
-  await page.locator('#admin-identifier').fill('browseradmin')
-  await page.locator('#admin-password').fill('Browser-Test-Password!42')
-  await page.locator('form[data-auth-form=admin] button[type=submit]').click()
+  await page.locator('#identifier').fill('browseradmin')
+  await page.locator('#password').fill('Browser-Test-Password!42')
+  await page.locator('form[data-auth-form] button[type=submit]').click()
   await expect(page).toHaveURL(/dashboard/)
   const gutter = width >= 1024 ? 32 : width >= 768 ? 24 : 16
   for (const route of routes) {

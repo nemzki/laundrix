@@ -7,10 +7,9 @@ const money = (amount: number) => `₱${amount.toLocaleString('en-PH', { minimum
 
 async function login(page: Page, role: 'admin' | 'staff') {
   await page.goto('/auth/login')
-  if (role === 'staff') await page.getByRole('tab', { name: 'Staff', exact: true }).click()
-  await page.locator(`#${role}-identifier`).fill(role === 'admin' ? 'browseradmin' : 'staff@example.test')
-  await page.locator(`#${role}-password`).fill('Browser-Test-Password!42')
-  await page.locator(`form[data-auth-form=${role}] button[type=submit]`).click()
+  await page.locator(`#identifier`).fill(role === 'admin' ? 'browseradmin' : 'staff@example.test')
+  await page.locator(`#password`).fill('Browser-Test-Password!42')
+  await page.locator(`form[data-auth-form] button[type=submit]`).click()
   await expect(page).toHaveURL(/dashboard/)
 }
 

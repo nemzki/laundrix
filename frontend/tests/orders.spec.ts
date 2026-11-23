@@ -11,8 +11,8 @@ test.beforeEach(async ({ page }) => {
 async function login(page: Page) {
   await page.goto('/auth/login')
   await page.getByLabel('Email or Username').fill('browseradmin')
-  await page.locator('#admin-password').fill('Browser-Test-Password!42')
-  await page.locator('form[data-auth-form=admin] button[type=submit]').click()
+  await page.locator('#password').fill('Browser-Test-Password!42')
+  await page.locator('form[data-auth-form] button[type=submit]').click()
   await expect(page).toHaveURL(/dashboard/)
   await page.goto('/orders/')
   await expect(page.locator('#laundrix-react-orders')).toHaveAttribute('data-ready', 'true')

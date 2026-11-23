@@ -4,8 +4,7 @@ for(const role of ['admin','staff'] as const)for(const width of [320,768,1440])t
  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message))
  await page.setViewportSize({width,height:1000});await page.goto('/auth/login')
  await expect(page.locator('link[href*="internal-polish"]')).toHaveCount(0)
- if(role==='staff')await page.getByRole('tab',{name:'Staff',exact:true}).click()
- await page.locator(`#${role}-identifier`).fill(role==='admin'?'browseradmin':'staff@example.test');await page.locator(`#${role}-password`).fill('Browser-Test-Password!42');await page.locator(`form[data-auth-form=${role}] button[type=submit]`).click();await expect(page).toHaveURL(/dashboard/)
+ await page.locator(`#identifier`).fill(role==='admin'?'browseradmin':'staff@example.test');await page.locator(`#password`).fill('Browser-Test-Password!42');await page.locator(`form[data-auth-form] button[type=submit]`).click();await expect(page).toHaveURL(/dashboard/)
  const routes=role==='admin'?['/dashboard/','/orders/new','/orders/','/orders/customers','/admin/services/','/admin/staff/','/payments/outstanding','/payments/','/payments/summary','/payments/settings']:['/dashboard/','/orders/new','/orders/','/payments/outstanding']
  for(const route of routes){
   const response=await page.goto(route);expect(response?.status(),route).toBe(200)
