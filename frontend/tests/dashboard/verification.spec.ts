@@ -28,7 +28,7 @@ for (const role of ['admin','staff'] as const) for (const width of [320,768,1440
       await page.goto('/settings', { waitUntil: 'domcontentloaded' })
     }
     await page.locator(`[data-theme-preferences] [data-theme-option=${theme}]`).click()
-    await page.getByRole('link', { name: 'View Verification Details', exact: true }).click()
+    await page.getByRole('link', { name: 'View verification details', exact: true }).click()
     await expect(page.locator('html')).toHaveAttribute('data-lx-theme', theme)
     await expect(page.locator('[data-idv-status]')).toHaveAttribute('data-idv-status', role === 'admin' ? 'not_started' : 'verified')
     await expect(page.locator('h1')).toBeVisible()

@@ -10,7 +10,7 @@
 {% block body %}
 <!-- Primary content identified as a landmark for assistive technology. --><main class="idv-page security-shell" id="main">
   {{ security_header('Account security', url_for('core.personal_settings') if current_user.is_operational else url_for('identity.index'), variant='landing') }}
-  {% if current_user.is_operational %}<a class="idv-back" href="{{ url_for('core.personal_settings') }}">{{ icon('arrow-left',16) }}Back to personal settings</a>{% else %}<p class="muted">Personal Settings becomes available after verification and account approval.</p>{% endif %}
+  {% if current_user.is_operational %}<a class="idv-back" href="{{ url_for('core.personal_settings') }}">{{ icon('arrow-left',16) }}Back to personal settings</a>{% else %}<p class="muted">Personal settings becomes available after verification and account approval.</p>{% endif %}
   {% block verification_content %}{% endblock %}
 </main>
 {% endblock %}

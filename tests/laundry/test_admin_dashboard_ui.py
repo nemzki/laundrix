@@ -21,13 +21,13 @@ def test_settings_replaces_admin_banner_without_changing_status_or_eligibility(a
     html = admin_client.get("/settings").get_data(as_text=True)
     banner = re.search(r'<section class="card ps-card" aria-labelledby="verification-heading".*?</section>', html, re.S).group()
     assert f'data-idv-status="{status}"' in banner
-    assert STATUS_COPY[status]["label"].title() in banner
+    assert STATUS_COPY[status]["label"].capitalize() in banner
     assert f'data-idv-can-start="{str(expected["can_start"]).lower()}"' in banner
     assert 'href="/identity/"' in banner
     if expected["can_start"]:
-        assert STATUS_COPY[status]["start_label"].title() in banner
+        assert STATUS_COPY[status]["start_label"].capitalize() in banner
     else:
-        assert "View Verification Details" in banner
+        assert "View verification details" in banner
     for url in ("/dashboard/admin", "/dashboard/admin?ui=jinja"):
         dashboard = admin_client.get(url).get_data(as_text=True)
         assert 'class="dashboard-identity"' not in dashboard
@@ -46,7 +46,7 @@ def test_staff_dashboard_omits_identity_banner_and_keeps_settings_access(app, ad
         assert 'class="idv-card"' not in html
         assert 'class="dashboard-identity"' not in html
         assert 'id="dashboard-preserved-identity"' not in html
-        assert "Identity Verification" not in html
+        assert "Identity verification" not in html
     settings = staff_client.get("/settings")
     assert settings.status_code == 200
     verification = re.search(

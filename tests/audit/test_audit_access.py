@@ -12,7 +12,7 @@ def test_admin_sees_the_card_inside_personal_settings_and_it_is_not_cached(admin
     r = admin_client.get(SETTINGS)
     html = r.get_data(as_text=True)
     assert r.status_code == 200 and "Hello audit" in html and 'id="audit-logs"' in html
-    assert "Account &amp; Security" in html and "no-store" in r.headers["Cache-Control"]
+    assert "Account &amp; security" in html and "no-store" in r.headers["Cache-Control"]
 
 
 def test_staff_settings_page_never_contains_audit_data(staff_client):
@@ -21,7 +21,7 @@ def test_staff_settings_page_never_contains_audit_data(staff_client):
         r = staff_client.get(SETTINGS + q)
         html = r.get_data(as_text=True)
         assert r.status_code == 200
-        assert "TOP-SECRET-ROW" not in html and 'id="audit-logs"' not in html and "Audit Logs" not in html
+        assert "TOP-SECRET-ROW" not in html and 'id="audit-logs"' not in html and "Audit logs" not in html
 
 
 def test_old_url_is_admin_only_and_forwards_to_the_card(anon_client, staff_client, admin_client):

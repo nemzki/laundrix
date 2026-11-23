@@ -45,7 +45,7 @@ def test_own_profile_persists_and_sidebar_and_dashboard_share_it(request, role):
     image = Image.open(io.BytesIO(response.data))
     assert image.size == (512,512) and image.info == {}
     assert b'do-not-retain' not in response.data
-    assert client.get('/settings').get_data(as_text=True).count('Personal Settings | Laundrix') == 1
+    assert client.get('/settings').get_data(as_text=True).count('Personal settings | Laundrix') == 1
 
 
 @pytest.mark.parametrize('name', ['', '   ', 'A', 'x'*151, 'A\x00B'])
@@ -111,7 +111,7 @@ def test_replacement_and_reset_clean_up_owned_files(admin_client, admin):
     assert not old.exists() and new.exists()
     assert post(admin_client, remove_picture='on').status_code == 303
     assert admin.picture_url == '' and not new.exists()
-    assert 'Default Profile Avatar' in admin_client.get('/settings').get_data(as_text=True)
+    assert 'Default profile avatar' in admin_client.get('/settings').get_data(as_text=True)
 
 
 def test_google_sync_preserves_user_edits_and_reset(app, admin_client, admin):

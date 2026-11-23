@@ -17,7 +17,7 @@ def test_verification_state_presentation(request, role, status):
         db.session.commit()
     html = client.get('/identity/').get_data(as_text=True)
     assert f'data-idv-status="{status}"' in html
-    assert STATUS_COPY[status]['label'].title() in html
+    assert STATUS_COPY[status]['label'].capitalize() in html
     assert 'href="/settings"' in html
     assert '/core/static/js/theme.js' in html
     assert '/core/static/css/theme.css' in html
@@ -32,8 +32,8 @@ def test_consent_notice_and_required_fields_remain_intact(app, admin_client):
     html = admin_client.get('/identity/start').get_data(as_text=True)
     assert 'method="post" action="/identity/start"' in html
     assert 'name="csrf_token"' in html
-    assert '<input type="checkbox" name="consent" required>' in html
-    for text in ('National Privacy Commission', 'handled outside your country', 'not</strong> stored on Laundrix servers', "I've read this notice", 'Continue to Verification', 'Back to Personal Settings'):
+    assert '<input type="checkbox" id="identity-consent" name="consent" required>' in html
+    for text in ('National Privacy Commission', 'handled outside your country', 'not</strong> stored on Laundrix servers', "I’ve read this notice", 'Continue to verification', 'Back to personal settings'):
         assert text in html
     assert 'iframe' not in html and 'type="file"' not in html
 
@@ -44,9 +44,9 @@ def test_historical_attempts_stay_read_only_and_owned(app, admin_client, admin, 
     new = IdentityVerification(user_id=admin.id, provider='didit', environment='sandbox', purpose='kyc', status='verified')
     db.session.add_all([old,new]); db.session.commit()
     html = admin_client.get('/identity/').get_data(as_text=True)
-    assert 'Previous Attempts' in html
+    assert 'Previous attempts' in html
     historical = admin_client.get(f'/identity/attempt/{old.public_id}').get_data(as_text=True)
-    assert 'View Current Status' in historical
+    assert 'View current status' in historical
     assert 'href="/identity/start"' not in historical
     assert 'action="/identity/refresh"' not in historical
     assert staff_client.get(f'/identity/attempt/{old.public_id}').status_code == 404
