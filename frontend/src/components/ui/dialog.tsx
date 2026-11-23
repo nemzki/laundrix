@@ -1,3 +1,4 @@
+/** Wrap modal content in reusable pieces for its trigger, title, content, and actions. */
 import { getPortalContainer } from "@/lib/portal"
 import { useFoundationPortalTheme } from "@/lib/portal-theme"
 

@@ -1,7 +1,7 @@
 {% extends 'identity/_page.html' %}
 {% block title %}Verify Your Identity &middot; Laundrix{% endblock %}
 {% block verification_content %}
-  <section class="idv-panel" aria-labelledby="consent-title">
+  <!-- Group the content and controls for identity verification in one section. --><section class="idv-panel" aria-labelledby="consent-title">
     <div class="idv-intro"><p class="idv-eyebrow">Identity Verification</p><h1 id="consent-title">Verify Your Identity</h1>
     <p class="muted">Please read this notice before you continue. It takes about two minutes.</p>
 
@@ -39,7 +39,7 @@
       </p>
     </div>
 
-    <form class="idv-consent-form" method="post" action="{{ url_for('identity.start') }}">
+    <!-- Fields and controls submitted together to the form action. --><form class="idv-consent-form" method="post" action="{{ url_for('identity.start') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <label class="check">
         <input type="checkbox" name="consent" required>

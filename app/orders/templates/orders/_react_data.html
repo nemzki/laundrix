@@ -19,7 +19,7 @@
     stubUrl=url_for('orders.stub', reference=o.reference)
   )] %}
 {% endfor %}
-<script type="application/json" id="laundrix-orders-data">{{ dict(
+<!-- Initial page data in JSON for the JavaScript interface to read. --><script type="application/json" id="laundrix-orders-data">{{ dict(
   orders=view.orders, filters=view.filters, term=term, status=status,
   indexUrl=url_for('orders.index'), newOrderUrl=url_for('orders.new_order'),
   fallbackUrl=url_for('orders.index', q=term or None, status=status or None, page=pagination.page, ui='jinja'),

@@ -1,3 +1,4 @@
+/* Guide the user through the camera scan and display the sign-in result. */
 (function () {
   "use strict";
 
@@ -57,6 +58,7 @@
 
   function setTitle(text) { if (title.textContent !== text) title.textContent = text; }
   function setMessage(text) { if (message.textContent !== text) message.textContent = text; }
+  /* Keep the visible progress indicator and its accessible value in sync. */
   function setProgress(fraction) {
     var percent = Math.round(Math.max(0, Math.min(1, fraction)) * 100);
     progress.style.width = percent + "%";
@@ -64,6 +66,7 @@
   }
   function setState(name) { stage.setAttribute("data-state", name); }
 
+  /* Check whether this browser can provide camera access. */
   function cameraIsAvailable() {
     return window.isSecureContext && navigator.mediaDevices &&
       typeof navigator.mediaDevices.getUserMedia === "function";
@@ -84,6 +87,7 @@
     if (timeoutTimer) { clearTimeout(timeoutTimer); timeoutTimer = null; }
   }
 
+  /* Stop the active camera stream and release its resources. */
   function stopCamera() {
     clearTimers();
     if (stream) {
@@ -107,6 +111,7 @@
     clearCapture();
   }
 
+  /* Close the panel. */
   function closePanel() {
     stopScan();
     if (cooldownTimer) { clearTimeout(cooldownTimer); cooldownTimer = null; }
@@ -117,6 +122,7 @@
     setState("idle");
   }
 
+  /* Update the scanner panel while it waits for a usable camera frame. */
   function showWaitingState() {
     var delay = cooldownUntil - Date.now();
     if (delay <= 0) {
@@ -221,6 +227,7 @@
     });
   }
 
+  /* Choose a camera frame to send for verification. */
   async function captureBest(signal) {
     var best = null, i;
     for (i = 0; i < BURST_FRAMES; i++) {
@@ -234,6 +241,7 @@
     return best.blob;
   }
 
+  /* Check the destination before sending the user to the next page. */
   function getSafeRedirect(value) {
     if (typeof value !== "string" || value.charAt(0) !== "/") return null;
     try {
@@ -242,6 +250,7 @@
     } catch (e) { return null; }
   }
 
+  /* Attach the captured image and request token before sending the verification request. */
   async function submit(blob) {
     var form = document.querySelector('[data-auth-form="staff"]');
     var csrf = form ? form.querySelector('input[name="csrf_token"]') : null;
@@ -273,6 +282,7 @@
     return result;
   }
 
+  /* Switch the scanner to its verification state and handle the result of the request. */
   async function verify(signal) {
     submitting = true;
     clearTimers();
@@ -410,6 +420,7 @@
     }
   }
 
+  /* Open the panel. */
   function openPanel(startImmediately) {
     shell.hidden = true;
     panel.hidden = false;
@@ -449,6 +460,7 @@
       trigger.focus();
     }
   }
+  /* Restore the page state when the user moves through browser history. */
   window.addEventListener("popstate", restoreView);
 
   document.addEventListener("visibilitychange", function () {

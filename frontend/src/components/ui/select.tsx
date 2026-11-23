@@ -1,3 +1,4 @@
+/** Share the trigger, popup, and option styles for selection controls. */
 import { getPortalContainer } from "@/lib/portal"
 import { useFoundationPortalTheme } from "@/lib/portal-theme"
 import * as React from "react"

@@ -1,9 +1,11 @@
+/* Connect order detail actions to dialogs and form submissions. */
 /* Order detail: status / receipt / SMS / reverse-payment modals. External JS (CSP). */
 (function () {
   "use strict";
 
   function ready(fn) {
     if (document.readyState === "loading") {
+      /* Wait until the browser has parsed the page before running this code. */
       document.addEventListener("DOMContentLoaded", fn);
     } else {
       fn();
@@ -16,6 +18,7 @@
     var busy = submitBtn.querySelector("[data-busy]");
     var submitting = false;
 
+    /* Update the loading state and prevent repeated actions while work is in progress. */
     function setBusy(on) {
       submitting = on;
       submitBtn.disabled = on;
@@ -23,6 +26,7 @@
       if (busy) busy.hidden = !on;
     }
 
+    /* Run this handler when the form is submitted. */
     form.addEventListener("submit", function (e) {
       if (submitting) {
         e.preventDefault();
@@ -39,6 +43,7 @@
     return { setBusy: setBusy };
   }
 
+  /* Set up the status modal. */
   function initStatusModal() {
     var modalEl = document.getElementById("statusUpdateModal");
     var form = document.getElementById("statusUpdateForm");
@@ -106,6 +111,7 @@
     });
   }
 
+  /* Set up the confirm received modal. */
   function initConfirmReceivedModal() {
     var modalEl = document.getElementById("confirmReceivedModal");
     var form = document.getElementById("confirmReceivedForm");
@@ -131,6 +137,7 @@
     });
   }
 
+  /* Set up the sms retry modal. */
   function initSmsRetryModal() {
     var modalEl = document.getElementById("smsRetryModal");
     var form = document.getElementById("smsRetryForm");
@@ -161,6 +168,7 @@
     });
   }
 
+  /* Set up the reverse payment modal. */
   function initReversePaymentModal() {
     var modalEl = document.getElementById("reversePaymentModal");
     var form = document.getElementById("reversePaymentForm");

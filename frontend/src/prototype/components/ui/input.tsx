@@ -1,3 +1,4 @@
+/** Share the base appearance and native behavior of text inputs. */
 import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
 import { cn } from "@prototype/lib/utils"

@@ -18,7 +18,7 @@
   image=a.image_url or '', visual=visual(a,18)|string, updated=a.updated_at|localdt, details='',
   chargeable=a.is_chargeable, customerSupplied=a.allow_customer_supplied,
   edit=url_for('catalog.addon_edit',pk=a.id), toggle=url_for('catalog.addon_toggle',pk=a.id))] %}{% endfor %}
-<script type="application/json" id="laundrix-catalog-data">{{ dict(
+<!-- Initial page data in JSON for the JavaScript interface to read. --><script type="application/json" id="laundrix-catalog-data">{{ dict(
   rows=view.rows, tab=request.args.get('tab') if request.args.get('tab') in ['all','services','packages','addons'] else 'all', csrf=csrf_token(), index=url_for('catalog.index'),
   create=dict(services=url_for('catalog.service_new'),packages=url_for('catalog.package_new'),addons=url_for('catalog.addon_new'))
 )|tojson }}</script>

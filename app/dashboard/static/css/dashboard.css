@@ -12,6 +12,7 @@
   min-width: 0;
 }
 
+/* Typography. Keep text sizes, weights, and spacing consistent. */
 .lx-dash__group-title {
   margin: 0 0 0.7rem; /* ~11px before cards */
   font-size: clamp(0.94rem, 1.1vw, 1.05rem); /* ~15–17px */
@@ -21,6 +22,7 @@
   color: var(--lx-navy);
 }
 
+/* Layout and containers. Arrange the main regions and control the space between them. */
 .lx-dash__kpi-grid {
   display: grid;
   gap: 1rem; /* ~16px between cards */
@@ -129,6 +131,8 @@
   align-items: start;
 }
 
+.lx-dash__panels--single { grid-template-columns: minmax(0, 1fr); }
+
 .lx-dash__panel {
   background: var(--lx-surface);
   border: 1px solid var(--lx-border);
@@ -137,6 +141,7 @@
   min-width: 0;
 }
 
+/* Cards and data displays. Group related information and make rows easier to scan. */
 .lx-dash__panel .card-head {
   margin-bottom: 0.65rem;
 }
@@ -248,49 +253,7 @@
   white-space: nowrap;
 }
 
-/* Compact IDV on dashboard pages that load identity.css */
-.app .idv-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.85rem 1rem;
-  flex-wrap: nowrap;
-  margin: 0 0 1.25rem;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-}
-
-.app .idv-card__main {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  min-width: 0;
-  flex: 1;
-}
-
-.app .idv-card__text {
-  min-width: 0;
-}
-
-.app .idv-card h2 {
-  margin: 0.15rem 0 0.1rem;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--lx-navy);
-  line-height: 1.25;
-}
-
-.app .idv-card p {
-  margin: 0;
-  font-size: 0.84rem;
-  line-height: 1.35;
-}
-
-.app .idv-card .btn {
-  flex: none;
-  white-space: nowrap;
-}
-
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media (max-width: 1024px) {
   .lx-dash__kpi-grid--3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -307,14 +270,6 @@
   .lx-dash__kpi-grid--2,
   .lx-dash__kpi-grid--3 {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .app .idv-card {
-    flex-wrap: wrap;
-  }
-
-  .app .idv-card .btn {
-    width: 100%;
   }
 }
 

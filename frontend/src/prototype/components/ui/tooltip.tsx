@@ -1,5 +1,6 @@
 "use client"
 
+/** Show a brief hint associated with a control. */
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 import { cn } from "@prototype/lib/utils"
 import { dashboardPortal } from "@/dashboard/portal"

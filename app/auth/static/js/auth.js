@@ -1,6 +1,8 @@
+/* Connect role choices, password visibility, and submission feedback to the sign-in page. */
 (function () {
   "use strict";
 
+  /* Make only the active role tab focusable and enable only its sign-in fields. */
   function setRole(role) {
     var tabs = document.querySelectorAll("[data-auth-role]");
     var panels = document.querySelectorAll("[data-auth-panel]");
@@ -27,6 +29,7 @@
     });
   }
 
+  /* Give mouse and keyboard users the same way to switch sign-in roles. */
   function initRoles() {
     var tabs = Array.prototype.slice.call(document.querySelectorAll("[data-auth-role]"));
     if (!tabs.length) return;
@@ -67,6 +70,7 @@
 
   function initSubmitLoading() {
     document.querySelectorAll("[data-auth-form]").forEach(function (form) {
+      /* Show immediate feedback while the browser submits the sign-in form. */
       form.addEventListener("submit", function () {
         if (form.dataset.submitting === "1") {
           return;
@@ -83,6 +87,7 @@
     });
   }
 
+  /* Show Google redirect feedback and reset it if the browser restores this page. */
   function initGoogle() {
     var buttons = document.querySelectorAll("[data-google-btn]");
     if (!buttons.length) return;

@@ -1,3 +1,4 @@
+/** Provide reusable menu parts with shared styling and keyboard behavior. */
 import { getPortalContainer } from "@/lib/portal"
 import { useFoundationPortalTheme } from "@/lib/portal-theme"
 import * as React from "react"

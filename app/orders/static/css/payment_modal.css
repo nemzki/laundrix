@@ -36,4 +36,5 @@ body.app .payment-modal .order-detail__kv { display:grid; grid-template-columns:
 body.app .payment-modal .order-detail__kv dt { color:var(--lx-paint-secondary, #475569); font-weight:400; }
 body.app .payment-modal .order-detail__kv dd { text-align:left; margin:0 0 8px; overflow-wrap:anywhere; }
 body.app .payment-modal [data-payment-preview] { font-size:12px; margin:10px 0; color:var(--lx-paint-secondary, #475569); }
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media(max-width:479px) { body.app .payment-modal .order-detail__gcash { grid-template-columns:minmax(0,1fr); } body.app .payment-modal .order-detail__gcash > a { justify-self:center; } }

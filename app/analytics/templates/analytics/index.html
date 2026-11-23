@@ -33,7 +33,7 @@
 
     <div class="analytics-bar">
       <h2 class="analytics-bar-title">Business activity</h2>
-      <nav class="analytics-periods" aria-label="Period">
+      <!-- Related links grouped together so users can find their way around. --><nav class="analytics-periods" aria-label="Period">
         {% for p in periods %}<a class="analytics-period" href="{{ url_for('analytics.index', days=p) }}"{% if p == days %} aria-current="page"{% endif %}>{{ p }} days</a>{% endfor %}
       </nav>
     </div>
@@ -99,7 +99,7 @@
       <div class="dashboard-panel-heading analytics-subheading"><div><h2>Orders waiting for pickup</h2>{% if ml.scores_available %}<p class="analytics-sub">Highest disposal risk first.</p>{% endif %}</div><span class="analytics-pill" data-tone="neutral">{{ ws.count }} waiting</span></div>
       {% if report.waiting %}
         <div class="analytics-scroll">
-          <table class="dashboard-table analytics-table">
+          <!-- Records displayed in rows under matching column headings. --><table class="dashboard-table analytics-table">
             <thead><tr><th>Order</th><th>Customer</th><th>Ready</th><th>Time left</th><th class="analytics-num">Total</th>{% if ml.scores_available %}<th>Risk</th>{% endif %}<th>Action</th></tr></thead>
             <tbody>
               {% for item in report.waiting %}
@@ -116,7 +116,7 @@
                 <td>
                   <details class="analytics-action">
                     <summary class="analytics-btn">Mark disposed</summary>
-                    <form method="post" action="{{ url_for('analytics.dispose', order_id=item.order_id) }}">
+                    <!-- Fields and controls submitted together to the form action. --><form method="post" action="{{ url_for('analytics.dispose', order_id=item.order_id) }}">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       <button class="analytics-btn" data-variant="danger" type="submit">Confirm disposed</button>
                     </form>
@@ -183,7 +183,7 @@
 {% endblock %}
 
 {% block page_scripts %}
-  <script type="application/json" id="analytics-chart-data">{{ {'orders': report.charts.orders, 'revenue': report.charts.revenue, 'status': report.charts.status, 'services': report.charts.services}|tojson }}</script>
-  <script src="{{ url_for('core.static', filename='vendor/chartjs/chart.umd.min.js') }}" defer></script>
+  <!-- Initial page data in JSON for the JavaScript interface to read. --><script type="application/json" id="analytics-chart-data">{{ {'orders': report.charts.orders, 'revenue': report.charts.revenue, 'status': report.charts.status, 'services': report.charts.services}|tojson }}</script>
+  <!-- Page behavior loaded after the HTML or referenced by the markup above. --><script src="{{ url_for('core.static', filename='vendor/chartjs/chart.umd.min.js') }}" defer></script>
   <script src="{{ url_for('analytics.static', filename='js/analytics-charts.js') }}" defer></script>
 {% endblock %}

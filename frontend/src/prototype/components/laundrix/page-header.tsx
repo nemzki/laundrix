@@ -1,3 +1,4 @@
+/** Share the page heading and action layout across prototype screens. */
 import { cn } from '@prototype/lib/utils'
 
 export function PageHeader({

@@ -6,7 +6,7 @@
 {% block page_subtitle %}The staff member sets a password and completes ID verification through a one-time link.{% endblock %}
 {% block page_actions %}<a class="btn btn-outline" href="{{ url_for('staff_admin.index') }}">{{ icon('arrow-left', 16) }}<span>Back</span></a>{% endblock %}
 {% block content %}
-<form class="card form-card" method="post" novalidate>
+<!-- Fields and controls submitted together to the form action. --><form class="card form-card" method="post" novalidate>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
   {{ text('Full name', 'full_name', values, {}, required=True, maxlength=150) }}

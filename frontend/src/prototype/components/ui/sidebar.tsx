@@ -1,5 +1,6 @@
 "use client"
 
+/** Coordinate the sidebar layout, collapsed state, and navigation controls. */
 import * as React from "react"
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"

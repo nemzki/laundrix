@@ -1,5 +1,6 @@
 "use client"
 
+/** Provide a shared control for choosing or clearing an option. */
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
 import { cn } from "@prototype/lib/utils"
 import { CheckIcon } from "lucide-react"

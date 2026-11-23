@@ -1,9 +1,11 @@
+/* Handle the mobile menu and interactive previews on the public page. */
 /* Approved v0 landing interactions, ported without React/Next or inline styles. */
 (function () {
   'use strict';
   document.documentElement.classList.add('lp-enhanced');
   var menu = document.getElementById('mobile-menu');
   var toggle = document.querySelector('[data-mobile-toggle]');
+  /* Update the menu. */
   function setMenu(open, restoreFocus) {
     if (!menu || !toggle) return;
     menu.hidden = !open;

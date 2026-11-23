@@ -8,7 +8,7 @@
 </div>
 {%- endmacro %}
 {% macro method_form(prefix, enhanced=false) -%}
-<form class="ps-method-form" method="post" action="{{ url_for('payments.create_method') }}"{% if enhanced %} id="ps-add-method-form" data-return-url="{{ url_for('payments.settings') }}"{% endif %}>
+<!-- Fields and controls submitted together to the form action. --><form class="ps-method-form" method="post" action="{{ url_for('payments.create_method') }}"{% if enhanced %} id="ps-add-method-form" data-return-url="{{ url_for('payments.settings') }}"{% endif %}>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
   <div class="ps-method-fields">
     <div class="field"><label for="{{ prefix }}-method-name">Method Name <span class="req" aria-hidden="true">*</span></label>
@@ -33,8 +33,8 @@
 <div id="payment-settings" class="ps-layout">
   <form class="ps-settings-form" id="ps-settings-form" method="post" action="{{ url_for('payments.update_settings') }}" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="ui" value="1">
-    <section class="card ps-card" aria-labelledby="ps-policies-title">
-      <header class="ps-card-heading"><span class="ps-icon">{{ icon('settings',18) }}</span><div><h2 id="ps-policies-title">Payment Policies</h2><p>Manage how payments are accepted and recorded.</p></div></header>
+    <!-- Group the content and controls for payment management in one section. --><section class="card ps-card" aria-labelledby="ps-policies-title">
+      <!-- Introductory information and controls for this part of the page. --><header class="ps-card-heading"><span class="ps-icon">{{ icon('settings',18) }}</span><div><h2 id="ps-policies-title">Payment Policies</h2><p>Manage how payments are accepted and recorded.</p></div></header>
       <div class="ps-policy-list">
         {{ setting_switch('partial_enabled', 'Allow Partial Payment', 'Let customers pay part of the order total and settle the balance later.') }}
         {{ setting_switch('pay_later_enabled', 'Allow Pay Later', 'Allow orders to be recorded without an initial payment.') }}
@@ -57,7 +57,7 @@
       {{ text('Payment Notice', 'payment_notice', values, errors, maxlength=255, hint='A short policy line, for example when balances are due.') }}
       {{ text('Stub Footer', 'stub_footer', values, errors, maxlength=255, hint='A closing message printed on the customer stub.') }}
     </section>
-    <footer class="ps-save-row"><p>Changes apply when you save settings.</p><button class="btn btn-primary" type="submit">{{ icon('check',16) }}<span>Save Settings</span></button></footer>
+    <!-- Supporting links or actions at the end of this part of the page. --><footer class="ps-save-row"><p>Changes apply when you save settings.</p><button class="btn btn-primary" type="submit">{{ icon('check',16) }}<span>Save Settings</span></button></footer>
   </form>
   <div class="ps-secondary">
     <section class="card ps-card" aria-labelledby="ps-qr-title">
@@ -96,7 +96,7 @@
     </section>
   </div>
 </div>
-<dialog class="modal ps-modal" id="ps-add-method-modal" aria-labelledby="ps-add-method-title"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0">
+<!-- Content that opens in a separate panel when a user activates its trigger. --><dialog class="modal ps-modal" id="ps-add-method-modal" aria-labelledby="ps-add-method-title"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0">
   <header class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><h2 class="modal-title" id="ps-add-method-title">Add Payment Method</h2><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></header>
   {{ method_form('modal', enhanced=true) }}
 </div></div></dialog>

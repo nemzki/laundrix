@@ -15,6 +15,7 @@ body.internal-ui .card .table { font-size:13px; }
 body.internal-ui .table th { color:var(--lx-paint-secondary, #334155); background:var(--lx-paint-subtle, #f8fafc); font-size:12px; line-height:18px; }
 body.internal-ui .table :is(th,td) { vertical-align:middle; }
 body.internal-ui .card :is(.hint,.field-error) { line-height:18px; }
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media(max-width:767px) {
  body.internal-ui .content { padding:20px 16px calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom,0px)); }
  body.internal-ui .page-header { gap:12px; }

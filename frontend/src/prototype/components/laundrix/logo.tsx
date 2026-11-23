@@ -1,3 +1,4 @@
+/** Provide the Laundrix mark in a reusable component. */
 import { WashingMachine } from 'lucide-react'
 import { cn } from '@prototype/lib/utils'
 

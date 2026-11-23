@@ -1,3 +1,4 @@
+/* Control the loading preview shown while the order list starts. */
 /* Establish skeleton styling before first paint; native HTML remains the fallback. */
 (function () {
   if (!window.fetch || !window.AbortController) return;

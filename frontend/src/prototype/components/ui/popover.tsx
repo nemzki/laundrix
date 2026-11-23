@@ -1,5 +1,6 @@
 "use client"
 
+/** Provide a floating panel anchored to the control that opens it. */
 import * as React from "react"
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 import { cn } from "@prototype/lib/utils"

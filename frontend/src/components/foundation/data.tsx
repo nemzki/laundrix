@@ -1,3 +1,4 @@
+/** Provide reusable components for displaying records and summary values. */
 import { useId, type ReactNode, type Key, type ComponentProps } from 'react'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'

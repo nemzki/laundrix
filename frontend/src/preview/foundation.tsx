@@ -1,3 +1,4 @@
+/** Show how shared foundation components fit together in the preview. */
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { Layers, LayoutDashboard, List, SlidersHorizontal } from 'lucide-react'

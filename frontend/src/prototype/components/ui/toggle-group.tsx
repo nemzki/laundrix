@@ -1,5 +1,6 @@
 "use client"
 
+/** Arrange related toggle options as one control group. */
 import * as React from "react"
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle"
 import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group"

@@ -1,5 +1,6 @@
 "use client"
 
+/** Provide a reusable group for choosing one option from a set. */
 import { Radio as RadioPrimitive } from "@base-ui/react/radio"
 import { RadioGroup as RadioGroupPrimitive } from "@base-ui/react/radio-group"
 import { cn } from "@prototype/lib/utils"

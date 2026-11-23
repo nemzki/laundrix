@@ -1,3 +1,4 @@
+/** Show a single staff account and provide the lifecycle actions available for that account. */
 import { useRef, useState, type FormEvent } from 'react'
 import { ArrowLeft, Check, ChevronDown, Link2, LoaderCircle, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -275,7 +276,7 @@ export function StaffDetails({ initial, index }: { initial: Details; index: stri
                         {title}<ChevronDown aria-hidden="true" size={16} className="shrink-0 group-open:rotate-180"/>
                       </summary>
                       <p className={`mt-1 mb-3 text-sm ${muted}`}>{description}</p>
-                      <form className="grid gap-2 pb-2" onSubmit={event => {
+                      {/* Collect the values entered in this section before sending them together. */}<form className="grid gap-2 pb-2" onSubmit={event => {
                         event.preventDefault()
                         const reason = String(new FormData(event.currentTarget).get('reason') ?? '')
                         const button = (event.nativeEvent as SubmitEvent).submitter as HTMLElement | null
@@ -295,7 +296,7 @@ export function StaffDetails({ initial, index }: { initial: Details; index: stri
           )}
         </div>
       </div>
-      <Dialog open={Boolean(operation)} onOpenChange={open => { if (!open && !busy) setOperation(null) }}>
+      {/* Keep this interaction in a separate panel over the current view. */}<Dialog open={Boolean(operation)} onOpenChange={open => { if (!open && !busy) setOperation(null) }}>
         <DialogContent className={confirmingLink ? 'staff-dialog staff-confirm-dialog' : 'staff-dialog'} onCloseAutoFocus={restoreFocus}
           onEscapeKeyDown={event => { if (busy) event.preventDefault() }}
           onPointerDownOutside={event => { if (busy) event.preventDefault() }}>

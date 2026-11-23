@@ -1,8 +1,8 @@
 {% if order.is_payment_tracked and order.balance_due > 0 %}
-<dialog class="modal payment-modal" id="recordPaymentModal" aria-labelledby="recordPaymentTitle">
+<!-- Content that opens in a separate panel when a user activates its trigger. --><dialog class="modal payment-modal" id="recordPaymentModal" aria-labelledby="recordPaymentTitle">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0 order-detail-modal">
     <div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><div><h2 class="modal-title tw:text-xl" id="recordPaymentTitle">Record Payment</h2><p class="hint">{{ order.reference }} &middot; {{ order.customer_name }}</p></div><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></div>
-        <form data-payment-form data-settings-url="{{ url_for('orders.new_order') }}" id="record-payment" method="post" action="{{ url_for('orders.record_payment', reference=order.reference) }}">
+        <!-- Fields and controls submitted together to the form action. --><form data-payment-form data-settings-url="{{ url_for('orders.new_order') }}" id="record-payment" method="post" action="{{ url_for('orders.record_payment', reference=order.reference) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
           <div class="modal-body">
@@ -45,7 +45,7 @@
               </div>
             </div>
           </details>
-          <section class="order-detail__gcash" data-payment-gcash hidden aria-labelledby="payment-gcash-heading">
+          <!-- Group the content and controls for payment management in one section. --><section class="order-detail__gcash" data-payment-gcash hidden aria-labelledby="payment-gcash-heading">
             <h3 id="payment-gcash-heading">GCash Payment Details</h3><p data-payment-config-status role="status">Loading configured GCash details...</p>
             <a data-payment-qr-link target="_blank" rel="noopener" hidden aria-label="View configured GCash QR full size"><img data-payment-qr width="160" height="160" alt="Configured GCash payment QR" hidden></a>
             <dl class="order-detail__kv" data-payment-account></dl><p data-payment-instructions></p>

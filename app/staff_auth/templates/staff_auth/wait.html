@@ -1,14 +1,14 @@
-{% extends "staff_auth/base_wizard.html" %}
+{% extends "staff_auth/base_enrollment.html" %}
 {% block title %}{{ title }} · Laundrix{% endblock %}
 {% block head %}
   {{ super() }}
   <meta http-equiv="refresh" content="4;url={{ refresh_url }}">
 {% endblock %}
-{% block progress %}{{ stepper(current, steps) }}{% endblock %}
+{% block progress %}{{ stepper(current, enrollment_steps, announce_status=true) }}{% endblock %}
 {% block card %}
-  <div class="wait">
-    <div class="spinner" aria-hidden="true"></div>
-    <h1>{{ title }}</h1>
+  <!-- Reusable wait markup for staff sign-in and enrollment. --><div class="wait">
+    <div class="enrollment-spinner" aria-hidden="true"></div>
+    <h1 id="enrollment-title">{{ title }}</h1>
     <p class="muted">{{ message }}</p>
     <p class="muted small">This page refreshes by itself.
        <a href="{{ refresh_url }}">Check now</a></p>

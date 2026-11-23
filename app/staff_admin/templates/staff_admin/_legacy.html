@@ -23,7 +23,7 @@
   {% endfor %}
 </div>
 
-<form class="search-bar" method="get">
+<!-- Fields and controls submitted together to the form action. --><form class="search-bar" method="get">
   {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
   <input class="input" type="search" name="q" value="{{ term }}" placeholder="Search name or email" aria-label="Search staff">
   <select class="input" name="sort" aria-label="Sort">

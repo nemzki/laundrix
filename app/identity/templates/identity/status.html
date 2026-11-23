@@ -1,7 +1,7 @@
 {% extends 'identity/_page.html' %}
 {% block title %}Identity Verification &middot; Laundrix{% endblock %}
 {% block verification_content %}
-  <section class="idv-panel" aria-labelledby="verification-title" data-idv-status="{{ status }}">
+  <!-- Group the content and controls for identity verification in one section. --><section class="idv-panel" aria-labelledby="verification-title" data-idv-status="{{ status }}">
     <div class="idv-panel-heading"><span class="idv-symbol" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/>{% if status == 'verified' %}<path d="m8 12 3 3 5-6"/>{% else %}<path d="M12 8v5m0 3h.01"/>{% endif %}</svg></span><div><p class="idv-eyebrow">Identity Verification</p><span class="badge badge-{{ ui.badge }}">{{ ui.label|title }}</span></div></div>
     {% if not is_latest %}<p class="idv-hint">You are viewing a previous verification attempt. <a href="{{ url_for('identity.index') }}">View Current Status</a></p>{% endif %}
     <div class="idv-intro"><h1 id="verification-title">{{ ui.headline|title }}</h1><p class="muted">{{ ui.body }}</p></div>

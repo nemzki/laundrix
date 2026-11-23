@@ -1,0 +1,27 @@
+{% extends "core/base.html" %}
+{% block head %}
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/order-status.css') }}">
+  <link rel="stylesheet" href="{{ url_for('tracking.static', filename='css/tracking.css') }}">
+{% endblock %}
+{% block flashes %}{% endblock %}
+
+{% block body %}
+  <a class="tracking-skip" href="#tracking-content">Skip to order tracking</a>
+  <main id="tracking-content" tabindex="-1" class="tracking-page tw:mx-auto tw:px-4">
+    <article class="tracking-ticket">
+      <header class="tracking-header tracking-section tw:flex tw:items-center tw:gap-3">
+        <img class="tracking-logo" src="{{ url_for('core.static', filename='images/mascot-original.svg') }}"
+             alt="Laundrix" width="30" height="36">
+        <div class="tw:min-w-0">
+          <p class="tracking-shop-name">WASH UP!</p>
+          <p class="tracking-secondary tw:mb-0!">Laundry Shop &middot; Inosluban, Lipa City</p>
+        </div>
+      </header>
+
+      {% block tracking_content %}{% endblock %}
+    </article>
+
+    <footer class="tracking-powered tw:text-center">Powered by <strong>Laundrix</strong></footer>
+  </main>
+{% endblock %}

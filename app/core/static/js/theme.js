@@ -1,3 +1,4 @@
+/* Apply the saved theme choice and keep the page in sync with it. */
 /* Shared by Jinja, the server dashboard and React. Blocking head load prevents a wrong-theme paint. */
 (function () {
   'use strict';
@@ -95,6 +96,7 @@
   document.addEventListener('focusin', function (event) {
     document.querySelectorAll('[data-theme-picker]').forEach(function (picker) { if (!picker.contains(event.target)) close(picker, false); });
   });
+  /* Wait until the browser has parsed the page before running this code. */
   document.addEventListener('DOMContentLoaded', function () {
     sync();
     // React replaces the server sidebar and creates mobile drawers after the initial paint.

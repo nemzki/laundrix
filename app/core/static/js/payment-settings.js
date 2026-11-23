@@ -1,3 +1,4 @@
+/* Connect payment method settings to the controls on the page. */
 /* Payment Settings only. Uses the existing method-creation JSON response; all other forms remain native. */
 (function () {
   'use strict';
@@ -18,6 +19,7 @@
     name.removeAttribute('aria-invalid');
     error.hidden = true;
   });
+  /* Run this handler when the form is submitted. */
   form.addEventListener('submit', async function (event) {
     event.preventDefault();
     if (busy || !form.reportValidity()) return;

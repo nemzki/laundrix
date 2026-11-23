@@ -1,5 +1,6 @@
 "use client"
 
+/** Connect field labels, descriptions, and validation messages to form state. */
 import * as React from "react"
 import { cn } from "cn"
 import type { Label as LabelPrimitive } from "radix-ui"

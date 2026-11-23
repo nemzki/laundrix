@@ -1,7 +1,10 @@
 /* Payment Settings components only; the existing Admin container owns width and gutters. */
 .ps-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 24px; }
+/* Buttons and forms. Style the controls users activate or fill in. */
 .ps-settings-form, .ps-secondary { display: grid; gap: 20px; min-width: 0; margin: 0; }
+/* Global defaults. Set defaults and shared values used throughout the page. */
 body.app.payment-settings-page .ps-card { container-type: inline-size; min-width: 0; margin: 0; padding: 20px; border: 1px solid var(--lx-border); border-radius: 14px; box-shadow: none; }
+/* Typography. Keep text sizes, weights, and spacing consistent. */
 .ps-card-heading { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
 .ps-card-heading > div { min-width: 0; }
 body.app.payment-settings-page #payment-settings h2 { margin: 0; font-size: 14px; line-height: 21px; font-weight: 500; letter-spacing: normal; }
@@ -57,6 +60,7 @@ body.internal-ui.payment-settings-page .input[aria-invalid=true] { border-color:
 .ps-qr-controls .remove-qr { margin-top: 10px; }
 .ps-qr-controls input[type=file] { height: 44px; overflow: hidden; padding: 6px; }
 .ps-methods-actions { display: flex; justify-content: flex-end; min-height: 36px; margin: -4px 0 16px; }
+/* Cards and data displays. Group related information and make rows easier to scan. */
 .ps-methods-table { width: 100%; margin: 0; }
 body.internal-ui .ps-methods-table :is(th, td) { padding: 12px 10px; font-size: 13px; line-height: 20px; vertical-align: middle; }
 body.internal-ui .ps-methods-table th { font-size: 12px; font-weight: 500; white-space: normal; }
@@ -70,6 +74,7 @@ body.internal-ui .ps-methods-table th { font-size: 12px; font-weight: 500; white
 .ps-methods-card .table-wrap:focus-visible { outline: 2px solid var(--lx-primary); outline-offset: 2px; }
 .ps-empty { display: grid; gap: 6px; padding: 20px 8px; text-align: center; }
 .ps-empty p { margin: 0; color: var(--lx-muted); font-size: 13px; }
+/* Dialogs and overlays. Position the floating panel and style its contents. */
 .ps-modal .modal-dialog { max-width: 480px; }
 .ps-modal .modal-content { border-radius: 14px; overflow: hidden; }
 body.app.payment-settings-page h2#ps-add-method-title { font-size: 16px; line-height: 24px; font-weight: 500; }
@@ -87,6 +92,8 @@ body.app.payment-settings-page .ps-native-method h3 { font-size: 14px; }
 .ps-native-method .ps-method-footer { padding: 12px 0 0; background: transparent; }
 body.app.payment-settings-page dialog.confirm .btn-primary { background: var(--lx-danger); border-color: var(--lx-danger); }
 .payment-settings-page [hidden] { display: none !important; }
+/* Apply these styles based on the size of the containing component. */
 @container (max-width: 460px) { .ps-qr-layout { grid-template-columns: minmax(0, 1fr); } .ps-qr-preview { width: 144px; } }
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media (max-width: 1023px) { .ps-layout { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 479px) { body.app.payment-settings-page .ps-card { padding: 16px; } .ps-methods-table { min-width: 430px; } .ps-save-row .btn { width: 100%; } }

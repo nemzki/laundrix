@@ -1,3 +1,4 @@
+/* Filter outstanding balances and open the form for recording a payment. */
 /* Original server-rendered balances; shared payment form, fresh server refetches. */
 (function () {
   "use strict";
@@ -15,6 +16,7 @@
     toast.classList.toggle("is-success", Boolean(success)); toast.hidden = false;
   }
   toast.querySelector("[data-toast-close]").addEventListener("click", function () { toast.hidden = true; });
+  /* Fetch the rendered results and parse them into a document the page can read. */
   async function documentAt(url, signal) {
     var response = await fetch(url, { credentials:"same-origin", cache:"no-store", signal:signal });
     if (!response.ok || response.redirected) throw new Error("The requested information could not be loaded.");
@@ -23,6 +25,7 @@
   var countVersion = 0;
   var records = [], perPage = 15, complete = false, scope = "", debounce;
   var selects = [];
+  /* Add a keyboard-friendly menu while keeping the original select control in sync. */
   function enhanceSelect(select) {
     var wrapper = select.closest(".ob-select-wrap");
     var trigger = document.createElement("button");
@@ -36,6 +39,7 @@
     var menu=document.createElement("div"); menu.className="ob-select-menu"; menu.hidden=true;
     menu.id=select.id+"-options"; trigger.setAttribute("aria-controls",menu.id);
     menu.setAttribute("role","listbox"); menu.setAttribute("aria-label",select.getAttribute("aria-label"));
+    /* Keep the menu's visibility and expanded state in sync. */
     function setOpen(open) {
       menu.hidden=!open;
       trigger.setAttribute("aria-expanded", String(open));
@@ -223,6 +227,7 @@
     } catch {if(controller===current) {current.abort();root.dataset.state="error";}}
     finally {clearTimeout(timeout);if(controller===current) root.removeAttribute("aria-busy");}
   }
+  /* Build a URL from the current outstanding balance filters. */
   function filterURL() {
     var url=new URL(form.action);
     var status=form.querySelector("[name=status]").value;
@@ -238,6 +243,7 @@
   }
   root.addEventListener("input",function(event){if(event.target.matches("#ob-search")){clearTimeout(debounce);debounce=setTimeout(function(){apply(filterURL(),true);},250);}});
   root.addEventListener("change",function(event){if(event.target.matches(".ob-filters select")) apply(filterURL(),true);});
+  /* Run this handler when the form is submitted. */
   root.addEventListener("submit",function(event){if(event.target.matches(".ob-filters")){event.preventDefault();apply(filterURL(),true);}});
   root.addEventListener("click",function(event){
     if(event.target.closest("[data-count-retry]")){counts();return;}
@@ -252,6 +258,7 @@
       dialog.show();openPayment();
     }
   });
+  /* Load the form for recording a payment on the selected order. */
   async function openPayment() {
     if (modalController) modalController.abort();
     var current = new AbortController(); modalController = current;
@@ -282,6 +289,7 @@
     } finally { clearTimeout(timeout); }
   }
   modal.addEventListener("dialog:hidden",function () { if (modalController) modalController.abort(); modalController=null; if (modal.paymentDispose) modal.paymentDispose(); if (trigger && trigger.isConnected) trigger.focus({preventScroll:true}); });
+  /* Restore the page state when the user moves through browser history. */
   window.addEventListener("popstate",function () { apply(new URL(location.href),false); });
   document.addEventListener("visibilitychange",function () { if (!document.hidden) { load(new URL(location.href),false); counts(); } });
   load(new URL(location.href),false); counts();

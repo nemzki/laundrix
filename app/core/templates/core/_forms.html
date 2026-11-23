@@ -35,7 +35,7 @@
 
 {% macro render_pagination(page_data, endpoint) -%}
 {% if page_data.pages > 1 %}
-<nav class="pagination" aria-label="Pagination">
+<!-- Related links grouped together so users can find their way around. --><nav class="pagination" aria-label="Pagination">
   {% if page_data.has_prev %}
   <a class="btn btn-outline btn-sm" href="{{ url_for(endpoint, page=page_data.prev_num, **kwargs) }}">Previous</a>
   {% else %}

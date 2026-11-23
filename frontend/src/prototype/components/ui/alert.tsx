@@ -1,3 +1,4 @@
+/** Present important feedback with a consistent title and supporting message. */
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@prototype/lib/utils"

@@ -6,7 +6,7 @@
 {% block page_subtitle %}Packages have a fixed price for a weight or piece range.{% endblock %}
 {% block page_actions %}<a class="btn btn-outline" href="{{ url_for('catalog.index', tab='packages') }}">{{ icon('arrow-left', 16) }}<span>Back</span></a>{% endblock %}
 {% block content %}
-<form class="card form-card" method="post" novalidate>
+<!-- Fields and controls submitted together to the form action. --><form class="card form-card" method="post" novalidate>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   {% if errors %}<div class="alert alert-error" role="alert">Please fix the highlighted fields.</div>{% endif %}
   <div class="form-grid">
@@ -19,7 +19,7 @@
     {{ text('Minimum', 'min_value', values, errors, required=True, inputmode='decimal') }}
     {{ text('Maximum', 'max_value', values, errors, required=True, inputmode='decimal') }}
     <div class="span-2">
-      <fieldset>
+      <!-- Related inputs grouped under a common label. --><fieldset>
         <legend>Services already included (never charged again)</legend>
         {% for s in all_services %}
           <div class="field field-check"><label class="check"><input type="checkbox" name="covers_codes" value="{{ s.code }}" {% if s.code in covers %}checked{% endif %}><span>{{ s.name }}</span></label></div>

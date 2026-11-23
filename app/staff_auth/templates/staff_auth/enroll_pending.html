@@ -1,10 +1,8 @@
-{% extends "staff_auth/base_wizard.html" %}
+{% extends "staff_auth/base_enrollment.html" %}
 {% block title %}Under review · Laundrix{% endblock %}
-{% block progress %}{{ stepper(2, ["Consent", "Verify", "Done"]) }}{% endblock %}
+{% block progress %}{{ stepper(2, enrollment_steps, announce_status=true) }}{% endblock %}
 {% block card %}
-  <h1>We're reviewing your verification</h1>
-  <p class="muted">This is taking longer than usual, which can happen when a person reviews it.
-     Nothing more is needed from you. Once it's approved you can sign in with your email and password,
-     Google, or Face Login.</p>
-  <a class="btn btn-outline btn-block" href="{{ url_for('staff_auth.enroll_return') }}">Check again</a>
+  <h1 id="enrollment-title">We're reviewing your verification</h1>
+  <!-- Reusable enroll pending markup for staff sign-in and enrollment. --><p class="muted">Didit is still reviewing your verification. You can check again here. If your account is new, an administrator must also approve it before you can sign in.</p>
+  <a class="btn btn-outline btn-block enrollment-action" href="{{ url_for('staff_auth.enroll_return') }}">Check again</a>
 {% endblock %}

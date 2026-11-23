@@ -2,7 +2,7 @@
 {% from 'orders/_customer_icons.html' import customer_icon %}
 {% set customer = profile.customer %}
 <div class="cm-profile" data-customer-profile="{{ customer.id }}">
-  <header class="offcanvas-header tw:flex tw:items-center tw:justify-between cm-profile-header">
+  <!-- Introductory information and controls for this part of the page. --><header class="offcanvas-header tw:flex tw:items-center tw:justify-between cm-profile-header">
     {{ avatar(customer.full_name) }}<div><h2 id="customerSheetTitle">{{ customer.full_name }}</h2><p>Customer since {{ customer.created_at|localdt('%b %d, %Y') }}</p></div>
     <button class="btn-close" type="button" data-dialog-dismiss="offcanvas" aria-label="Close customer details"></button>
   </header>
@@ -13,7 +13,7 @@
       <div><dt>Total Paid</dt><dd data-profile-paid>{{ profile.paid|peso }}</dd></div>
       <div><dt>Balance</dt><dd data-profile-balance{% if profile.balance > 0 %} class="cm-balance"{% endif %}>{{ profile.balance|peso }}</dd></div>
     </dl>
-    <section class="cm-history" aria-labelledby="customerHistoryTitle">
+    <!-- Group the content and controls for order management in one section. --><section class="cm-history" aria-labelledby="customerHistoryTitle">
       <h3 id="customerHistoryTitle">Order History</h3>
       {% if profile.orders %}<div class="cm-history-list">{% for order in profile.orders %}
       <a class="cm-history-order" href="{{ url_for('orders.detail',reference=order.reference) }}" data-history-reference="{{ order.reference }}">

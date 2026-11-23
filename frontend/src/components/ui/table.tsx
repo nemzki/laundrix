@@ -1,5 +1,6 @@
 "use client"
 
+/** Share the markup and styling for headings, rows, and data cells. */
 import * as React from "react"
 import { cn } from "cn"
 

@@ -1,3 +1,4 @@
+/** Provide a side panel for content that opens over the current screen. */
 import { getPortalContainer } from "@/lib/portal"
 import { useFoundationPortalTheme } from "@/lib/portal-theme"
 

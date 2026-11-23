@@ -1,12 +1,14 @@
 .idv-page { width: min(680px, 92%); margin: 2rem auto; }
 .idv-back { display: inline-block; margin-bottom: 1rem; color: var(--muted); text-decoration: none; font-size: .9rem; }
 .idv-back:hover { color: var(--navy); }
+/* Layout and containers. Arrange the main regions and control the space between them. */
 .idv-panel { background: var(--white); border: 1px solid var(--border); border-radius: 16px;
   box-shadow: var(--shadow); padding: 2rem 1.8rem; }
 .idv-panel h1 { font-size: 1.5rem; margin-top: .6rem; }
 .idv-panel h2 { font-size: 1rem; margin: 1.2rem 0 .3rem; }
 .idv-hint { background: var(--primary-soft); border-radius: 10px; padding: .8rem 1rem; font-size: .92rem; margin: 1rem 0 0; }
 .idv-actions { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.4rem; }
+/* Buttons and forms. Style the controls users activate or fill in. */
 .idv-actions form { margin: 0; }
 .idv-meta { display: grid; gap: .5rem; margin: 1.2rem 0 0; font-size: .9rem; }
 .idv-meta div { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
@@ -31,6 +33,7 @@
 .badge-danger { background: #fee2e2; color: #b91c1c; }
 .badge-neutral { background: var(--border); color: var(--muted); }
 
+/* Cards and data displays. Group related information and make rows easier to scan. */
 .idv-card {
   display: flex;
   justify-content: space-between;
@@ -50,10 +53,12 @@
   min-width: 0;
   flex: 1;
 }
+/* Typography. Keep text sizes, weights, and spacing consistent. */
 .idv-card__text { min-width: 0; }
 .idv-card h2 { font-size: 0.95rem; margin: 0.15rem 0 0.1rem; font-weight: 700; }
 .idv-card p { margin: 0; font-size: 0.84rem; line-height: 1.35; }
 .idv-card .btn { flex: none; }
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media (max-width: 640px) {
   .idv-card .btn { width: 100%; }
 }

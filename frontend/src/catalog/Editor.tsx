@@ -1,3 +1,4 @@
+/** Build the catalog editor from the supplied form fields and show validation feedback. */
 import { useState, type FormEvent } from 'react'
 import { LoaderCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'

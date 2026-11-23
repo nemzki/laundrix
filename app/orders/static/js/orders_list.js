@@ -1,3 +1,4 @@
+/* Refresh the orders list and open order summaries from the list. */
 /* Manage Orders: original authenticated HTML queries and native dialogs. */
 (function () {
   "use strict";
@@ -9,6 +10,7 @@
   var paymentInput = form.querySelector("[name=payment]");
   var controller, debounce, lastURL = new URL(location.href);
   var index = new URL(root.dataset.indexUrl, location.origin);
+  /* Build the address used to request the filtered orders list. */
   function requestURL(page) {
     var url = new URL(index);
     if (search.value.trim()) url.searchParams.set("q", search.value.trim());
@@ -17,6 +19,7 @@
     if (page && page > 1) url.searchParams.set("page", page);
     return url;
   }
+  /* Update the visible filter controls to match the current URL. */
   function syncControls(url) {
     search.value = url.searchParams.get("q") || "";
     statusInput.value = url.searchParams.get("status") || "";
@@ -58,6 +61,7 @@
       if (controller === current) root.removeAttribute("aria-busy");
     }
   }
+  /* Run this handler when the form is submitted. */
   form.addEventListener("submit", function (event) { event.preventDefault(); load(requestURL(1), true); });
   paymentInput.addEventListener("change", function () { load(requestURL(1), true); });
   search.addEventListener("input", function () {
@@ -73,12 +77,15 @@
       event.preventDefault(); var url = new URL(link.href); syncControls(url); load(url, true);
     }
   });
+  /* Restore the page state when the user moves through browser history. */
   window.addEventListener("popstate", function () { var url = new URL(location.href); syncControls(url); load(url, false); });
   document.addEventListener("visibilitychange", function () { if (!document.hidden) load(new URL(location.href), false); });
 
+  /* Put the supplied value into the element as plain text. */
   function setText(container, name, value) {
     container.querySelector('[data-field="' + name + '"]').textContent = value == null ? "Not tracked" : value;
   }
+  /* Update the status. */
   function setStatus(container, name, label, tone) {
     var node = container.querySelector('[data-field="' + name + '"]');
     node.textContent = label; node.className = "status status-" + tone;
@@ -86,6 +93,7 @@
   var summaryEl = document.getElementById("orderSummaryModal");
   var summary = window.laundrixDialog(summaryEl);
   var summaryURL, expectedRef, summaryController, summaryTrigger;
+  /* Fetch the selected order and fill the summary panel. */
   async function loadSummary() {
     var restoreFocus = summaryEl.contains(document.activeElement);
     if (summaryController) summaryController.abort();
@@ -136,6 +144,7 @@
   });
   summaryEl.querySelector("[data-summary-retry]").addEventListener("click", loadSummary);
   summaryEl.addEventListener("dialog:hidden", function () { if (summaryController) summaryController.abort(); summaryController = null; if (summaryTrigger && summaryTrigger.isConnected) summaryTrigger.focus({ preventScroll: true }); });
+  /* Set up the confirm modal. */
   function initConfirmModal() {
     var modalEl = document.getElementById("confirmReceivedModal");
     var form = document.getElementById("confirmReceivedForm");
@@ -148,6 +157,7 @@
     var busy = submitBtn && submitBtn.querySelector("[data-busy]");
     var submitting = false;
 
+    /* Update the loading state and prevent repeated actions while work is in progress. */
     function setBusy(on) {
       submitting = on;
       if (!submitBtn) return;
@@ -172,6 +182,7 @@
       } else modal.show();
     });
 
+    /* Run this handler when the form is submitted. */
     form.addEventListener("submit", function (e) {
       if (submitting) {
         e.preventDefault();

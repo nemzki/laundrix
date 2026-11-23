@@ -1,16 +1,21 @@
 /* Internal Order Details only. Business forms and status colors stay original. */
 @font-face { font-family: "Inter"; src: url("../../../core/static/fonts/inter/InterVariable.woff2") format("woff2"); font-style: normal; font-weight: 100 900; font-display: swap; }
 .order-detail-page { --lx-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-family: var(--lx-font); }
+/* Global defaults. Set defaults and shared values used throughout the page. */
 body.app.order-detail-page:not(.admin-workspace) .content { width: 100%; max-width: 1280px; margin-inline: auto; padding: 24px; }
 body.app.order-detail-page .page-header { align-items: start; gap: 16px; margin-bottom: 20px; }
 body.app.order-detail-page .page-header h1 { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -.025em; }
 body.app.order-detail-page .page-header p { font-size: 13px; line-height: 20px; }
 .order-detail-page .order-detail-head-actions { flex-direction: row; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; }
 .order-detail-page .order-detail-head-actions__btns { flex-wrap: wrap; gap: 8px; }
+/* Buttons and forms. Style the controls users activate or fill in. */
 .order-detail-page .order-detail-head-actions .btn { min-height: 36px; padding: 6px 10px; font-size: 13px; line-height: 20px; border-radius: 8px; }
+/* Layout and containers. Arrange the main regions and control the space between them. */
 .order-detail-page .order-detail__layout { display: grid; grid-template-columns: minmax(0,69fr) minmax(0,31fr); gap: 20px; align-items: start; }
 .order-detail-page .order-detail__main, .order-detail-page .order-detail__side { display: grid; min-width: 0; gap: 20px; }
+/* Cards and data displays. Group related information and make rows easier to scan. */
 .order-detail-page .order-detail__card, .order-detail-page .order-detail__tracker { margin: 0; padding: 16px; min-width: 0; border-radius: 12px; box-shadow: none; }
+/* Typography. Keep text sizes, weights, and spacing consistent. */
 .order-detail-page .order-detail__section-title { margin: 0 0 14px; font-size: 15px; line-height: 22px; font-weight: 600; }
 .order-detail-page .order-detail__card .card-head { padding: 0; margin: 0 0 14px; align-items: start; gap: 8px; flex-wrap: wrap; }
 .order-detail-page .order-detail__card .card-head .order-detail__section-title { margin: 0; }
@@ -70,6 +75,7 @@ body.app.order-detail-page .page-header p { font-size: 13px; line-height: 20px; 
 .order-detail-page .order-detail__tracking-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .order-detail-page .order-detail__tracking-actions .btn { min-height: 36px; padding: 6px 8px; font-size: 12px; white-space: normal; }
 .order-detail-page #sms .inline-note { display: block; font-size: 12px; line-height: 18px; }
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media (max-width: 1199px) {
  .order-detail-page .order-detail__layout { grid-template-columns: minmax(0,1fr); }
  .order-detail-page .order-tracker { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px 8px; }

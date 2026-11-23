@@ -1,3 +1,4 @@
+/** Give form labels a consistent appearance while preserving their connection to inputs. */
 import * as React from "react"
 import { cn } from "cn"
 import { Label as LabelPrimitive } from "radix-ui"

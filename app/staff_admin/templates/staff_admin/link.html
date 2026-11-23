@@ -6,7 +6,7 @@
 {% block page_subtitle %}{{ staff.full_name or staff.email }} &middot; {{ staff.email }}{% endblock %}
 {% block page_actions %}<a class="btn btn-outline" href="{{ url_for('staff_admin.detail', user_id=staff.id) }}">View account</a>{% endblock %}
 {% block content %}
-<div class="alert alert-warn" role="alert">
+<!-- Reusable link markup for staff account management. --><div class="alert alert-warn" role="alert">
   {{ icon('alert', 16) }} This link is shown <strong>only once</strong>. It is stored as a hash and cannot be displayed again.
   If it is lost, issue a replacement from the staff member's page.
 </div>

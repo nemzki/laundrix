@@ -13,14 +13,14 @@
 {% block content %}
 {{ finance_nav('summary') }}
 {% set period_names = {'daily': 'Today', 'weekly': 'This Week', 'monthly': 'This Month'} %}
-<nav class="payment-summary-periods" aria-label="Reporting period">
+<!-- Related links grouped together so users can find their way around. --><nav class="payment-summary-periods" aria-label="Reporting period">
   {% for key, name in period_names.items() %}
   <a class="payment-summary-period{% if period == key %} is-active{% endif %}" href="{{ url_for('payments.summary', period=key) }}"{% if period == key %} aria-current="page"{% endif %}>
     <span>{{ name }}</span><span class="payment-summary-period-amount">{{ totals[key]|peso }}</span>
   </a>
   {% endfor %}
 </nav>
-<section id="payment-summary-kpis" class="payment-summary-kpis" aria-label="Payment summary totals">
+<!-- Group the content and controls for payment management in one section. --><section id="payment-summary-kpis" class="payment-summary-kpis" aria-label="Payment summary totals">
   <article class="card payment-summary-kpi">
     <div class="payment-summary-kpi-heading"><h2>Collected ({{ period_names[period] }})</h2><span class="payment-summary-icon">{{ icon('receipt', 18) }}</span></div>
     <strong class="payment-summary-value" data-summary-value="collected">{{ collected|peso }}</strong>
@@ -39,7 +39,7 @@
 </section>
 <div id="payment-summary-reports" class="payment-summary-reports">
   <section class="card payment-summary-report" aria-labelledby="method-report-title">
-    <header class="payment-summary-report-heading"><h2 id="method-report-title">Collections by Payment Method</h2><p>Net payments recorded in the selected period.</p></header>
+    <!-- Introductory information and controls for this part of the page. --><header class="payment-summary-report-heading"><h2 id="method-report-title">Collections by Payment Method</h2><p>Net payments recorded in the selected period.</p></header>
     {% if by_method %}
     <div class="table-wrap" tabindex="0" role="region" aria-label="Collections by payment method"><table class="table payment-summary-table">
       <thead><tr><th scope="col">Method</th><th scope="col" class="num">Collected</th></tr></thead>

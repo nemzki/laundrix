@@ -1,3 +1,4 @@
+/** Start the dashboard React interface using its page mount point. */
 import { Component, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { flushSync } from 'react-dom'
@@ -27,10 +28,8 @@ try {
     if (getComputedStyle(host).getPropertyValue('--lx-dashboard-ready').trim() !== '1') {
       location.replace(data.urls.fallback)
     } else {
-      const identity = document.getElementById('dashboard-preserved-identity')
-      identity?.remove()
       root = createRoot(host)
-      flushSync(() => root!.render(<ServerFallback><Dashboard data={data} identity={identity}
+      flushSync(() => root!.render(<ServerFallback><Dashboard data={data}
         onReady={() => { host.dataset.renderer = 'react'; host.dataset.ready = 'true' }} /></ServerFallback>))
     }
   }

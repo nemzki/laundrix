@@ -33,6 +33,7 @@
 /* ---------- shell ---------- */
 .shell { min-height: 100vh; }
 
+/* Navigation. Arrange the links and controls used to move through the application. */
 .app .lx-sidebar {
   position: fixed;
   inset: 0 auto 0 0;
@@ -52,6 +53,7 @@
 }
 .app .lx-sidebar__brand .lx-logo { width: 100%; }
 .app .lx-sidebar .lx-logo--sidebar { color: var(--navy); }
+/* Typography. Keep text sizes, weights, and spacing consistent. */
 .app .lx-sidebar .lx-logo--sidebar .lx-logo__text {
   color: var(--navy);
   font-weight: 700;
@@ -265,6 +267,7 @@
   font-weight: 700;
 }
 
+/* Dialogs and overlays. Position the floating panel and style its contents. */
 .app .lx-nav-drawer {
   --lx-drawer-width: min(100vw - 2.5rem, 320px);
 }
@@ -290,6 +293,7 @@
 }
 .app .lx-nav-drawer__logout { margin-top: auto; }
 
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media (max-width: 960px) {
   .app .lx-sidebar { display: none; }
   .main { margin-left: 0; }

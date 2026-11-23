@@ -1,5 +1,6 @@
 "use client"
 
+/** Keep labels, helper text, and errors grouped with their form controls. */
 import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@prototype/lib/utils"

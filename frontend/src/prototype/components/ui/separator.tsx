@@ -1,5 +1,6 @@
 "use client"
 
+/** Use a consistent divider between related interface regions. */
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator"
 import { cn } from "@prototype/lib/utils"
 

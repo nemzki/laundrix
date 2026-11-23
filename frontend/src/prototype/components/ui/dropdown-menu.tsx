@@ -1,5 +1,6 @@
 "use client"
 
+/** Provide reusable menu parts with shared styling and keyboard behavior. */
 import * as React from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { cn } from "@prototype/lib/utils"

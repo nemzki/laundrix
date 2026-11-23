@@ -2,7 +2,7 @@
 {% from "core/_nav_shared.html" import nav_groups, logout_button, user_initials, nav_link %}
 {% from "core/_personal_settings_link.html" import personal_settings_link %}
 
-<nav class="lx-bottom-nav" aria-label="Primary mobile navigation">
+<!-- Related links grouped together so users can find their way around. --><nav class="lx-bottom-nav" aria-label="Primary mobile navigation">
   {{ nav_link(url_for('dashboard.index'), 'Dashboard', 'dashboard', bp == 'dashboard', 'lx-bottom-nav__item') }}
   {{ nav_link(url_for('orders.index'), 'Orders', 'orders', bp == 'orders' and ep not in ('orders.new_order', 'orders.customers'), 'lx-bottom-nav__item') }}
   <a
@@ -30,7 +30,7 @@
   </button>
 </nav>
 
-<dialog
+<!-- Content that opens in a separate panel when a user activates its trigger. --><dialog
   class="offcanvas lx-nav-drawer"
   id="appNavDrawer"
   aria-labelledby="appNavDrawerLabel"

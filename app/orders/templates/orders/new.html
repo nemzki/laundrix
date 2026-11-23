@@ -29,7 +29,7 @@
       </li>
       {% endfor %}
     </ol>
-    <div class="wiz-progress-mobile" aria-live="polite">
+    <!-- Live region where assistive technology can announce updates. --><div class="wiz-progress-mobile" aria-live="polite">
       <div class="wiz-progress-mobile__meta">
         <span class="wiz-progress-mobile__count">Step <strong id="wiz-step-num">1</strong> of 5</span>
         <strong class="wiz-progress-mobile__title" id="wiz-step-title">Customer</strong>
@@ -44,7 +44,7 @@
     <div class="wizard-main card">
       <div id="step-alert" class="alert alert-error" role="alert" hidden></div>
 
-      <section class="wstep" data-step="1" data-step-title="Customer">
+      <!-- Group the content and controls for order management in one section. --><section class="wstep" data-step="1" data-step-title="Customer">
         <h2 class="wiz-heading">Customer Information</h2>
         <p class="muted wiz-lead">Search an existing customer or enter a new one. New customers are saved when you confirm the order.</p>
         <div class="seg" role="group" aria-label="Customer mode">
@@ -308,7 +308,7 @@
         <div class="review-block">
           <div class="review-section-head"><h3>Services</h3><button class="review-edit" type="button" data-review-step="2" aria-label="Edit services">Edit</button></div>
           <div class="table-wrap">
-            <table class="table">
+            <!-- Records displayed in rows under matching column headings. --><table class="table">
               <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit Price</th><th class="num">Amount</th></tr></thead>
               <tbody id="rev-lines"></tbody>
               <tfoot>

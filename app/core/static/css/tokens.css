@@ -1,4 +1,5 @@
 /* Laundrix design tokens. */
+/* These styles control the appearance of this part of the frontend. */
 :root {
   /* Brand */
   --lx-primary: #2563eb;

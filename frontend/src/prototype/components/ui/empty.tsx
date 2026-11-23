@@ -1,3 +1,4 @@
+/** Give empty views a consistent place for an explanation and suggested action. */
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@prototype/lib/utils"
 

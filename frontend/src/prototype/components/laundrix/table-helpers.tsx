@@ -1,5 +1,6 @@
 'use client'
 
+/** Provide reusable pieces for presenting and navigating tabular data. */
 import * as React from 'react'
 import { ChevronLeft, ChevronRight, SearchIcon, SearchX } from 'lucide-react'
 import { Button } from '@prototype/components/ui/button'

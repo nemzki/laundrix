@@ -7,7 +7,7 @@
 {% block title %}Manage Orders &middot; Laundrix{% endblock %}
 {% block body_class %}{{ super() }} manage-orders-page{% if not is_admin %} manage-orders-staff{% endif %}{% endblock %}
 {% block page_head %}
-<script src="{{ url_for('orders.static', filename='js/orders_loading.js') }}"></script>
+<!-- Page behavior loaded after the HTML or referenced by the markup above. --><script src="{{ url_for('orders.static', filename='js/orders_loading.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/orders.css') }}">
 <link rel="stylesheet" href="{{ url_for('orders.static', filename='css/manage_orders.css') }}">
 {% endblock %}
@@ -15,14 +15,14 @@
 {% block page_subtitle %}Track every laundry order, check its status, and open order details.{% endblock %}
 {% block page_actions %}<a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus', 16) }}<span>New Order</span></a>{% endblock %}
 {% block content %}
-<section class="mo" data-manage-orders data-state="loading" data-index-url="{{ url_for('orders.index') }}" aria-label="Manage orders">
+<!-- Group the content and controls for order management in one section. --><section class="mo" data-manage-orders data-state="loading" data-index-url="{{ url_for('orders.index') }}" aria-label="Manage orders">
   <div class="card mo-panel">
     <div class="mo-controls">
-      <nav class="mo-tabs" aria-label="Laundry status filters">
+      <!-- Related links grouped together so users can find their way around. --><nav class="mo-tabs" aria-label="Laundry status filters">
         <a class="mo-tab{% if not status %} is-active{% endif %}" href="{{ url_for('orders.index', q=term or none, payment=payment or none) }}"{% if not status %} aria-current="page"{% endif %}>All <span>{{ total_orders }}</span></a>
         {% for s in statuses.FLOW %}<a class="mo-tab{% if status == s %} is-active{% endif %}" data-status="{{ s }}" href="{{ url_for('orders.index', q=term or none, status=s, payment=payment or none) }}"{% if status == s %} aria-current="page"{% endif %}>{{ s|status_label }} <span>{{ counts[s] }}</span></a>{% endfor %}
       </nav>
-      <form class="mo-filters" method="get" action="{{ url_for('orders.index') }}" role="search">
+      <!-- Fields and controls submitted together to the form action. --><form class="mo-filters" method="get" action="{{ url_for('orders.index') }}" role="search">
         <label class="tw:sr-only" for="orders-search">Search reference, customer, or contact</label>
         <div class="mo-search">{{ icon('search',16) }}<input class="input" id="orders-search" type="search" name="q" value="{{ term }}" placeholder="Search reference, customer, or contact" autocomplete="off"><button type="button" data-clear-search aria-label="Clear Search"{% if not term %} hidden{% endif %}>&times;</button></div>
         <input type="hidden" name="status" value="{{ status }}">
@@ -51,7 +51,7 @@
           </tr>{% else %}<tr><td colspan="7" class="mo-empty"><strong>{{ 'No orders match your filters.' if has_filters else 'No orders yet.' }}</strong><p>{{ 'Try a different search or clear your filters.' if has_filters else 'Your saved orders will appear here.' }}</p>{% if has_filters %}<a class="btn btn-outline" data-clear-filters href="{{ url_for('orders.index') }}">Clear Filters</a>{% endif %}</td></tr>{% endfor %}
         </tbody>
       </table></div>
-      <footer class="mo-footer"><span>Showing <strong>{{ (pagination.page-1)*pagination.per_page+1 if orders else 0 }}&ndash;{{ (pagination.page-1)*pagination.per_page+orders|length if orders else 0 }}</strong> of <strong>{{ pagination.total }}</strong> orders</span>
+      <!-- Supporting links or actions at the end of this part of the page. --><footer class="mo-footer"><span>Showing <strong>{{ (pagination.page-1)*pagination.per_page+1 if orders else 0 }}&ndash;{{ (pagination.page-1)*pagination.per_page+orders|length if orders else 0 }}</strong> of <strong>{{ pagination.total }}</strong> orders</span>
         <nav class="mo-pagination" aria-label="Pagination">
           {% if pagination.has_prev %}<a href="{{ url_for('orders.index', q=term or none, status=status or none, payment=payment or none, page=pagination.prev_num) }}">Previous</a>{% else %}<button disabled>Previous</button>{% endif %}
           {% for number in pagination.iter_pages(left_edge=1,right_edge=1,left_current=1,right_current=2) %}{% if number %}<a href="{{ url_for('orders.index', q=term or none, status=status or none, payment=payment or none, page=number) }}"{% if number == pagination.page %} aria-current="page"{% endif %}>{{ number }}</a>{% else %}<span aria-hidden="true">&hellip;</span>{% endif %}{% endfor %}
@@ -62,7 +62,7 @@
     <p class="mo-loading-label" role="status">Loading orders...</p><p class="tw:sr-only" data-orders-announcement role="status"></p>
   </div>
 </section>
-<dialog class="modal" id="orderSummaryModal" aria-labelledby="orderSummaryModalLabel">
+<!-- Content that opens in a separate panel when a user activates its trigger. --><dialog class="modal" id="orderSummaryModal" aria-labelledby="orderSummaryModalLabel">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0 mo-modal">
     <div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><h2 class="modal-title" id="orderSummaryModalLabel">Order Summary</h2><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></div>
     <div class="modal-body">

@@ -1,3 +1,4 @@
+/** Reserve space for content while it is loading. */
 import { cn } from "@prototype/lib/utils"
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {

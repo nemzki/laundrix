@@ -1,3 +1,4 @@
+/** Provide shared links for moving between pages of results. */
 import * as React from "react"
 import { cn } from "@prototype/lib/utils"
 

@@ -1,3 +1,4 @@
+/** Offer the supported theme choices and keep the selected option visible. */
 import { Palette, Sun, Moon, Monitor, Check } from 'lucide-react'
 
 /** The shared head script owns preference, persistence and keyboard behavior in both shells. */

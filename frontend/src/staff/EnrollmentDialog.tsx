@@ -1,4 +1,5 @@
-﻿import { useState } from 'react'
+﻿/** Present the enrollment link and provide a way to copy it. */
+import { useState } from 'react'
 import { Check, CircleCheck, Copy, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

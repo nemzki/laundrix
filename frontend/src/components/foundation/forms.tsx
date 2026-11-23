@@ -1,3 +1,4 @@
+/** Provide reusable form layout and feedback components. */
 import { useId, type ReactNode } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'

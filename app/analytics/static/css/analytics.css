@@ -1,6 +1,7 @@
 /* Analytics & Reports. Scoped under the admin dashboard so it matches the other admin pages. */
 .analytics-stack { display: grid; gap: 16px; margin-top: 16px; }
 .analytics-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+/* Cards and data displays. Group related information and make rows easier to scan. */
 .analytics-card { min-width: 0; }
 
 .analytics-sub { display: block; margin: 2px 0 0; color: var(--muted-foreground, #64748b); font-size: 12px; font-weight: 400; line-height: 1.4; }
@@ -48,6 +49,7 @@
 .analytics-btn[data-variant=danger] { color: #d92d20; border-color: color-mix(in srgb, #d92d20 35%, transparent); }
 .analytics-action summary::-webkit-details-marker { display: none; }
 .analytics-action[open] summary { background: var(--accent, #f1f5f9); }
+/* Buttons and forms. Style the controls users activate or fill in. */
 .analytics-action form { margin-top: 6px; }
 
 /* stat strip and chips */
@@ -60,11 +62,14 @@
 
 /* charts */
 .analytics-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+/* Typography. Keep text sizes, weights, and spacing consistent. */
 .analytics-bar-title { margin: 0; font-size: 14px; font-weight: 500; color: var(--foreground, #172033); }
 .analytics-periods { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--border, #e2e8f0); border-radius: 10px; background: var(--card, #fff); }
 .analytics-period { padding: 3px 12px; border-radius: 7px; font-size: 12px; font-weight: 500; color: var(--muted-foreground, #64748b); text-decoration: none; }
 .analytics-period[aria-current=page] { background: var(--primary, #2563eb); color: #fff; }
+/* Layout and containers. Arrange the main regions and control the space between them. */
 .analytics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media (max-width: 820px) { .analytics-grid { grid-template-columns: minmax(0, 1fr); } }
 .analytics-chart { position: relative; height: 240px; padding: 0 16px 16px; }
 .analytics-chart .analytics-empty { padding: 0; display: grid; place-items: center; height: 100%; }

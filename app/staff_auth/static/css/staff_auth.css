@@ -24,8 +24,10 @@
 .wizard-card { width: 100%; background: var(--white); border: 1px solid var(--border); border-radius: 18px;
   box-shadow: var(--shadow); padding: 2rem 1.8rem; }
 .wizard-card h1 { font-size: 1.5rem; }
+/* Typography. Keep text sizes, weights, and spacing consistent. */
 .wizard-card > .muted { margin: 0 0 1.4rem; }
 .wizard-card label { display: block; font-weight: 600; font-size: .9rem; margin-bottom: .4rem; }
+/* Buttons and forms. Style the controls users activate or fill in. */
 .wizard-card input[type="email"], .wizard-card input[type="password"], .wizard-card input[type="text"] {
   width: 100%; padding: .8rem .9rem; border: 1px solid var(--border); border-radius: 10px; font: inherit;
   margin-bottom: 1.1rem; background: #fff; color: var(--text); }
@@ -44,6 +46,7 @@
 .small { font-size: .85rem; }
 .spinner { width: 42px; height: 42px; margin: 0 auto; border: 4px solid var(--border);
   border-top-color: var(--primary); border-radius: 50%; animation: spin .9s linear infinite; }
+/* Describe how the named animation changes at different points in time. */
 @keyframes spin { to { transform: rotate(360deg); } }
 .tips { margin: 0 0 1.4rem; padding-left: 1.1rem; color: var(--muted); font-size: .92rem; }
 .btn[disabled] { opacity: .6; cursor: not-allowed; }

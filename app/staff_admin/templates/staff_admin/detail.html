@@ -48,7 +48,7 @@
         <h3>Approve</h3>
         {% if verification and verification.status == 'verified' %}
           <p class="muted">Identity is verified. Approving lets this person sign in and use operational features.</p>
-          <form method="post" action="{{ url_for('staff_admin.approve', user_id=staff.id) }}"
+          <!-- Fields and controls submitted together to the form action. --><form method="post" action="{{ url_for('staff_admin.approve', user_id=staff.id) }}"
                 data-confirm="Approve {{ staff.full_name or staff.email }}? They will be able to sign in and use the system." data-confirm-title="Approve Account">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-primary" type="submit">{{ icon('check', 16) }}<span>Approve Account</span></button>

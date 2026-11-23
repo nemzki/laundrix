@@ -44,6 +44,7 @@ body.app.staff-management-page .page-actions #staff-action-react [data-slot=butt
   font-size: 13px;
 }
 
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media (max-width: 767px) {
   body.app.staff-management-page:not(.admin-workspace) .content {
     padding: 20px 16px calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom, 0px));

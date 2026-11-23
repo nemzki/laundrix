@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% macro toggle_form(endpoint, pk, active, name) %}
-  <form class="inline-form" method="post" action="{{ url_for(endpoint, pk=pk) }}"
+  <!-- Fields and controls submitted together to the form action. --><form class="inline-form" method="post" action="{{ url_for(endpoint, pk=pk) }}"
         {% if active %}data-confirm="Staff will no longer be able to select {{ name }} for new orders. Existing orders are not affected." data-confirm-title="Deactivate {{ name }}?"{% endif %}>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button class="btn btn-sm {{ 'btn-danger' if active else 'btn-outline' }}" type="submit">{{ 'Deactivate' if active else 'Activate' }}</button>

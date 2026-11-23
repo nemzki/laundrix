@@ -1,3 +1,4 @@
+/* Handle order detail controls such as copying and release feedback. */
 /* Display only: reuse the existing backend-rendered stub QR, never generate one. */
 (function () {
   "use strict";
@@ -25,6 +26,7 @@
 
   var field = document.getElementById("order-tracking-link");
   var copyStatus = root.querySelector("[data-copy-status]");
+  /* Copy the value using the text selection fallback. */
   function fallbackCopy() {
     field.focus(); field.select();
     var copied = false;
@@ -69,6 +71,7 @@
   var statusForm = document.getElementById("statusUpdateForm");
   var checked = false;
   var checking = false;
+  /* Run this handler when the form is submitted. */
   statusForm.addEventListener("submit", function (event) {
     if (!releaseTarget(document.getElementById("statusUpdateValue").value)) return;
     if (checked) { checked = false; return; }

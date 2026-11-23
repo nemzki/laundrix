@@ -1,8 +1,8 @@
-{% extends "staff_auth/base_wizard.html" %}
-{% block title %}Staff sign-in unavailable · Laundrix{% endblock %}
+{% extends "staff_auth/base_enrollment.html" %}
+{% block title %}Staff enrollment unavailable · Laundrix{% endblock %}
 {% block card %}
-  <h1>Staff sign-in is unavailable</h1>
-  <p class="muted">Staff sign-in needs identity verification to be set up first. Please contact your
+  <h1 id="enrollment-title">Staff enrollment is unavailable</h1>
+  <!-- Reusable unavailable markup for staff sign-in and enrollment. --><p class="muted">Staff enrollment needs identity verification to be set up first. Please contact your
      administrator.</p>
-  <a class="btn btn-outline btn-block" href="{{ url_for('landing.index') }}">Back to home</a>
+  <a class="btn btn-outline btn-block enrollment-action" href="{{ url_for('landing.index') }}">Back to home</a>
 {% endblock %}

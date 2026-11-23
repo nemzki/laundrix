@@ -1,4 +1,4 @@
-<section id="home" aria-labelledby="hero-heading" class="ticket-hero">
+<!-- Group the content and controls for the public homepage in one section. --><section id="home" aria-labelledby="hero-heading" class="ticket-hero">
   <div class="ticket-hero__inner">
     <div class="ticket-hero__copy">
       <p class="shop-badge"><span aria-hidden="true"></span><strong>WASH UP!</strong> LAUNDRY SHOP</p>
@@ -24,7 +24,7 @@
           <span class="claim-ticket__top"><span>WASH UP!</span><span>CLAIM</span></span>
           <span class="claim-ticket__number">&#8470; {{ number }}</span>
           <span class="claim-ticket__details"><span><span>Service</span><strong>{{ service }}</strong></span><span><span>Weight</span><strong>{{ weight }}</strong></span></span>
-          <span class="claim-stamp" aria-live="polite">{{ status|upper }}</span>
+          <!-- Live region where assistive technology can announce updates. --><span class="claim-stamp" aria-live="polite">{{ status|upper }}</span>
         </button>
         {% endfor %}
       </div>

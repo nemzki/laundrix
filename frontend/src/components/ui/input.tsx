@@ -1,3 +1,4 @@
+/** Share the base appearance and native behavior of text inputs. */
 import * as React from "react"
 import { cn } from "cn"
 

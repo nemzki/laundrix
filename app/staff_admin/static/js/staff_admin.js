@@ -1,3 +1,4 @@
+/* Handle browser controls in the server-rendered staff management view. */
 /* Copy-link button for the one-time enrollment URL (external file: the CSP forbids inline scripts). */
 (function () {
   "use strict";

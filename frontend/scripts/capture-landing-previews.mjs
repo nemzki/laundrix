@@ -1,3 +1,4 @@
+/* Use a browser to take screenshots for the landing page previews. */
 /* Capture the original app design with synthetic data. Start tests/frontend/serve_react.py first. */
 import fs from 'node:fs/promises'
 import { chromium } from '@playwright/test'

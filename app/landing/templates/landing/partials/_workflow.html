@@ -1,4 +1,4 @@
-<section id="how-it-works" aria-labelledby="how-it-works-heading" class="bg-muted py-20 sm:py-24">
+<!-- Group the content and controls for the public homepage in one section. --><section id="how-it-works" aria-labelledby="how-it-works-heading" class="bg-muted py-20 sm:py-24">
   <div class="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
     <div data-visible="false" class="reveal mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
       <p class="rounded-full border border-primary/20 bg-secondary px-3 py-1 text-xs font-semibold tracking-widest text-primary uppercase">How It Works</p>
@@ -17,7 +17,7 @@
           <li class="relative after:bg-border"><button type="button" class="group flex w-full items-start gap-4 rounded-2xl text-left md:flex-col md:items-center md:gap-3 md:text-center" data-workflow-step="3"><span class="relative flex size-12 shrink-0 items-center justify-center rounded-full border-2 text-base font-bold transition-all duration-300 border-border bg-card text-muted-foreground group-hover:border-primary/50"><span class="sr-only">Step </span>4</span><span class="flex flex-col gap-1 pt-0.5 md:pt-1"><span class="font-semibold transition-colors text-foreground">Complete &amp; Release Orders</span><span class="text-sm text-muted-foreground">Hand over finished laundry.</span></span></button></li>
         </ol>
       </div>
-      <div aria-live="polite" class="mt-10 grid items-center gap-8 rounded-3xl border bg-card p-6 shadow-sm sm:p-10 md:grid-cols-[auto_1fr] md:gap-12" data-workflow-panel="">
+      <!-- Live region where assistive technology can announce updates. --><div aria-live="polite" class="mt-10 grid items-center gap-8 rounded-3xl border bg-card p-6 shadow-sm sm:p-10 md:grid-cols-[auto_1fr] md:gap-12" data-workflow-panel="">
         <div aria-hidden="true" class="relative mx-auto flex size-36 items-center justify-center rounded-[2rem] bg-linear-to-br from-secondary to-brand/25 sm:size-44">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus size-16 animate-rise text-primary sm:size-20" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg>
           <span class="absolute -top-3 -right-3 flex size-11 items-center justify-center rounded-2xl border bg-card text-primary shadow-md"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search size-5" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></span>
@@ -36,7 +36,7 @@
       </div>
     </div>
   </div>
-  <template data-workflow-template="0">{% include 'landing/partials/_workflow-panel-0.html' %}</template>
+  <!-- Markup the browser keeps inactive until JavaScript needs it. --><template data-workflow-template="0">{% include 'landing/partials/_workflow-panel-0.html' %}</template>
   <template data-workflow-template="1">{% include 'landing/partials/_workflow-panel-1.html' %}</template>
   <template data-workflow-template="2">{% include 'landing/partials/_workflow-panel-2.html' %}</template>
   <template data-workflow-template="3">{% include 'landing/partials/_workflow-panel-3.html' %}</template>

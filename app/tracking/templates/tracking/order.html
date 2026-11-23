@@ -1,82 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Track Order {{ order.reference }} | WASH UP!</title>
-    <link
-        rel="stylesheet"
-        href="{{ url_for('tracking.static', filename='css/tracking.css') }}"
-    >
-</head>
-<body>
-    <main class="tracking-page">
-        <header class="tracking-header">
-            <h1>WASH UP!</h1>
-            <p>Laundry Shop · Inosluban, Lipa City</p>
-        </header>
+{% extends "tracking/base.html" %}
+{% block title %}Track Order {{ order.reference }} | WASH UP!{% endblock %}
 
-        <section class="tracking-card">
-            <p class="eyebrow">ORDER TRACKING</p>
-            <h2>{{ order.reference }}</h2>
+{% block tracking_content %}
+  <section class="tracking-section tracking-reference" aria-labelledby="tracking-reference">
+    <p class="tracking-kicker">Order reference</p>
+    <h1 id="tracking-reference">{{ order.reference }}</h1>
 
-            <div class="status-panel">
-                <p class="status-label">Current status</p>
-                <p class="status-value">
-                    {{ order.status|status_label }}
-                </p>
+    {# The recorded status drives the label and shared palette, including the fallback for unrecognized values. #}
+    <dl class="tracking-status tw:flex tw:items-center tw:flex-wrap tw:gap-2 tw:mb-0!">
+      <dt>Current status</dt>
+      <dd class="tracking-badge" data-laundry-status="{{ order.status }}">{{ order.status|status_label }}</dd>
+    </dl>
+    <p class="tracking-updated tracking-secondary tw:mb-0!">Last updated: {{ order.updated_at|localdt }}</p>
+  </section>
+
+  <div class="tracking-perforation" aria-hidden="true"></div>
+
+  <div class="tracking-section">
+    <section aria-labelledby="tracking-summary-heading">
+      <h2 id="tracking-summary-heading">Order Summary</h2>
+      <ul class="tracking-items tw:mb-0!" role="list">
+        {% for item in order.items %}
+          <li class="tracking-item tw:grid tw:gap-3">
+            <div class="tw:min-w-0">
+              <strong>{{ item.name }}</strong>
+              {# Use the recorded measurement and quantity without pulling detail from the description. #}
+              {% set measurement = item.measurement is not none and item.measurement_unit %}
+              {% set quantity = item.quantity|qty %}
+              {% if measurement or quantity %}
+                <span class="tracking-item-meta tracking-secondary">
+                  {%- if measurement %}{{ item.measurement|qty }} {{ item.measurement_unit }}{% endif -%}
+                  {%- if measurement and quantity %} &middot; {% endif -%}
+                  {%- if quantity -%}
+                    {% if item.unit %}{{ quantity }} {{ 'packages' if item.unit == 'package' and item.quantity != 1 else item.unit }}
+                    {%- else %}Qty {{ quantity }}{% endif %}
+                  {%- endif -%}
+                </span>
+              {% endif %}
             </div>
+            <strong class="tracking-amount tw:text-right">{{ item.line_total|peso }}</strong>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
 
-            <p class="updated">
-                Last updated: {{ order.updated_at|localdt }}
-            </p>
-
-            <hr>
-
-            <h3>Order Summary</h3>
-
-            <div class="order-items">
-                {% for item in order.items %}
-                <div class="order-item">
-                    <div>
-                        <strong>{{ item.name }}</strong>
-                        {% if item.description %}
-                        <p>{{ item.description }}</p>
-                        {% endif %}
-                        <small>{{ item.quantity|qty }} {{ item.unit }}</small>
-                    </div>
-                    <strong>{{ item.line_total|peso }}</strong>
-                </div>
-                {% endfor %}
+    <section class="tracking-payment" aria-labelledby="tracking-payment-heading">
+      <h2 id="tracking-payment-heading">Payment Summary</h2>
+      <dl class="tracking-payments tw:grid tw:gap-2 tw:mb-0!">
+        <div class="tracking-total tw:grid tw:gap-3 tw:items-center">
+          <dt>Total</dt>
+          <dd class="tracking-amount tw:text-right">{{ order.total|peso }}</dd>
+        </div>
+        {% if order.is_payment_tracked %}
+          <div class="tw:grid tw:gap-3">
+            <dt>Payment</dt>
+            <dd class="tw:text-right"><span class="tracking-badge" data-payment-status="{{ order.payment_status }}">{{ order.payment_status|payment_status_label }}</span></dd>
+          </div>
+          {% if order.balance_due > 0 %}
+            <div class="tw:grid tw:gap-3">
+              <dt>Balance due</dt>
+              <dd class="tracking-amount tw:text-right">{{ order.balance_due|peso }}</dd>
             </div>
+          {% endif %}
+        {% endif %}
+      </dl>
+    </section>
+  </div>
 
-            <hr>
+  <div class="tracking-perforation tracking-perforation--claim" aria-hidden="true"></div>
 
-            <div class="total-row">
-                <strong>Total</strong>
-                <strong>{{ order.total|peso }}</strong>
-            </div>
-            {% if order.is_payment_tracked %}
-            <div class="total-row">
-                <span>Payment</span>
-                <strong>{{ order.payment_status|payment_status_label }}</strong>
-            </div>
-            {% if order.balance_due > 0 %}
-            <div class="total-row">
-                <span>Balance due</span>
-                <strong>{{ order.balance_due|peso }}</strong>
-            </div>
-            {% endif %}
-            {% endif %}
-        </section>
-
-        <footer class="tracking-footer">
-            <p>
-                Please present your order stub when claiming your laundry.
-            </p>
-            <p>Thank you for choosing WASH UP! Laundry Shop.</p>
-        </footer>
-    </main>
-</body>
-</html>
+  <section class="tracking-claim tracking-section" aria-labelledby="tracking-claim-heading">
+    <h2 id="tracking-claim-heading">Claim your laundry</h2>
+    <p>Please present your order stub when claiming your laundry.</p>
+    <p class="tracking-secondary tw:mb-0!">Thank you for choosing WASH UP! Laundry Shop.</p>
+  </section>
+{% endblock %}

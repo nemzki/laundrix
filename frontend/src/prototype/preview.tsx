@@ -1,3 +1,4 @@
+/** Render the prototype preview and the interface shown inside it. */
 import { useState } from 'react'
 import { LayoutDashboard, ListFilter, SlidersHorizontal } from 'lucide-react'
 import { toast } from 'sonner'

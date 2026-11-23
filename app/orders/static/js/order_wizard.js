@@ -1,3 +1,4 @@
+/* Guide staff through order entry and send their selections to the server. */
 /* New Order wizard. The browser only sends WHAT was chosen (ids, measurements, quantities, the
    amounts staff typed as received). The server prices the order and validates the payment against
    its own total; figures shown here are for convenience only. All DOM text is inserted with
@@ -67,6 +68,7 @@
     $("#side-step").textContent = "Step " + n + " of " + TOTAL_STEPS;
   }
 
+  /* Display the requested wizard step and move keyboard focus to its heading when appropriate. */
   function show(n) {
     quoteRevision += 1; clearTimeout(quoteTimer);
     step = n;
@@ -92,6 +94,7 @@
     if (n === 3) queueDetailsQuote();
   }
 
+  /* Remove previous validation feedback before displaying new errors. */
   function clearErrors() {
     var box = $("#step-alert");
     box.hidden = true; box.textContent = "";
@@ -99,6 +102,7 @@
     var d = $("#dupe-box"); if (d) d.hidden = true;
   }
 
+  /* Combine general validation messages in the wizard's alert area. */
   function showAlert(messages) {
     var box = $("#step-alert");
     box.textContent = "";
@@ -151,6 +155,7 @@
     });
   }
 
+  /* Update the summary beside the wizard with the current selections and estimate. */
   function renderSide() {
     $("#side-customer").textContent = custMode === "existing" && customer ? customer.full_name : custMode === "new" ? ($("#new-name").value.trim() || "Not selected") : "Not selected";
     $("#side-contact").textContent = custMode === "existing" && customer ? customer.contact_number : custMode === "new" ? $("#new-contact").value.trim() : "";
@@ -270,10 +275,12 @@
   function arrangement() { var r = $('input[name="arrangement"]:checked'); return r ? r.value : null; }
   function pickedMethods() { return $$("input[data-pay-method]:checked").map(function (i) { return i.value; }); }
   function cents(v) { var n = parseFloat(v); return isFinite(n) ? Math.round(n * 100) : 0; }
+  /* Format a number as a Philippine peso amount for display. */
   function peso(c) {
     return "\u20b1" + (c / 100).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  /* Update payment controls and amounts for the selected arrangement. */
   function syncPayment() {
     var a = arrangement();
     var takesMoney = a === "full" || a === "partial";
@@ -303,6 +310,7 @@
     } else { summary.hidden = true; }
   }
 
+  /* Load and display the GCash QR code when it is available. */
   function loadGcashQR(box) {
     if (!box.dataset.qrUrl || box.dataset.qrStarted) return;
     box.dataset.qrStarted = "true";
@@ -324,6 +332,7 @@
     }).catch(unavailable);
   }
 
+  /* Collect the payment choices and amounts entered by staff. */
   function buildPayment() {
     var a = arrangement(), entries = [];
     if (a === "full" || a === "partial") {
@@ -365,6 +374,12 @@
     return payload;
   }
 
+  /**
+   * Send the wizard data as JSON using the form's request token.
+   * @param {string} url - The quote or confirmation endpoint.
+   * @param {object} payload - The current order details to send.
+   * @returns {Promise<{status: number, body: object}>} The HTTP status and parsed response body.
+   */
   function post(url, payload) {
     return fetch(url, {
       method: "POST", credentials: "same-origin",
@@ -373,6 +388,7 @@
     }).then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); });
   }
 
+  /* Update the loading state and prevent repeated actions while work is in progress. */
   function setBusy(b) {
     busy = b;
     $("[data-confirm-label]").textContent = submitting && b ? "Creating order…" : "Confirm Order";
@@ -397,6 +413,7 @@
 
   // ---------------------------------------------------------------- step 1: customer
   var searchTimer = null;
+  /* Request matching customers and display the results. */
   function runSearch() {
     var q = $("#cust-search").value.trim(), list = $("#cust-results");
     clearErrors();
@@ -418,6 +435,7 @@
     b.addEventListener("click", function () { handler(c); });
     li.appendChild(b); return li;
   }
+  /* Save the selected customer and update the visible selection. */
   function pick(c) {
     setMode("existing"); customer = c;
     var box = $("#cust-picked");
@@ -426,6 +444,7 @@
     $("#dupe-box").hidden = true;
     renderSide();
   }
+  /* Switch between finding an existing customer and entering a new one. */
   function setMode(m) {
     clearErrors();
     custMode = m;
@@ -435,6 +454,7 @@
     if (m === "new") { customer = null; $("#cust-picked").hidden = true; confirmDuplicate = false; }
     renderSide();
   }
+  /* Show matching records so staff can decide how to proceed. */
   function showDuplicates(dupes, message) {
     if (!dupes || !dupes.length) return;
     $("#dupe-text").textContent = message;
@@ -449,6 +469,7 @@
   }
   function kv(dl, term, value) { dl.appendChild(el("dt", {}, term)); dl.appendChild(el("dd", {}, value)); }
 
+  /* Populate the final review with the current order and quote details. */
   function renderReview(data) {
     var c = custMode === "existing" && customer ? customer.full_name + " \u00b7 " + customer.contact_number
       : $("#new-name").value.trim() + " \u00b7 " + $("#new-contact").value.trim() + " (new customer)";
@@ -503,6 +524,7 @@
       showDuplicates(result.body.duplicates, (errors.customer_duplicate || [""])[0]);
     }
   }
+  /* Store the quoted total and use it to update the on-screen summary. */
   function acceptQuote(data) {
     localEstimates = {};
     sideQuote = data.lines;
@@ -516,6 +538,7 @@
     });
     renderSide();
   }
+  /* Mark the previous quote as out of date after relevant inputs change. */
   function invalidateQuote() {
     quoteRevision += 1; clearTimeout(quoteTimer);
     sideQuote = null;
@@ -527,6 +550,7 @@
     $$("[data-line-total]").forEach(function (line) { line.textContent = "—"; line.removeAttribute("data-estimated"); line.setAttribute("aria-label", "Line total unavailable"); });
     renderSide();
   }
+  /* Wait briefly for more edits before asking the server for a new quote. */
   function queueDetailsQuote() {
     clearTimeout(quoteTimer);
     if (step !== 3 || busy) return;
@@ -552,6 +576,7 @@
       });
     }, 350);
   }
+  /* Update on-screen estimates for services priced by length. */
   function renderLinearEstimates() {
     // Display-only estimates for the original linear service rule. Packages and
     // extras remain server-priced; no estimated amount enters the payload.
@@ -576,6 +601,7 @@
     });
     renderSide();
   }
+  /* Validate the current step and move forward when it is ready. */
   function next() {
     if (busy) return;
     quoteRevision += 1; clearTimeout(quoteTimer);
@@ -621,8 +647,10 @@
     }
   }
 
+  /* Return to the previous step of the wizard. */
   function back() { if (!busy && step > 1) show(step - 1); }
 
+  /* Send the final order request and display the server response. */
   function confirmOrder() {
     if (busy) return;
     if (!window.confirm("Create this order and generate the stub? Prices and payment will be saved as shown.")) return;

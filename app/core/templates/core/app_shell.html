@@ -28,7 +28,7 @@
       {% set topbar_title = self.page_title()|striptags|trim %}
       {% include 'core/_admin_topbar.html' %}
     {% else %}
-    <header class="app-topbar app-topbar--mobile" aria-label="Mobile navigation">
+    <!-- Introductory information and controls for this part of the page. --><header class="app-topbar app-topbar--mobile" aria-label="Mobile navigation">
       <button
         class="icon-btn lx-topbar__menu"
         type="button"
@@ -41,7 +41,7 @@
     </header>
     {% endif %}
 
-    <main class="content">
+    <!-- Primary content identified as a landmark for assistive technology. --><main class="content">
       {% block page_header %}<div class="page-header">
         <div>
           <h1>{% block page_title %}{% endblock %}</h1>
@@ -60,7 +60,7 @@
 
 {% block scripts %}
   {% if current_user.role == 'admin' and request.blueprint not in ['identity', 'staff_auth'] and request.endpoint != 'staff_admin.enroll_link' %}
-  <script src="{{ url_for('core.static', filename='js/admin-topbar.js') }}" defer></script>
+  <!-- Page behavior loaded after the HTML or referenced by the markup above. --><script src="{{ url_for('core.static', filename='js/admin-topbar.js') }}" defer></script>
   {% endif %}
   {% block page_scripts %}{% endblock %}
 {% endblock %}

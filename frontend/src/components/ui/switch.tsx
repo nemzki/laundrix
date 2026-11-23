@@ -1,3 +1,4 @@
+/** Provide a shared on-and-off control. */
 import * as React from 'react'
 import { Switch as Primitive } from 'radix-ui'
 import { cn } from '@/lib/utils'

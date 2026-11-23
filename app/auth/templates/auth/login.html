@@ -27,7 +27,7 @@
     {{ brand_logo('auth', href=url_for('landing.index'), show_text=False) }}
   </div>
 
-  <main class="lx-auth__main">
+  <!-- Primary content identified as a landmark for assistive technology. --><main class="lx-auth__main">
     <div class="lx-auth__form-wrap">
       <h1>Sign In</h1>
       <p class="lx-auth__lead">Welcome to Laundrix. Sign in to continue.</p>
@@ -61,7 +61,7 @@
         data-auth-panel="admin"
         {% if active_role != 'admin' %}hidden{% endif %}
       >
-        <form
+        <!-- Fields and controls submitted together to the form action. --><form
           class="lx-auth__form"
           method="post"
           action="{{ url_for('auth.login', role='admin') }}"
@@ -199,6 +199,6 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('auth.static', filename='js/auth.js') }}" defer></script>
+  <!-- Page behavior loaded after the HTML or referenced by the markup above. --><script src="{{ url_for('auth.static', filename='js/auth.js') }}" defer></script>
   <script src="{{ url_for('auth.static', filename='js/face_login.js') }}" defer></script>
 {% endblock %}

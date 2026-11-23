@@ -1,11 +1,17 @@
-{% extends "core/base.html" %}
-{% block title %}{{ title }} · Laundrix{% endblock %}
-{% block body_class %}centered{% endblock %}
+{# Keep the existing HTTP 404 and use the shop recovery screen only for tracking links. #}
+{% set tracking_not_found = code == 404 and request.endpoint == "tracking.view_order" %}
+{% extends "tracking/unavailable.html" if tracking_not_found else "core/base.html" %}
+{% block title %}{% if tracking_not_found %}{{ super() }}{% else %}{{ title }} · Laundrix{% endif %}{% endblock %}
+{% block body_class %}{% if not tracking_not_found %}centered{% endif %}{% endblock %}
 {% block body %}
-<main class="error-box">
+{% if tracking_not_found %}
+  {{ super() }}
+{% else %}
+<!-- Primary content identified as a landmark for assistive technology. --><main class="error-box">
   <p class="error-code">{{ code }}</p>
   <h1>{{ title }}</h1>
   <p class="muted">{{ message }}</p>
   <a class="btn btn-primary" href="{{ url_for('landing.index') }}">Back to home</a>
 </main>
+{% endif %}
 {% endblock %}

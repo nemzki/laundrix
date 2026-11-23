@@ -1,3 +1,4 @@
+/* Update the payment form according to the selected payment method. */
 /* Shared original payment form: server-authoritative validation and one transaction. */
 (function () {
   "use strict";
@@ -35,6 +36,7 @@
     var qr = paymentForm.querySelector("[data-payment-qr]");
     var qrLink = paymentForm.querySelector("[data-payment-qr-link]");
     var loaded = false, loading = false;
+    /* Load the configuration. */
     async function loadConfiguration() {
       if (loaded || loading) return;
       loading = true;
@@ -107,6 +109,7 @@
       errors.textContent = "No payment methods are enabled. Please check Payment Settings.";
     }
     modal.addEventListener("dialog:hide", function (event) { if (sending) event.preventDefault(); }, { signal:lifecycle.signal });
+    /* Run this handler when the form is submitted. */
     paymentForm.addEventListener("submit", function (event) {
       event.preventDefault();
       if (sending || !paymentForm.reportValidity()) return;

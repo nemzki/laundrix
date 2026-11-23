@@ -1,3 +1,4 @@
+/** Share the appearance of inputs for longer, multi-line text. */
 import * as React from "react"
 import { cn } from "@prototype/lib/utils"
 

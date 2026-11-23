@@ -10,7 +10,7 @@
 <a class="mo-server-button mo-server-view" data-slot="button" href="{{ o.detailUrl }}" aria-label="View order {{ o.reference }}">View</a>
 {%- endmacro %}
 <div id="laundrix-react-orders" class="lx-react" data-renderer="server">
-  <section class="manage-orders" aria-label="Manage orders">
+  <!-- Group the content and controls for order management in one section. --><section class="manage-orders" aria-label="Manage orders">
     <div data-slot="tabs"><div class="mo-status-tabs" data-slot="tabs-list" role="tablist" aria-label="Order status">
       {% for f in view.filters %}
       <a href="{{ f.url }}" role="tab" aria-selected="{{ 'true' if status == f.value else 'false' }}" data-state="{{ 'active' if status == f.value else 'inactive' }}"
@@ -19,7 +19,7 @@
       </a>
       {% endfor %}
     </div></div>
-    <form method="get" action="{{ url_for('orders.index') }}" role="search" class="mo-filters" data-orders-filters>
+    <!-- Fields and controls submitted together to the form action. --><form method="get" action="{{ url_for('orders.index') }}" role="search" class="mo-filters" data-orders-filters>
       <div data-slot="form-item" class="mo-search-field"><label for="initial-orders-search" data-slot="form-label">Search orders</label>
         <input id="initial-orders-search" class="mo-search-input" data-slot="input" type="search" name="q" value="{{ term }}" placeholder="Reference, name or contact" autocomplete="off">
       </div>

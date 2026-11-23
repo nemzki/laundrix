@@ -1,3 +1,4 @@
+/** Share button sizes and visual variants across screens. */
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@prototype/lib/utils"

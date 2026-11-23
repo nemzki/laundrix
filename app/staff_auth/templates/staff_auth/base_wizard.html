@@ -7,10 +7,10 @@
 {% block body_class %}centered{% endblock %}
 
 {% block body %}
-<main class="wizard">
+<!-- Primary content identified as a landmark for assistive technology. --><main class="wizard">
   <a class="wizard-brand" href="{{ url_for('landing.index') }}"><span>L</span>Laundrix <small>Staff Portal</small></a>
   {% block progress %}{% endblock %}
-  <section class="wizard-card">
+  <!-- Group the content and controls for staff sign-in and enrollment in one section. --><section class="wizard-card">
     {% block card %}{% endblock %}
   </section>
   {% block below %}{% endblock %}

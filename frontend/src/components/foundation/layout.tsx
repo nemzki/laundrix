@@ -1,3 +1,4 @@
+/** Share layout building blocks across the foundation screens. */
 import { useId, useState, type ReactNode } from 'react'
 import { Menu, type LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'

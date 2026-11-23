@@ -1,5 +1,6 @@
 "use client"
 
+/** Provide a shared on-and-off control. */
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
 import { cn } from "@prototype/lib/utils"
 

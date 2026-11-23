@@ -1,5 +1,6 @@
 "use client"
 
+/** Wrap modal content in reusable pieces for its trigger, title, content, and actions. */
 import * as React from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { cn } from "@prototype/lib/utils"

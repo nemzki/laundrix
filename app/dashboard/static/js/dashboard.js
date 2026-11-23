@@ -1,7 +1,9 @@
+/* Read data from the dashboard markup and draw its charts. */
 /* Admin dashboard charts — Chart.js, CSP-safe external file. */
 (function () {
   "use strict";
 
+  /* Read data embedded in the page and turn it into a JavaScript value. */
   function readJson(id) {
     var el = document.getElementById(id);
     if (!el) return null;
@@ -12,6 +14,7 @@
     }
   }
 
+  /* Format a number as a Philippine peso amount for display. */
   function peso(n) {
     var value = Number(n) || 0;
     return "\u20b1" + value.toLocaleString("en-PH", {
@@ -20,6 +23,7 @@
     });
   }
 
+  /* Set chart options shared by the charts in this file. */
   function baseOptions() {
     return {
       responsive: true,
@@ -46,6 +50,7 @@
     };
   }
 
+  /* Set up the status chart. */
   function initStatusChart(payload) {
     var canvas = document.getElementById("dashStatusChart");
     if (!canvas || typeof Chart === "undefined" || !payload) return;
@@ -84,6 +89,7 @@
     });
   }
 
+  /* Set up the popular chart. */
   function initPopularChart(payload) {
     var canvas = document.getElementById("dashPopularChart");
     if (!canvas || typeof Chart === "undefined" || !payload) return;

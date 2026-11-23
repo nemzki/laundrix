@@ -1,5 +1,6 @@
 "use client"
 
+/** Share the controls and panels used to switch between related views. */
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"

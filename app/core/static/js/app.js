@@ -1,8 +1,10 @@
+/* Set up dialogs, confirmation prompts, and other behavior shared across pages. */
 /* Shared behaviour (CSP-safe: external file, no inline handlers). */
 (function () {
   "use strict";
 
   var dialogs = new WeakMap();
+  /* Keep the interface in sync with the dialog. */
   function syncDialog(element) {
     element.classList.toggle("show", element.open);
     document.body.classList.toggle("modal-open", !!document.querySelector("dialog:is(.modal,.offcanvas)[open]"));
@@ -84,6 +86,7 @@
     document.body.appendChild(dlg);
     return dlg;
   }
+  /* Run this handler when the form is submitted. */
   document.addEventListener("submit", function (e) {
     var form = e.target;
     if (!form.matches || !form.matches("form[data-confirm]") || form.dataset.confirmed) return;

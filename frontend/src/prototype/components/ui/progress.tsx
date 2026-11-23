@@ -1,5 +1,6 @@
 "use client"
 
+/** Give progress indicators consistent styling. */
 import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 import { cn } from "@prototype/lib/utils"
 

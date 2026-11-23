@@ -1,7 +1,7 @@
-{% set shared_theme = request.blueprint not in ['identity', 'staff_auth'] or request.endpoint in ['staff_auth.login', 'identity.index', 'identity.attempt', 'identity.start'] %}
+{% set shared_theme = (use_enrollment_theme|default(false)) or request.blueprint not in ['identity', 'staff_auth'] or request.endpoint in ['staff_auth.login', 'identity.index', 'identity.attempt', 'identity.start'] %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<!-- Browser settings and assets shared by this page. --><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% if shared_theme %}<script src="{{ url_for('core.static', filename='js/theme.js') }}"></script>{% endif %}
@@ -15,18 +15,20 @@
   {% if shared_theme %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/theme.css') }}">{% endif %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+  {% block flashes %}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div class="flash-stack" role="status" aria-live="polite">
+      <!-- Live region where assistive technology can announce updates. --><div class="flash-stack" role="status" aria-live="polite">
         {% for category, message in messages %}
           <div class="flash flash-{{ category }}">{{ message }}</div>
         {% endfor %}
       </div>
     {% endif %}
   {% endwith %}
+  {% endblock %}
 
   {% block body %}{% endblock %}
-  <script src="{{ url_for('core.static', filename='js/app.js') }}" defer></script>
+  <!-- Page behavior loaded after the HTML or referenced by the markup above. --><script src="{{ url_for('core.static', filename='js/app.js') }}" defer></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,5 +1,6 @@
 "use client"
 
+/** Display a person's image with a fallback when the image is unavailable. */
 import * as React from "react"
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar"
 import { cn } from "@prototype/lib/utils"

@@ -4,12 +4,12 @@
 {%- if value is none -%}&mdash;{%- elif value is sameas true -%}Yes{%- elif value is sameas false -%}No{%- else -%}{{ value }}{%- endif -%}
 {%- endmacro %}
 {% set f = audit.f %}{% set pg = audit.pagination %}
-<section class="card ps-card audit-card" id="audit-logs" aria-labelledby="audit-heading">
+<!-- Group the content and controls for audit history in one section. --><section class="card ps-card audit-card" id="audit-logs" aria-labelledby="audit-heading">
   <div class="ps-section-heading"><span class="ps-section-icon">{{ icon('receipt',20) }}</span><div><h2 id="audit-heading">Audit Logs</h2><p class="muted">Recent actions by staff and admins, newest first. Read-only.</p></div></div>
 
   <details class="audit-filters"{% if f.active or f.notices %} open{% endif %}>
     <summary>Filters{% if f.active %} <span class="audit-badge">On</span>{% endif %}</summary>
-    <form method="get" action="{{ url_for('core.personal_settings', _anchor='audit-logs') }}" aria-label="Filter audit logs">
+    <!-- Fields and controls submitted together to the form action. --><form method="get" action="{{ url_for('core.personal_settings', _anchor='audit-logs') }}" aria-label="Filter audit logs">
       <div class="field audit-filters__wide"><label for="audit-q">Staff / Admin name</label>
         <input id="audit-q" class="input" type="search" name="q" value="{{ f.q }}" maxlength="100" autocomplete="off"></div>
       <div class="field"><label for="audit-action">Action</label>
@@ -35,7 +35,7 @@
   {% for notice in f.notices %}<p class="audit-notice" role="status">{{ notice }}</p>{% endfor %}
 
   {% if audit.entries %}
-  <p class="audit-count muted" aria-live="polite">{{ pg.first }}&ndash;{{ pg.last }} of {{ pg.total }}{% if f.active %} (filtered){% endif %} &middot; Philippine time</p>
+  <!-- Live region where assistive technology can announce updates. --><p class="audit-count muted" aria-live="polite">{{ pg.first }}&ndash;{{ pg.last }} of {{ pg.total }}{% if f.active %} (filtered){% endif %} &middot; Philippine time</p>
   <ul class="audit-list" aria-label="Audit log entries">
     {% for row in audit.entries %}
     <li class="audit-row{% if not row.success %} is-failed{% endif %}">
@@ -57,7 +57,7 @@
         {% set changed = audit.diff_rows(row) %}
         {% if changed %}
         <div class="audit-diff" tabindex="0" role="region" aria-label="Changed values">
-          <table class="table">
+          <!-- Records displayed in rows under matching column headings. --><table class="table">
             <thead><tr><th scope="col">Field</th><th scope="col">Before</th><th scope="col">After</th></tr></thead>
             <tbody>{% for key, before, after in changed %}<tr><th scope="row">{{ key|replace('_', ' ')|capitalize }}</th><td>{{ show(before) }}</td><td>{{ show(after) }}</td></tr>{% endfor %}</tbody>
           </table>
@@ -68,7 +68,7 @@
     {% endfor %}
   </ul>
   {% if pg.pages > 1 %}
-  <nav class="audit-pager" aria-label="Audit log pages">
+  <!-- Related links grouped together so users can find their way around. --><nav class="audit-pager" aria-label="Audit log pages">
     {% if pg.has_prev %}<a class="btn btn-outline btn-sm" href="{{ url_for('core.personal_settings', page=pg.prev_num, _anchor='audit-logs', **f.params) }}">Previous</a>{% else %}<span class="btn btn-outline btn-sm is-disabled" aria-disabled="true">Previous</span>{% endif %}
     <span class="muted" aria-current="page">Page {{ pg.page }} of {{ pg.pages }}</span>
     {% if pg.has_next %}<a class="btn btn-outline btn-sm" href="{{ url_for('core.personal_settings', page=pg.next_num, _anchor='audit-logs', **f.params) }}">Next</a>{% else %}<span class="btn btn-outline btn-sm is-disabled" aria-disabled="true">Next</span>{% endif %}

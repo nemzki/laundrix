@@ -1,3 +1,4 @@
+/* Limit frontend styles to their intended containers during the build. */
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import postcss from 'postcss'
 import prefixSelector from 'postcss-prefix-selector'

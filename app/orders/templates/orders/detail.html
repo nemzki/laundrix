@@ -39,7 +39,7 @@
 {% endblock %}
 
 {% block content %}
-<script type="application/json" id="order-summary-data">{{ dict(
+<!-- Initial page data in JSON for the JavaScript interface to read. --><script type="application/json" id="order-summary-data">{{ dict(
   reference=order.reference, customer=order.customer_name, contact=order.customer_contact,
   created=order.created_at|localdt, total=order.total|peso,
   paid=(order.amount_paid|peso if order.is_payment_tracked else none),
@@ -53,7 +53,7 @@
 )|tojson }}</script>
 
 <div class="order-detail__toast" data-detail-toast role="alert" hidden><strong data-toast-title></strong><p data-toast-message></p><button type="button" data-toast-close aria-label="Dismiss notification">&times;</button></div>
-<section class="order-detail" aria-label="Order Details"
+<!-- Group the content and controls for order management in one section. --><section class="order-detail" aria-label="Order Details"
          data-ref="{{ order.reference }}"
          data-current-status="{{ laundry_label }}" data-balance="{{ order.balance_due if order.is_payment_tracked else 0 }}" data-balance-label="{{ order.balance_due|peso if order.is_payment_tracked else '\u2014' }}" data-detail-url="{{ url_for('orders.detail', reference=order.reference) }}">
 
@@ -144,7 +144,7 @@
         <h2 class="order-detail__section-title">Laundry Services</h2>
         {% if main_items %}
         <div class="table-wrap">
-          <table class="table order-detail__table">
+          <!-- Records displayed in rows under matching column headings. --><table class="table order-detail__table">
             <thead>
               <tr>
                 <th scope="col">Item</th>
@@ -369,7 +369,7 @@
           </button>
           {% endif %}
           {% if sms.can_refresh %}
-          <form class="inline-form" method="post" action="{{ url_for('orders.sms_refresh', reference=order.reference) }}">
+          <!-- Fields and controls submitted together to the form action. --><form class="inline-form" method="post" action="{{ url_for('orders.sms_refresh', reference=order.reference) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-outline btn-sm" type="submit">Refresh status</button>
           </form>
@@ -394,7 +394,7 @@
 </section>
 
 {% include 'payments/_record_payment_modal.html' %}
-<dialog class="modal" id="statusUpdateModal" aria-labelledby="statusUpdateModalLabel">
+<!-- Content that opens in a separate panel when a user activates its trigger. --><dialog class="modal" id="statusUpdateModal" aria-labelledby="statusUpdateModalLabel">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content tw:flex tw:flex-col tw:min-w-0 order-detail-modal">
       <form id="statusUpdateForm" method="post" action="{{ url_for('orders.update_status', reference=order.reference) }}">
@@ -521,7 +521,7 @@
 {% endblock %}
 
 {% block page_scripts %}
-<script src="{{ url_for('orders.static', filename='js/orders_detail.js') }}" defer></script>
+<!-- Page behavior loaded after the HTML or referenced by the markup above. --><script src="{{ url_for('orders.static', filename='js/orders_detail.js') }}" defer></script>
 <script src="{{ url_for('orders.static', filename='js/payment_modal.js') }}" defer></script>
 <script src="{{ url_for('orders.static', filename='js/order_detail_layout.js') }}" defer></script>
 {% endblock %}

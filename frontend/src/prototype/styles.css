@@ -1,9 +1,11 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
+/* Define the selector that activates this Tailwind variant. */
 @custom-variant dark (&:where([data-lx-theme="dark"], [data-lx-theme="dark"] *));
 
 
+/* Expose design values that Tailwind can turn into utility classes. */
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -50,6 +52,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Global defaults. Set defaults and shared values used throughout the page. */
 :root {
   color-scheme: light;
   --background: oklch(0.982 0.004 250);
@@ -90,6 +93,7 @@
 }
 
 
+/* Group these rules in a cascade layer that controls where they sit in style priority. */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -102,8 +106,10 @@
 
 /* Local fonts replace next/font loading; same source families, separate document only. */
 @font-face { font-family: 'Geist'; src: url('./assets/GeistSans-Variable.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; }
+/* Give the browser a font family name and the file that contains that font. */
 @font-face { font-family: 'Geist Mono'; src: url('./assets/GeistMono-Variable.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; }
 :root { --font-geist-sans: 'Geist', system-ui, sans-serif; --font-geist-mono: 'Geist Mono', monospace; }
+/* Reduced motion. Apply these styles only when the device or browser meets the condition below. */
 @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
 .lx-react.prototype-preview-host { margin: 0; font-family: var(--font-geist-sans); }

@@ -1,7 +1,7 @@
 {% from "core/_brand.html" import brand_logo %}
 <!DOCTYPE html>
 <html lang="en" class="_0bjUvq_variable" data-scroll-behavior="smooth">
-<head>
+<!-- Browser settings and assets shared by this page. --><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Laundrix brings customer records, laundry orders, services, and payments together for Wash Up! Laundry Shop.">
@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="{{ url_for('landing.static', filename='css/v0-landing.css') }}">
   <link rel="stylesheet" href="{{ url_for('landing.static', filename='css/landing.css') }}">
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/theme.css') }}">
-  <script src="{{ url_for('core.static', filename='js/theme.js') }}"></script>
+  <!-- Page behavior loaded after the HTML or referenced by the markup above. --><script src="{{ url_for('core.static', filename='js/theme.js') }}"></script>
   <script src="{{ url_for('landing.static', filename='js/landing.js') }}" defer></script>
 </head>
 <body class="lx-landing font-sans antialiased">
@@ -21,7 +21,7 @@
   {% endwith %}
   <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-primary-foreground">Skip to content</a>
   {% include 'landing/partials/_header.html' %}
-  <main id="main">
+  <!-- Primary content identified as a landmark for assistive technology. --><main id="main">
     {% include 'landing/partials/_hero.html' %}
     {% include 'landing/partials/_features.html' %}
     {% include 'landing/partials/_workflow.html' %}

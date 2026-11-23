@@ -1,3 +1,4 @@
+/** Show how shared foundation components fit together in the preview. */
 import { useId, type Key, type ReactNode } from 'react'
 import { AlertCircle, LoaderCircle } from 'lucide-react'
 import { Input } from '@prototype/components/ui/input'

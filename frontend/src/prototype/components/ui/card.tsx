@@ -1,3 +1,4 @@
+/** Group related content into consistent heading, body, and action regions. */
 import * as React from "react"
 import { cn } from "@prototype/lib/utils"
 

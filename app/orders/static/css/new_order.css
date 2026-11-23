@@ -21,13 +21,16 @@
 .new-order-page .page-header p { font-size: 14px; }
 .new-order-page #wizard { font-size: 14px; line-height: 1.5; scroll-margin-top: 72px; }
 .new-order-page #wizard [hidden] { display: none !important; }
+/* Cards and data displays. Group related information and make rows easier to scan. */
 .new-order-page #wizard .card { box-shadow: none; border-radius: 12px; }
+/* Layout and containers. Arrange the main regions and control the space between them. */
 .new-order-page #wizard .wizard-layout { grid-template-columns: minmax(0,1fr) 300px; gap: 24px; }
 .new-order-page #wizard .wizard-main { padding: 24px; min-width: 0; }
 .new-order-page #wizard .wizard-side { min-width: 0; top: 24px; }
 .new-order-page #wizard .wiz-steps { padding: 0; border: 0; border-radius: 0; background: transparent; gap: 16px; overflow: visible; margin-bottom: 24px; }
 .new-order-page #wizard .wiz-step { justify-content: start; padding: 0 0 12px; gap: 10px; border-bottom: 2px solid var(--border); border-radius: 0; background: transparent; min-width: 0; }
 .new-order-page #wizard .wiz-step__num { width: 28px; height: 28px; border: 1px solid var(--border); background: var(--lx-paint-surface, #fff); font-size: 12px; font-weight: 500; }
+/* Typography. Keep text sizes, weights, and spacing consistent. */
 .new-order-page #wizard .wiz-step__text { min-width: 0; display: grid; gap: 2px; }
 .new-order-page #wizard .wiz-step__name { font-size: 13px; font-weight: 500; color: var(--text); }
 .new-order-page #wizard .wiz-step__description { font-size: 11px; line-height: 16px; font-weight: 400; color: var(--muted); }
@@ -42,6 +45,7 @@
 .new-order-page #wizard .wiz-panel { background: var(--lx-paint-surface, #fff); border: 0; padding: 16px 0 0; }
 .new-order-page #wizard .seg { display: inline-flex; width: auto; max-width: 100%; border-radius: 8px; padding: 4px; background: var(--lx-paint-muted, #eef2f7); }
 .new-order-page #wizard .seg-btn { padding: 8px 12px; border-radius: 6px; font-size: 13px; min-height: 40px; }
+/* Buttons and forms. Style the controls users activate or fill in. */
 .new-order-page #wizard .field { min-width: 0; }
 .new-order-page #wizard .field label { font-size: 13px; font-weight: 500; }
 .new-order-page #wizard .input { min-height: 40px; border-radius: 8px; font: inherit; }
@@ -112,6 +116,7 @@
 .new-order-page #wizard .side-customer-row #side-customer { text-align: right; }
 .new-order-page #wizard #side-contact { text-align: right; }
 .new-order-page #wizard #side-step { border-top: 1px solid var(--border); margin: 12px 0 0; padding-top: 12px; }
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media (max-width: 1150px) {
  .new-order-page #wizard .detail-card { grid-template-columns: minmax(0,1fr) auto; }
  .new-order-page #wizard .detail-card .form-grid { grid-column: 1; }

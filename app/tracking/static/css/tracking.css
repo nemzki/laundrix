@@ -1,126 +1,145 @@
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    min-height: 100vh;
-    background: #f4f7fb;
-    color: #172033;
-    font-family: Arial, sans-serif;
-}
-
+/* The public ticket uses the shared Laundrix theme and Tailwind layout utilities. */
 .tracking-page {
-    width: min(100% - 32px, 520px);
-    margin: 0 auto;
-    padding: 32px 0;
+  max-width: 560px;
+  padding-block: clamp(1.25rem, 4vw, 2.5rem);
 }
 
+.tracking-skip {
+  position: fixed;
+  z-index: 1;
+  inset: .75rem auto auto .75rem;
+  transform: translateY(-200%);
+  padding: .625rem 1rem;
+  border-radius: var(--lx-radius-sm);
+  background: var(--lx-surface);
+  color: var(--lx-navy);
+}
+
+.tracking-skip:focus { transform: none; }
+.tracking-page:focus { outline: none; }
+
+.tracking-ticket {
+  --ticket-inset: clamp(1rem, 4.5vw, 1.5rem);
+  border: 1px solid var(--lx-border);
+  border-radius: var(--lx-radius-lg);
+  background: var(--lx-surface);
+  box-shadow: var(--lx-shadow);
+  overflow-wrap: anywhere;
+}
+
+.tracking-section { padding: var(--ticket-inset); }
 .tracking-header {
-    text-align: center;
-    margin-bottom: 24px;
+  padding-bottom: .875rem;
+  border-bottom: 1px solid var(--lx-border);
 }
 
-.tracking-header h1 {
-    margin: 0;
-    color: #173b68;
-    font-size: 1.7rem;
+.tracking-logo { flex: none; object-fit: contain; }
+.tracking-shop-name {
+  margin: 0;
+  color: var(--lx-navy);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
-.tracking-header p,
-.tracking-footer {
-    color: #64748b;
-    font-size: 0.9rem;
+.tracking-ticket h1 {
+  margin: 0 0 .75rem;
+  font-size: clamp(1.375rem, 5.4vw, 1.9rem);
+  letter-spacing: -.025em;
+  font-variant-numeric: tabular-nums;
 }
 
-.tracking-card {
-    padding: 24px;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+.tracking-ticket h2 { margin: 0; font-size: 1rem; }
+.tracking-kicker,
+.tracking-secondary,
+.tracking-powered {
+  color: var(--lx-muted);
+  font-size: .875rem;
 }
 
-.eyebrow,
-.status-label {
-    color: #64748b;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+.tracking-kicker {
+  margin: 0 0 .25rem;
+  color: var(--lx-navy);
+  font-weight: 600;
 }
 
-.tracking-card h2 {
-    margin: 8px 0 20px;
-    color: #173b68;
-    font-size: 1.5rem;
-    overflow-wrap: anywhere;
+.tracking-status { font-size: .875rem; }
+.tracking-status dt { font-weight: 600; }
+
+/* Laundry and payment badges use the shared palette with a neutral fallback. */
+.tracking-badge {
+  display: inline-block;
+  margin: 0;
+  padding: .125rem .625rem;
+  border: 1px solid var(--order-status-border, var(--lx-border));
+  border-radius: 999px;
+  background: var(--order-status-bg, var(--lx-bg));
+  color: var(--order-status-fg, var(--lx-text));
+  font-size: .8125rem;
+  font-weight: 700;
 }
 
-.status-panel {
-    padding: 16px;
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 10px;
+.tracking-updated { margin-top: .5rem; }
+
+/* The divider owns the notches so neither cutout can overlap text or amounts. */
+.tracking-perforation {
+  position: relative;
+  height: 0;
+  border-top: 1px dashed var(--lx-muted);
 }
 
-.status-panel p {
-    margin: 0;
+.tracking-perforation::before,
+.tracking-perforation::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%);
+  border: 1px solid var(--lx-border);
+  border-radius: 50%;
+  background: var(--lx-bg);
+  pointer-events: none;
 }
 
-.status-value {
-    margin-top: 6px !important;
-    color: #1d4ed8;
-    font-size: 1.2rem;
-    font-weight: 800;
+.tracking-perforation::before { left: -9px; clip-path: inset(0 0 0 50%); }
+.tracking-perforation::after { right: -9px; clip-path: inset(0 50% 0 0); }
+.tracking-perforation--claim { z-index: 1; }
+
+.tracking-items { margin-top: .25rem; padding: 0; list-style: none; }
+.tracking-item,
+.tracking-payments > div {
+  grid-template-columns: minmax(0, 1fr) minmax(0, max-content);
 }
 
-.updated {
-    color: #64748b;
-    font-size: 0.82rem;
+.tracking-item { padding-block: .625rem; }
+.tracking-item + .tracking-item { border-top: 1px solid var(--lx-border); }
+.tracking-item-meta { display: block; margin-top: .125rem; font-size: .8125rem; }
+.tracking-amount { font-variant-numeric: tabular-nums; }
+
+.tracking-payment {
+  padding-top: .875rem;
+  border-top: 1px solid var(--lx-border);
 }
 
-.tracking-card hr {
-    margin: 20px 0;
-    border: 0;
-    border-top: 1px solid #e2e8f0;
+.tracking-payments { margin-top: .5rem; font-size: .875rem; }
+.tracking-payments dt { font-weight: 400; }
+.tracking-payments dd { margin: 0; font-weight: 700; }
+.tracking-payments .tracking-total {
+  color: var(--lx-navy);
+  font-size: 1.125rem;
 }
+.tracking-total dt { font-weight: 700; }
 
-.tracking-card h3 {
-    margin-bottom: 16px;
+.tracking-claim {
+  border-radius: 0 0 calc(var(--lx-radius-lg) - 1px) calc(var(--lx-radius-lg) - 1px);
+  background: color-mix(in srgb, var(--lx-primary-soft) 45%, var(--lx-surface));
+  font-size: .875rem;
 }
+.tracking-claim h2 { margin-bottom: .375rem; }
+.tracking-claim p { margin-bottom: .25rem; }
 
-.order-items {
-    display: grid;
-    gap: 14px;
-}
-
-.order-item,
-.total-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.order-item p,
-.order-item small {
-    display: block;
-    margin: 4px 0 0;
-    color: #64748b;
-    font-size: 0.85rem;
-}
-
-.order-item > strong,
-.total-row > strong:last-child {
-    white-space: nowrap;
-}
-
-.total-row {
-    font-size: 1.05rem;
-}
-
-.tracking-footer {
-    padding: 16px 8px;
-    text-align: center;
-    line-height: 1.6;
-}
+.tracking-powered { margin-top: .875rem; font-size: .8125rem; }
+.tracking-powered strong { color: var(--lx-navy); }
+.tracking-unavailable ol { padding-left: 1.25rem; }
+.tracking-refresh { min-height: 44px; margin-bottom: 1rem; }

@@ -1,3 +1,4 @@
+/** Show a reusable indicator when an action or view is loading. */
 import { cn } from "@prototype/lib/utils"
 import { Loader2Icon } from "lucide-react"
 

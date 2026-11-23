@@ -1,10 +1,12 @@
 /* System-wide layout primitives. Brand, semantic colors and type remain in existing styles. */
 .ui-skip { position: fixed; top: .75rem; left: .75rem; z-index: 1100; padding: .6rem 1rem; border: 1px solid var(--lx-border); border-radius: var(--lx-radius-sm); background: var(--lx-surface); transform: translateY(-200%); }
 .ui-skip:focus { transform: none; box-shadow: var(--lx-focus-ring); }
+/* Cards and data displays. Group related information and make rows easier to scan. */
 .ui-page, .ui-page > *, .ui-stack > *, .ui-root .card, .ui-root .stat { min-width: 0; }
 .ui-stack { display: grid; gap: 1rem; }
 .ui-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
 .ui-toolbar { display: flex; align-items: end; flex-wrap: wrap; gap: .75rem; padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--lx-border); border-radius: var(--lx-radius); }
+/* Buttons and forms. Style the controls users activate or fill in. */
 .ui-toolbar .field { flex: 1 1 12rem; min-width: 0; margin: 0; }
 .ui-toolbar .input, .ui-toolbar.filters > .input { max-width: 100%; }
 .ui-toolbar > .input { flex: 1 1 10rem; min-width: 0; }
@@ -15,6 +17,7 @@
 .ui-table th:first-child { width: 22%; }
 .ui-table .num { white-space: normal; overflow-wrap: anywhere; }
 .ui-table .status, .ui-table .pill { max-width: 100%; white-space: normal; }
+/* Typography. Keep text sizes, weights, and spacing consistent. */
 .ui-table .cell-title { min-width: 0; align-items: start; gap: .5rem; }
 .ui-table .cell-title > div { min-width: 0; }
 .ui-table .thumb { width: 2rem; height: 2rem; }
@@ -31,6 +34,7 @@
 .ui-root .flash { display: flex; align-items: start; justify-content: space-between; gap: .75rem; }
 .ui-root .flash .btn-close { flex-shrink: 0; }
 .ui-root .input:focus-visible, .ui-root select:focus-visible, .ui-root button:focus-visible, .ui-root a:focus-visible { outline-offset: 3px; }
+/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
 @media (max-width: 700px) {
   .ui-root .tabs { flex-wrap: wrap; overflow-x: visible; }
   .ui-root .tab { padding: .65rem .75rem; white-space: normal; }
@@ -48,6 +52,7 @@
   .ui-toolbar > .btn { flex: 1 1 auto; min-height: 44px; }
   .ui-root .ui-actions > .btn { min-height: 44px; }
 }
+/* Reduced motion. Apply these styles only when the device or browser meets the condition below. */
 @media (prefers-reduced-motion: reduce) {
   .ui-root *, .ui-root *::before, .ui-root *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }

@@ -1,3 +1,4 @@
+/** Render the orders workspace and keep the visible results in sync with the active filters. */
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react'
 import { useForm } from 'react-hook-form'
 import { ArrowRight, ChevronLeft, ChevronRight, ClipboardList, LoaderCircle, Printer, Search } from 'lucide-react'
@@ -97,7 +98,7 @@ export function OrdersPage({ data: initial, onReady }: { data: OrdersPageData; o
       </TabsList>
     </Tabs>
       <Form {...form}>
-        <form method="get" action={data.indexUrl} role="search" className="mo-filters"
+        {/* Collect the values entered in this section before sending them together. */}<form method="get" action={data.indexUrl} role="search" className="mo-filters"
           aria-busy={pending} onSubmit={event => {
             event.preventDefault()
             if (pending) return

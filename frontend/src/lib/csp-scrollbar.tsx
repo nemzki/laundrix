@@ -1,3 +1,4 @@
+/** Coordinate scrollbar compensation for overlays using the page's content security policy. */
 import { useLayoutEffect } from 'react'
 
 // react-remove-scroll-bar normally injects a <style> element, which Flask's

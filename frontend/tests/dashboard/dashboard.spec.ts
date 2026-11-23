@@ -8,17 +8,17 @@ async function login(page: Page, role: 'admin' | 'staff') {
   await page.locator(`form[data-auth-form=${role}] button[type=submit]`).click()
   await expect(page).toHaveURL(/\/dashboard\//)
 }
-async function assertDataParity(page: Page, role: 'admin' | 'staff') {
+async function assertDataParity(page: Page) {
   const legacy = await page.request.get('/dashboard/?ui=jinja')
   expect(legacy.status()).toBe(200)
-  const original = await page.evaluate(({ html, role }) => {
+  const original = await page.evaluate(html => {
     const doc = new DOMParser().parseFromString(html, 'text/html')
-    const rows = [...doc.querySelectorAll(role === 'admin' ? '.lx-dash__kpi' : '.stat')]
+    const rows = [...doc.querySelectorAll('.lx-dash__kpi')]
     return { metrics: rows.map(row => ({
-      label: row.querySelector(role === 'admin' ? '.lx-dash__kpi-label' : '.stat-label')!.textContent!.trim(),
-      value: row.querySelector(role === 'admin' ? '.lx-dash__kpi-value' : '.stat-value')!.textContent!.trim(),
+      label: row.querySelector('.lx-dash__kpi-label')!.textContent!.trim(),
+      value: row.querySelector('.lx-dash__kpi-value')!.textContent!.trim(),
     })), links: [...doc.querySelectorAll('#app-sidebar .lx-nav__link')].map(link => ({ label: link.textContent!.trim(), href: link.getAttribute('href')! })) }
-  }, { html: await legacy.text(), role })
+  }, await legacy.text())
   const payload = JSON.parse((await page.locator('#laundrix-dashboard-data').textContent())!)
   expect(payload.metrics.map((metric: { label: string; value: string }) => ({ label: metric.label, value: metric.value }))).toEqual(original.metrics)
   expect(payload.navigation.flatMap((group: { items: { label: string; url: string }[] }) => group.items.map(item => ({ label: item.label, href: item.url })))).toEqual(original.links)
@@ -116,7 +116,7 @@ for (const width of [768, 1440]) test(`Admin sidebar matches dashboard on origin
   }
 })
 
-for (const role of ['admin', 'staff'] as const) for (const width of [320, 768, 1440]) {
+for (const role of ['admin', 'staff'] as const) for (const width of role === 'staff' ? [320, 390, 768, 1024, 1440] : [320, 768, 1440]) {
   test(`${role} dashboard parity, permissions, navigation and CSP at ${width}px`, async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', error => errors.push(error.message))
@@ -128,9 +128,22 @@ for (const role of ['admin', 'staff'] as const) for (const width of [320, 768, 1
     await login(page, role)
     await expect(page.locator('#laundrix-dashboard')).toHaveAttribute('data-renderer', 'react')
     await page.evaluate(() => document.fonts.ready)
-    const data = await assertDataParity(page, role)
+    const data = await assertDataParity(page)
     expect(data.metrics).toHaveLength(role === 'admin' ? 8 : 7)
     if (role === 'staff') {
+      await expect(page.getByRole('heading', { name: 'Staff Dashboard', exact: true })).toBeVisible()
+      await expect(page.getByText("Today's laundry operations at a glance.")).toBeVisible()
+      const heading = page.locator('.dashboard-heading')
+      const newOrder = heading.getByRole('button', { name: 'New Order' })
+      await expect(newOrder).toHaveAttribute('href', data.urls.newOrder)
+      if (width < 768) await expect(newOrder).toHaveCSS('height', '44px')
+      await expect(page.getByRole('link', { name: 'View All' })).toHaveAttribute('href', data.urls.orders)
+      await expect(page.locator('.dashboard-content')).toHaveCSS('padding-left', width < 768 ? '16px' : width < 1024 ? '24px' : '32px')
+      await expect(heading).toHaveCSS('font-family', /Inter/)
+      await expect(page.locator('[data-metric]').first()).toHaveCSS('border-radius', '14px')
+      await expect(page.locator('.dashboard-metric-value').first()).toHaveCSS('font-size', '26px')
+      const grid = page.locator('.dashboard-metrics')
+      expect(await grid.evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length)).toBe(width < 768 ? 1 : width < 1024 ? 2 : 3)
       expect(data.popular).toEqual([])
       expect(data.metrics.map((metric: { key: string }) => metric.key)).not.toContain('collected_today')
       for (const path of ['/dashboard/admin', '/orders/customers', '/admin/services/', '/admin/staff/', '/payments/', '/payments/summary', '/payments/settings']) {

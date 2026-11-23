@@ -1,3 +1,4 @@
+/* Load the customer directory and connect the profile and edit controls. */
 /* Customer directory: original server queries and approved Admin-only customer writes. */
 (function () {
   "use strict";
@@ -10,6 +11,7 @@
   hint.setAttribute("role","tooltip");
   hint.hidden=true;
   document.body.appendChild(hint);
+  /* Hide the edit hints. */
   function hideEditHints() {
     if (hintTrigger) hintTrigger.removeAttribute("aria-describedby");
     hintTrigger=null;
@@ -21,6 +23,7 @@
     hint.style.left=(bounds.left+bounds.width/2)+"px";
     hint.style.top=bounds.top+"px";
   }
+  /* Show the edit hint. */
   function showEditHint(event) {
     var button=event.target.closest("[data-edit-hint]");
     if (!button || button===hintTrigger) return;
@@ -50,12 +53,14 @@
   var directoryController, profileController, editController, debounce, lastURL=new URL(location.href);
   var selected=null, profileURL=null, viewTrigger=null, editTrigger=null, returnSheet=false, saving=false, mode="add", editId=null, modalReady=false, formReady=false;
   var toast=document.querySelector("[data-customer-toast]");
+  /* Update the status message that assistive technology can announce. */
   function announce(title,message) {
     toast.querySelector("[data-customer-toast-title]").textContent=title;
     toast.querySelector("[data-customer-toast-message]").textContent=message;toast.hidden=false;
   }
   toast.querySelector("[data-customer-toast-close]").addEventListener("click",function(){toast.hidden=true;});
   function safeURL(value) {var url=new URL(value,location.origin);if(url.origin!==location.origin) throw new Error("Invalid customer link.");return url;}
+  /* Read the response as JSON so the page can use its values. */
   async function readJSON(url,options) {
     var response=await fetch(url,Object.assign({credentials:"same-origin",cache:"no-store"},options));
     if(response.redirected) throw new Error("Please sign in again before continuing.");
@@ -69,6 +74,7 @@
     if(filter.value!=="all") url.searchParams.set("filter",filter.value);
     return url;
   }
+  /* Fetch the customer list for the current filters and update the directory. */
   async function loadDirectory(url,push,clamped) {
     lastURL=new URL(url);clearTimeout(debounce);
     if(directoryController) directoryController.abort();
@@ -98,10 +104,13 @@
     } catch {if(directoryController===current){root.dataset.state="error";root.querySelector("[data-customer-load-error]").hidden=false;}return false;}
     finally {clearTimeout(timer);if(directoryController===current) root.removeAttribute("aria-busy");}
   }
+  /* Run this handler when the form is submitted. */
   root.querySelector(".cm-filters").addEventListener("submit",function(event){event.preventDefault();loadDirectory(queryURL(),true);});
   search.addEventListener("input",function(){clearTimeout(debounce);debounce=setTimeout(function(){loadDirectory(queryURL(),true);},300);});
   filter.addEventListener("change",function(){loadDirectory(queryURL(),true);});
+  /* Restore the page state when the user moves through browser history. */
   window.addEventListener("popstate",function(){loadDirectory(new URL(location.href),false);});
+  /* Show the sheet status. */
   function showSheetStatus(message,retry) {
     var container=sheet.querySelector("[data-customer-sheet-content]");container.replaceChildren();
     var profile=document.createElement("div");profile.className="cm-profile";
@@ -113,6 +122,7 @@
     if(retry){var button=document.createElement("button");button.className="btn btn-outline";button.type="button";button.textContent="Retry";button.addEventListener("click",retry);body.appendChild(button);}
     profile.append(header,body);container.appendChild(profile);sheet.querySelector("[data-sheet-edit]").disabled=true;
   }
+  /* Show the profile. */
   function showProfile(customer) {
     var doc=new DOMParser().parseFromString(customer.profile_html,"text/html"), profile=doc.querySelector("[data-customer-profile]");
     if(!profile || Number(profile.dataset.customerProfile)!==customer.id) throw new Error("The selected customer could not be verified.");
@@ -120,6 +130,7 @@
     sheet.querySelector("[data-customer-sheet-content]").replaceChildren(profile);
     sheet.querySelector("[data-sheet-edit]").disabled=false;
   }
+  /* Fetch the chosen customer profile before showing its details. */
   async function loadProfile(url,id) {
     if(profileController) profileController.abort();
     var current=new AbortController();profileController=current;
@@ -133,12 +144,14 @@
     } catch(error){if(profileController===current) showSheetStatus(error.message || "Customer details could not be loaded.",function(){loadProfile(url,id);});}
     finally {clearTimeout(timer);}
   }
+  /* Remove previous validation feedback before displaying new errors. */
   function clearErrors() {
     form.querySelector("[data-customer-errors]").hidden=true;
     form.querySelectorAll("[data-customer-error]").forEach(function(item){item.hidden=true;item.textContent="";});
     [name,contact].forEach(function(input){input.removeAttribute("aria-invalid");input.removeAttribute("aria-describedby");});
   }
   function enableFields(value) {name.disabled=!value;contact.disabled=!value;duplicate.disabled=!value;submit.disabled=!value;}
+  /* Load the customer details and prepare the fields for editing. */
   async function prepareEdit(url,id) {
     if(editController) editController.abort();
     var current=new AbortController();editController=current;
@@ -193,6 +206,7 @@
     else if(editTrigger?.isConnected) editTrigger.focus();
   });
   form.addEventListener("input",function(event){if(event.target!==duplicate){duplicate.checked=false;duplicate.required=false;form.querySelector("[data-customer-duplicate]").hidden=true;}});
+  /* Run this handler when the form is submitted. */
   form.addEventListener("submit",async function(event){
     event.preventDefault();if(saving || !form.reportValidity()) return;
     var payload={full_name:name.value,contact_number:contact.value,confirm_duplicate:duplicate.checked};

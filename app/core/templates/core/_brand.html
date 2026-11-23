@@ -6,7 +6,7 @@
 {%- if not show_text -%}{%- set classes = classes ~ ' lx-logo--mark-only' -%}{%- endif -%}
 {%- set mark = url_for('core.static', filename='images/mascot-original.svg') -%}
 {%- if href -%}
-<a class="{{ classes }}" href="{{ href }}">
+<!-- Reusable brand markup for the shared application shell. --><a class="{{ classes }}" href="{{ href }}">
   <img class="lx-logo__mark" src="{{ mark }}" width="48" height="58" alt="{{ alt }}">
   {% if show_text %}<span class="lx-logo__text">Laundrix</span>{% endif %}
 </a>

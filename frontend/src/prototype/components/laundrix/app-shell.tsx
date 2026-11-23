@@ -1,3 +1,4 @@
+/** Arrange the prototype navigation and the content of the selected workspace. */
 import { useId, type ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,

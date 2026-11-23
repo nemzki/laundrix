@@ -1,5 +1,6 @@
 /* Internal order status palette. Explicit domains keep payment and laundry semantics separate.
    Values match the requested Tailwind pastel palette; stored statuses/tones are unchanged. */
+/* These styles control the appearance of this part of the frontend. */
 [data-laundry-status="order_received"], [data-workflow-status="order_received"], .lx-react.lx-dashboard .dashboard-status[data-tone="info"] { --order-status-bg:var(--lx-paint-cyan-bg, #e0f2fe); --order-status-fg:var(--lx-paint-cyan-ink, #075985); --order-status-border:var(--lx-paint-cyan-border, #bae6fd); }
 [data-laundry-status="pending_processing"], [data-workflow-status="pending_processing"], .lx-react.lx-dashboard .dashboard-status[data-tone="warn"] { --order-status-bg:var(--lx-paint-amber-bg, #fef3c7); --order-status-fg:var(--lx-paint-amber-ink, #92400e); --order-status-border:var(--lx-paint-amber-border, #fde68a); }
 [data-laundry-status="processing"], [data-workflow-status="processing"], .lx-react.lx-dashboard .dashboard-status[data-tone="progress"] { --order-status-bg:var(--lx-paint-blue-bg, #dbeafe); --order-status-fg:var(--lx-paint-blue-ink, #1e40af); --order-status-border:var(--lx-paint-blue-border, #bfdbfe); }

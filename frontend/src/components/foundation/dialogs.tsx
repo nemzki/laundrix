@@ -1,3 +1,4 @@
+/** Share common dialog layouts and actions across foundation screens. */
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'

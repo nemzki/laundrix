@@ -1,5 +1,6 @@
 "use client"
 
+/** Combine an input with nearby icons, labels, or actions. */
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@prototype/lib/utils"

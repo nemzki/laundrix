@@ -1,3 +1,4 @@
+/* Read report data and draw the analytics charts. */
 /* Draws the Analytics charts with the Chart.js copy that ships with Laundrix (no CDN).
    Data comes from a JSON block in the page; there is no inline script (the site's CSP forbids it). */
 (function () {
@@ -11,6 +12,7 @@
   var root = document.getElementById("laundrix-analytics") || document.documentElement;
   var charts = [];
 
+  /* Look up a CSS value so chart colors can match the page theme. */
   function css(name, fallback) {
     var v = getComputedStyle(root).getPropertyValue(name).trim();
     return v || fallback;
@@ -24,8 +26,10 @@
     };
   }
 
+  /* Format a number as a Philippine peso amount for display. */
   function peso(v) { return "\u20B1" + Number(v).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
+  /* Set chart options shared by the charts in this file. */
   function baseOptions(p) {
     return {
       responsive: true,

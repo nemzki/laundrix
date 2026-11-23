@@ -1,3 +1,4 @@
+/* Handle interactive parts of the personal settings page. */
 /* Preview only; profile writes use the existing authenticated form/CSRF session. */
 (function () {
   'use strict';
@@ -11,6 +12,7 @@
   var notice = form.querySelector('[data-profile-unsaved]');
   var name = form.querySelector('[name=full_name]');
   var reader;
+  /* Reset the preview. */
   function clearPreview() {
     if (reader && reader.readyState === 1) reader.abort();
     preview.onload = null; preview.onerror = null;
@@ -50,6 +52,7 @@
     file.value = ''; clearPreview(); dirty();
     notice.textContent = remove.checked ? 'The default avatar will be used after saving.' : 'Unsaved Changes';
   });
+  /* Run this handler when the form is submitted. */
   form.addEventListener('submit', function (event) {
     name.value = name.value.trim();
     if (!name.value || name.value.length < 2 || name.value.length > 150) {

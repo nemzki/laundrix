@@ -14,7 +14,20 @@ for (const role of ['admin','staff'] as const) for (const width of [320,768,1440
     await page.setViewportSize({ width, height: 1000 })
     await page.emulateMedia({ reducedMotion: 'reduce', colorScheme: theme })
     await login(page, role)
-    await page.goto('/settings', { waitUntil: 'domcontentloaded' })
+    if (role === 'staff') {
+      // The verification fixture enables IDV, so this also covers the pre-React dashboard markup.
+      for (const url of ['/dashboard/staff', '/dashboard/staff?ui=jinja']) {
+        const dashboard = await page.request.get(url)
+        expect(dashboard.status()).toBe(200)
+        expect(await dashboard.text()).not.toMatch(/dashboard-preserved-identity|class="idv-card"|Identity verification/i)
+      }
+      await expect(page.locator('.idv-card, #dashboard-preserved-identity')).toHaveCount(0)
+      if (width < 768) await page.getByRole('button', { name: 'More', exact: true }).click()
+      await page.getByRole('link', { name: 'Personal Settings', exact: true }).filter({ visible: true }).click()
+      await expect(page).toHaveURL(/\/settings$/)
+    } else {
+      await page.goto('/settings', { waitUntil: 'domcontentloaded' })
+    }
     await page.locator(`[data-theme-preferences] [data-theme-option=${theme}]`).click()
     await page.getByRole('link', { name: 'View Verification Details', exact: true }).click()
     await expect(page.locator('html')).toHaveAttribute('data-lx-theme', theme)

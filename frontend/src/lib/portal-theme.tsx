@@ -1,3 +1,4 @@
+/** Make the selected theme available to interface elements rendered outside the page container. */
 import { createContext, useContext, type ReactNode } from 'react'
 const PortalTheme = createContext(false)
 export function FoundationPortalTheme({ children }: { children: ReactNode }) {

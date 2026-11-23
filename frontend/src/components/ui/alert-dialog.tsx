@@ -1,3 +1,4 @@
+/** Provide a confirmation dialog for actions that need an explicit decision. */
 import { getPortalContainer } from "@/lib/portal"
 import { useFoundationPortalTheme } from "@/lib/portal-theme"
 import * as React from "react"
