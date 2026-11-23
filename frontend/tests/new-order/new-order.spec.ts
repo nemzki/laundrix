@@ -110,7 +110,7 @@ for (const role of ['admin', 'staff'] as const) for (const width of [320, 768, 1
     await expect(page.locator('[data-detail$=":quantity"]')).toHaveValue('2')
     await next(page, 4); await next(page, 5)
     await page.evaluate(() => document.fonts.ready)
-    const font = role === 'admin' ? 'Inter' : 'Laundrix Order Geist'
+    const font = 'Geist Sans'
     expect(await page.evaluate(family => document.fonts.check(`400 14px "${family}"`), font)).toBe(true)
     expect(await page.locator('#wizard').evaluate(element => getComputedStyle(element).fontFamily)).toContain(font)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)

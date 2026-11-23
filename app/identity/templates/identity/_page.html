@@ -1,15 +1,16 @@
 {% extends 'core/base.html' %}
-{% from 'core/_brand.html' import brand_logo %}
+{% from 'core/_security_form.html' import security_header %}
 {% from 'core/_icons.html' import icon %}
 {% block head %}
   <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="{{ url_for('core.static', filename='css/security-flow.css') }}">
   <link rel="stylesheet" href="{{ url_for('identity.static', filename='css/verification.css') }}">
 {% endblock %}
-{% block body_class %}idv-screen{% endblock %}
+{% block body_class %}idv-screen security-flow{% endblock %}
 {% block body %}
-<!-- Primary content identified as a landmark for assistive technology. --><main class="idv-page" id="main">
-  <!-- Introductory information and controls for this part of the page. --><header class="idv-page-header">{{ brand_logo('landing', href=url_for('core.personal_settings') if current_user.is_operational else url_for('identity.index')) }}<span>Account Security</span></header>
-  {% if current_user.is_operational %}<a class="idv-back" href="{{ url_for('core.personal_settings') }}">{{ icon('arrow-left',16) }}Back to Personal Settings</a>{% else %}<p class="muted">Personal Settings becomes available after verification and account approval.</p>{% endif %}
+<!-- Primary content identified as a landmark for assistive technology. --><main class="idv-page security-shell" id="main">
+  {{ security_header('Account security', url_for('core.personal_settings') if current_user.is_operational else url_for('identity.index'), variant='landing') }}
+  {% if current_user.is_operational %}<a class="idv-back" href="{{ url_for('core.personal_settings') }}">{{ icon('arrow-left',16) }}Back to personal settings</a>{% else %}<p class="muted">Personal Settings becomes available after verification and account approval.</p>{% endif %}
   {% block verification_content %}{% endblock %}
 </main>
 {% endblock %}

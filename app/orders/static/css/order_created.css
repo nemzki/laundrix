@@ -1,6 +1,4 @@
 /* Give the browser a font family name and the file that contains that font. */
-@font-face { font-family: "Inter"; src: url("../../../core/static/fonts/inter/InterVariable.woff2") format("woff2"); font-style: normal; font-weight: 100 900; font-display: swap; }
-.order-created-page { --lx-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-family: var(--lx-font); }
 .order-created-page .content > .page-header { display: none; }
 /* Cards and data displays. Group related information and make rows easier to scan. */
 .order-created-page .order-created-card { width: 100%; max-width: 560px; margin: 0 auto 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--lx-paint-surface, #fff); overflow: hidden; }

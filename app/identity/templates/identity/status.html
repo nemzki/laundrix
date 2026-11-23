@@ -1,46 +1,109 @@
 {% extends 'identity/_page.html' %}
-{% block title %}Identity Verification &middot; Laundrix{% endblock %}
+{% from 'core/_lucide.html' import lucide %}
+{% from 'identity/_status_components.html' import status_badge, status_icon, timestamp %}
+{% block title %}Identity verification &middot; Laundrix{% endblock %}
+{% block body_class %}{{ super() }} idv-details-screen{% endblock %}
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('identity.static', filename='css/status.css') }}">
+{% endblock %}
+
+{% block flashes %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="idv-toasts tw:grid tw:gap-2" role="status" aria-live="polite" aria-atomic="false">
+        {% for category, message in messages %}
+          <div class="idv-toast tw:flex tw:items-start tw:gap-3" data-idv-toast>
+            {{ lucide('info', 17) }}<span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+{% endblock %}
+
 {% block verification_content %}
-  <!-- Group the content and controls for identity verification in one section. --><section class="idv-panel" aria-labelledby="verification-title" data-idv-status="{{ status }}">
-    <div class="idv-panel-heading"><span class="idv-symbol" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/>{% if status == 'verified' %}<path d="m8 12 3 3 5-6"/>{% else %}<path d="M12 8v5m0 3h.01"/>{% endif %}</svg></span><div><p class="idv-eyebrow">Identity Verification</p><span class="badge badge-{{ ui.badge }}">{{ ui.label|title }}</span></div></div>
-    {% if not is_latest %}<p class="idv-hint">You are viewing a previous verification attempt. <a href="{{ url_for('identity.index') }}">View Current Status</a></p>{% endif %}
-    <div class="idv-intro"><h1 id="verification-title">{{ ui.headline|title }}</h1><p class="muted">{{ ui.body }}</p></div>
-    {% if hint %}<p class="idv-hint">{{ hint }}</p>{% endif %}
-    {% if can_start and status != 'in_progress' %}
-    <ol class="idv-preparation" aria-label="Verification Preparation">
-      <li><span aria-hidden="true">01</span><div><h2>Prepare a Valid ID</h2><p>Have your government-issued ID ready.</p></div></li>
-      <li><span aria-hidden="true">02</span><div><h2>Complete the Identity Check</h2><p>Follow the ID and selfie instructions on Didit's secure verification page.</p></div></li>
-      <li><span aria-hidden="true">03</span><div><h2>Review Your Status</h2><p>Return to Laundrix to view your verification result.</p></div></li>
-    </ol>
-    {% endif %}
-    {% if verification %}
-    <dl class="idv-meta">
-      <div><dt>Started</dt><dd>{{ verification.created_at.strftime('%b %d, %Y %H:%M') }} UTC</dd></div>
-      <div><dt>Last Update</dt><dd>{{ verification.updated_at.strftime('%b %d, %Y %H:%M') }} UTC</dd></div>
-      {% if verification.document_type %}
-        <div><dt>Document</dt><dd>{{ verification.document_type }}</dd></div>
-      {% endif %}
-    </dl>
-    {% endif %}
-    {% if blocked_message %}<p class="idv-hint">{{ blocked_message }}</p>{% endif %}
-    <div class="idv-actions">
-      {% if can_start %}<a class="btn btn-primary" href="{{ url_for('identity.start') }}">{{ ui.start_label|title }}</a>{% endif %}
-      {% if can_refresh %}<form method="post" action="{{ url_for('identity.refresh') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline" type="submit">Check Status</button></form>{% endif %}
+  {% set label = ui.label[:1]|upper ~ ui.label[1:] %}
+  <section class="idv-status-panel tw:grid tw:gap-6" aria-labelledby="verification-title" data-idv-status="{{ status }}">
+    <div class="idv-status-hero">
+      {{ status_icon(status, 26, hero=true) }}
+      {{ status_badge(status, label) }}
+      <h1 id="verification-title">{{ ('We couldn\u2019t verify your ID' if status == 'rejected' else ui.headline[:1]|upper ~ ui.headline[1:])|replace("'", "\u2019") }}</h1>
+      <p>{{ ui.body|replace("'", "\u2019") }}</p>
     </div>
-  </section>
-  {% if history and history|length > 1 %}
-  <section class="idv-history">
-    <h2>Previous Attempts</h2>
-    <ul>
-      {% for h in history %}
-        <li>
-          <a href="{{ url_for('identity.attempt', public_id=h.public_id) }}">
-            {{ h.created_at.strftime('%b %d, %Y %H:%M') }} UTC
+
+    {% if not is_latest %}
+      <p class="idv-status-note">You are viewing a previous verification attempt. <a href="{{ url_for('identity.index') }}">View current status</a></p>
+    {% endif %}
+    {% if hint and status in ('rejected', 'action_required', 'error') %}
+      {% set reason, separator, guidance = hint.partition('. ') %}
+      <div class="security-alert idv-reason" data-tone="action-required">
+        {{ lucide('triangle-alert', 18) }}
+        <div>
+          <p><strong>{{ reason|replace("'", "\u2019") }}{{ '.' if separator else '' }}</strong></p>
+          {% if guidance %}<p>{{ guidance|replace("'", "\u2019") }}</p>{% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <section class="idv-status-section" aria-labelledby="verification-details-heading">
+      <h2 id="verification-details-heading">Verification details</h2>
+      <dl class="idv-status-group">
+        <div class="idv-detail-row"><dt>Result</dt><dd>{{ status_badge(status, label) }}</dd></div>
+        {% if verification %}
+          <div class="idv-detail-row"><dt>Started</dt><dd>{{ timestamp(verification.created_at) }}</dd></div>
+          <div class="idv-detail-row"><dt>Last updated</dt><dd>{{ timestamp(verification.updated_at) }}</dd></div>
+          {% if verification.document_type %}
+            <div class="idv-detail-row"><dt>Document</dt><dd>{{ verification.document_type }}</dd></div>
+          {% endif %}
+        {% endif %}
+      </dl>
+    </section>
+
+    {% if blocked_message %}<p class="idv-status-note">{{ blocked_message }}</p>{% endif %}
+    {% if can_start or can_refresh %}
+      <div class="idv-status-actions tw:flex tw:gap-3">
+        {% if can_start %}
+          <a class="btn btn-primary security-button" href="{{ url_for('identity.start') }}" data-idv-open>
+            <span data-idv-label>{{ ui.start_label[:1]|upper ~ ui.start_label[1:] }}</span>
+            <span data-idv-icon>{{ lucide('arrow-right', 16) }}</span>
+            <span data-submit-spinner hidden>{{ lucide('loader-circle', 16) }}</span>
+            <span data-idv-loading hidden>Opening verification&hellip;</span>
           </a>
-          <span class="badge badge-sm">{{ h.status.replace('_', ' ')|title }}</span>
-        </li>
-      {% endfor %}
-    </ul>
+        {% endif %}
+        {% if can_refresh %}
+          <form action="{{ url_for('identity.refresh') }}" method="post" data-idv-refresh>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-outline security-button" type="submit">
+              <span data-idv-icon>{{ lucide('refresh-cw', 16) }}</span>
+              <span data-idv-label>Check status</span>
+              <span data-submit-spinner hidden>{{ lucide('loader-circle', 16) }}</span>
+              <span data-idv-loading hidden>Checking&hellip;</span>
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    {% endif %}
   </section>
+
+  {% if history and history|length > 1 %}
+    <section class="idv-status-section idv-status-history" aria-labelledby="verification-history-heading">
+      <h2 id="verification-history-heading">Previous attempts</h2>
+      <ul class="idv-status-group" role="list">
+        {% for attempt in history %}
+          <li>
+            <a class="idv-history-link tw:flex tw:items-center tw:gap-3" href="{{ url_for('identity.attempt', public_id=attempt.public_id) }}">
+              {{ status_icon(attempt.status, 15) }}
+              <span class="idv-history-date tw:flex-1">{{ timestamp(attempt.created_at) }}</span>
+              {{ status_badge(attempt.status) }}
+              {{ lucide('chevron-right', 16) }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
   {% endif %}
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('identity.static', filename='js/status.js') }}" defer></script>
 {% endblock %}

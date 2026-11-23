@@ -1,0 +1,23 @@
+{% from 'core/_brand.html' import brand_logo %}
+{% from 'core/_lucide.html' import lucide %}
+{% macro submit(label, loading='Continuing…', full_width=false) -%}
+<button class="btn btn-primary security-button{% if full_width %} btn-block{% endif %}" type="submit">
+  <span data-submit-spinner hidden>{{ lucide('loader-circle', 16) }}</span>
+  <span data-submit-label>{{ label }}</span>
+  <span data-loading-label hidden>{{ loading }}</span>
+</button>
+{%- endmacro %}
+{% macro alert(title, symbol='info') -%}
+<div class="security-alert">
+  {{ lucide(symbol, 17) }}
+  <div><h2>{{ title }}</h2>{{ caller() }}</div>
+</div>
+{%- endmacro %}
+
+{% macro security_header(label, href, variant='auth') -%}
+<header class="security-header tw:flex tw:items-center tw:gap-3">
+  {{ brand_logo(variant, href=href, alt='') }}
+  <span class="security-header-divider" aria-hidden="true"></span>
+  <span class="security-header-label">{{ label }}</span>
+</header>
+{%- endmacro %}

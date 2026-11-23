@@ -1,9 +1,15 @@
 {% extends "staff_auth/base_enrollment.html" %}
+{% from 'core/_lucide.html' import lucide %}
 {% block title %}Enrollment complete · Laundrix{% endblock %}
 {% block progress %}{{ stepper(3, enrollment_steps, announce_status=true) }}{% endblock %}
 
 {% block card %}
-  <h1 id="enrollment-title">Enrollment complete</h1>
-  <p>Your identity verification is complete. Sign in with your work email and password. If your account is new, your administrator must approve it before you can sign in.</p>
-  <a class="btn btn-primary btn-block enrollment-action" href="{{ url_for('auth.login') }}">Go to sign-in</a>
+  <div class="tw:grid tw:gap-6">
+    <div>
+      <span class="enrollment-complete-icon">{{ lucide('circle-check', 24) }}</span>
+      <h1 class="security-heading" id="enrollment-title">You’re all set</h1>
+      <p class="security-copy tw:mb-0!">Your identity verification is complete. Sign in with your work email and password. If your account is new, your administrator must approve it before you can sign in.</p>
+    </div>
+    <a class="btn btn-primary btn-block security-button" href="{{ url_for('auth.login') }}">Go to sign-in</a>
+  </div>
 {% endblock %}

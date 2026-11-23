@@ -975,7 +975,6 @@ details.correct form { display: grid; gap: .5rem; margin-top: .5rem; text-align:
     }
 
     body.stub-page {
-        font-family: Arial, sans-serif;
         font-size: 9pt;
         line-height: 1.35;
     }

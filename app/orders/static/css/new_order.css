@@ -1,13 +1,5 @@
 /* Original Flask New Order only; the reference and shared/protected pages are untouched. */
-@font-face {
-  font-family: "Laundrix Order Geist";
-  src: url("../../../core/static/fonts/geist/GeistSans-Variable.woff2") format("woff2");
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
-}
 .new-order-page {
-  --lx-font: "Laundrix Order Geist", system-ui, sans-serif;
   --lx-bg: var(--lx-paint-subtle, #f7f9fc); --lx-text: var(--lx-paint-text, #162644); --lx-muted: var(--lx-paint-muted-text, #64748b);
   --lx-primary: var(--lx-paint-blue, #1c69e3); --lx-primary-hover: var(--lx-paint-blue-ink, #185ac4); --lx-primary-soft: var(--lx-paint-blue-bg, #e5efff);
   --lx-border: var(--lx-paint-border, #dfe3ea); --lx-navy: var(--lx-paint-text, #162644); --lx-radius: 10px; --lx-radius-sm: 8px;

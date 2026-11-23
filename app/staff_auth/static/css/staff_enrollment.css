@@ -1,205 +1,142 @@
-/* Enrollment uses shared theme tokens and buttons. This file owns page layout and field styling. */
-.staff-enrollment {
-  min-height: 100vh;
-  padding: clamp(1rem, 4vw, 2.5rem) 1rem;
-}
+body.staff-enrollment { font-family: var(--lx-font); }
 
-.staff-enrollment .enrollment-shell { max-width: 800px; }
-.staff-enrollment .enrollment-header { margin-bottom: 1.25rem; }
-.staff-enrollment .enrollment-label {
-  border-left: 1px solid var(--lx-border);
-  padding-left: .75rem;
-  color: var(--lx-muted);
-  font-size: .875rem;
+.staff-enrollment .enrollment-content h1:not(.security-heading) {
+  margin-bottom: .375rem;
+  color: var(--foreground);
+  font-size: 1.5rem;
+  line-height: 2rem;
   font-weight: 600;
+  letter-spacing: -.025em;
+}
+.staff-enrollment .enrollment-content > p {
+  color: var(--muted-foreground);
+  font-size: .875rem;
+  line-height: 1.5rem;
 }
 
-.staff-enrollment .stepper {
-  display: flex;
-  margin: 0 0 1rem;
-  padding: 0;
+/* Flex tracks stop at the 8px gaps. Labels are centered on the marker row. */
+.staff-enrollment .enrollment-stepper {
+  margin: 0 0 2rem;
+  padding: 0 calc(100% / 6 - 1rem) 1.375rem;
   list-style: none;
 }
-
-.staff-enrollment .stepper li {
-  position: relative;
+.staff-enrollment [data-enrollment-step] { position: relative; flex: none; }
+.staff-enrollment .enrollment-step-connector { flex: 1; height: 1px; background: var(--border); }
+.staff-enrollment .done + .enrollment-step-connector { background: var(--primary); }
+.staff-enrollment .enrollment-step-marker {
   display: grid;
-  flex: 1;
-  min-width: 0;
-  justify-items: center;
-  align-content: start;
-  gap: .375rem;
-  padding-inline: .25rem;
-  color: var(--lx-muted);
-  text-align: center;
-  font-size: clamp(.75rem, 2.5vw, .875rem);
-  font-weight: 600;
-}
-
-.staff-enrollment .stepper li + li::before {
-  content: "";
-  position: absolute;
-  top: 15px;
-  right: 50%;
-  width: 100%;
-  border-top: 2px solid var(--lx-border);
-}
-
-.staff-enrollment .stepper li:is(.active, .done)::before { border-color: var(--lx-primary); }
-
-.staff-enrollment .stepper li > span {
-  z-index: 1;
-  display: grid;
-  width: 32px;
-  height: 32px;
   place-items: center;
-  border: 1px solid var(--lx-border);
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border);
   border-radius: 50%;
-  background: var(--lx-surface);
-}
-
-.staff-enrollment .stepper .done > span {
-  border-color: var(--lx-primary);
-  background: var(--lx-primary-soft);
-  color: var(--lx-text);
-}
-
-.staff-enrollment .stepper .active { color: var(--lx-text); font-weight: 700; }
-.staff-enrollment .stepper .active > span {
-  border: 2px solid var(--lx-primary);
-  background: var(--lx-paint-blue-solid, var(--lx-primary));
-  color: #fff;
-}
-
-.staff-enrollment .enrollment-card {
-  overflow-wrap: anywhere;
-  padding: clamp(1rem, 3vw, 1.5rem);
-  border: 1px solid var(--lx-border);
-  border-radius: var(--lx-radius);
-  background: var(--lx-surface);
-  box-shadow: var(--lx-shadow-sm);
-}
-
-.staff-enrollment h1 { font-size: clamp(1.35rem, 4vw, 1.75rem); }
-.staff-enrollment h2 { margin-bottom: .25rem; font-size: .95rem; }
-.staff-enrollment :is(p, ul, small) { color: var(--lx-muted); }
-
-.staff-enrollment .enrollment-preparation {
-  padding: .75rem;
-  border-inline-start: 3px solid var(--lx-primary);
-  border-radius: var(--lx-radius-sm);
-  background: var(--lx-primary-soft);
-  font-size: .875rem;
-}
-
-.staff-enrollment .enrollment-preparation :is(p, ul) { margin: 0; }
-.staff-enrollment .enrollment-preparation ul { padding-left: 1.125rem; }
-.staff-enrollment .enrollment-preparation + form { margin-top: 1rem; }
-
-.staff-enrollment .enrollment-field label {
-  display: block;
-  margin-bottom: .375rem;
-  font-size: .9rem;
+  background: var(--background);
+  color: var(--muted-foreground);
+  font-size: .75rem;
   font-weight: 600;
 }
-
-.staff-enrollment .enrollment-password {
-  border: 1px solid var(--lx-muted);
-  border-radius: var(--lx-radius-sm);
+.staff-enrollment .enrollment-step-label {
+  position: absolute;
+  top: calc(100% + .375rem);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  font-size: .75rem;
+  line-height: 1rem;
 }
-
+.staff-enrollment .active .enrollment-step-label { color: var(--foreground); font-weight: 600; }
+.staff-enrollment .active .enrollment-step-marker {
+  background: var(--lx-paint-blue-solid, var(--primary));
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent);
+}
+.staff-enrollment .done .enrollment-step-marker {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--background));
+  color: var(--primary);
+}
+.staff-enrollment [data-enrollment-step]:not(.done) [data-step-check],
+.staff-enrollment .done [data-step-number] { display: none; }
+.staff-enrollment [data-step-check] { display: grid; place-items: center; }
+.staff-enrollment .enrollment-field label { display: block; margin-bottom: .375rem; }
+.staff-enrollment .enrollment-password { position: relative; }
 .staff-enrollment .enrollment-password input {
-  flex: 1;
-  width: 0;
+  width: 100%;
   min-width: 0;
-  min-height: 44px;
-  padding: .625rem .75rem;
-  border: 0;
-  border-radius: inherit;
+  min-height: 2.75rem;
+  padding: .375rem 2.5rem .375rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   background: transparent;
-  color: inherit;
+  color: var(--lx-text);
 }
-
 .staff-enrollment .enrollment-password button {
-  min-width: 54px;
-  min-height: 44px;
-  margin: 2px;
-  padding: 0 .5rem;
+  position: absolute;
+  inset: 1px 1px 1px auto;
+  width: 2.375rem;
   border: 0;
-  border-radius: var(--lx-radius-sm);
-  background: var(--lx-primary-soft);
-  color: var(--lx-text);
-  font-size: .85rem;
-  font-weight: 600;
+  border-radius: var(--radius);
+  color: var(--muted-foreground);
+  background: transparent;
 }
-
-.staff-enrollment .enrollment-field small { display: block; margin-top: .375rem; }
-.staff-enrollment .enrollment-notice {
-  border: 1px solid var(--lx-border);
-  border-radius: var(--lx-radius-sm);
-  background: var(--lx-bg);
-  font-size: .875rem;
-}
-
+.staff-enrollment .enrollment-password button:hover { color: var(--foreground); }
+.staff-enrollment .enrollment-field .security-copy { margin: .25rem 0 0; }
+.staff-enrollment .enrollment-strength { display: grid; grid-template-columns: repeat(4, 1fr); gap: .25rem; margin-top: .5rem; }
+.staff-enrollment .enrollment-strength span { height: .25rem; border-radius: 999px; background: var(--muted); }
+.staff-enrollment .enrollment-strength .filled { background: var(--primary); }
+.staff-enrollment [data-length-check] { color: var(--lx-success); }
+.staff-enrollment .enrollment-notice { border-block: 1px solid var(--border); font-size: .875rem; }
 .staff-enrollment .enrollment-notice summary {
-  min-height: 44px;
-  padding: .75rem;
-  border-radius: inherit;
-  color: var(--lx-text);
-  font-weight: 700;
+  position: relative;
+  display: block;
+  min-height: 2.75rem;
+  padding: .625rem 2rem .625rem 0;
+  color: var(--foreground);
+  font-weight: 600;
   cursor: pointer;
 }
-
+.staff-enrollment .enrollment-notice summary::-webkit-details-marker { display: none; }
+.staff-enrollment .enrollment-notice summary .lucide {
+  position: absolute;
+  inset: .875rem .25rem auto auto;
+  color: var(--muted-foreground);
+}
+.staff-enrollment .enrollment-notice[open] summary .lucide { transform: rotate(180deg); }
 .staff-enrollment .enrollment-notice summary span {
   display: block;
-  margin-inline-start: 1rem;
-  color: var(--lx-muted);
+  color: var(--muted-foreground);
   font-weight: 400;
+  line-height: 1.25rem;
 }
-.staff-enrollment .enrollment-notice > div { padding: 0 .75rem .75rem; }
-.staff-enrollment .enrollment-notice p { margin-bottom: .625rem; }
-.staff-enrollment :is(.enrollment-notice, .wait) p:last-child { margin-bottom: 0; }
-.staff-enrollment .enrollment-consent { font-size: .875rem; cursor: pointer; }
-.staff-enrollment .enrollment-consent input {
-  flex: none;
-  width: 1.25rem;
-  height: 1.25rem;
-  margin-top: .125rem;
-  accent-color: var(--lx-primary);
-}
-
-.staff-enrollment .enrollment-action { min-height: 46px; text-align: center; }
-.staff-enrollment :is(a, button, input, summary):focus-visible {
-  outline: 2px solid var(--lx-primary);
-  outline-offset: 3px;
-}
-
+.staff-enrollment .enrollment-notice > div { padding-bottom: .875rem; }
+.staff-enrollment .enrollment-notice p { color: var(--muted-foreground); line-height: 1.5rem; margin-bottom: .625rem; }
+.staff-enrollment .enrollment-notice p:last-child { margin-bottom: 0; }
 .staff-enrollment .enrollment-message {
   margin-bottom: 1rem;
-  padding: .625rem .75rem;
-  border-inline-start: 3px solid var(--lx-info);
-  border-radius: var(--lx-radius-sm);
-  background: var(--lx-info-soft);
-  color: var(--lx-text);
+  border: 0;
+  border-inline-start: 2px solid currentColor;
+  border-radius: 0;
 }
-
-.staff-enrollment .enrollment-message--error {
-  border-color: var(--lx-danger);
-  background: var(--lx-danger-soft);
+.staff-enrollment .enrollment-complete-icon { display: inline-block; margin-bottom: .5rem; color: var(--lx-success); }
+.staff-enrollment .enrollment-preparation {
+  padding-block: .75rem .875rem;
+  border-block: 1px solid var(--border);
+  font-size: .875rem;
 }
-
+.staff-enrollment .enrollment-preparation ul {
+  margin: 0;
+  padding-inline-start: 1.125rem;
+  color: var(--muted-foreground);
+}
+.staff-enrollment .enrollment-preparation h2 { font-size: .875rem; }
 .staff-enrollment .wait { text-align: center; }
 .staff-enrollment .enrollment-spinner {
-  width: 32px;
-  height: 32px;
+  width: fit-content;
   margin: 0 auto 1rem;
-  border: 3px solid var(--lx-border);
-  border-top-color: var(--lx-primary);
-  border-radius: 50%;
+  color: var(--primary);
 }
-
 @media (prefers-reduced-motion: no-preference) {
-  .staff-enrollment .enrollment-spinner { animation: enrollment-spin 1s linear infinite; }
+  .staff-enrollment .enrollment-spinner { animation: security-spin 1s linear infinite; }
 }
-
-@keyframes enrollment-spin { to { transform: rotate(360deg); } }

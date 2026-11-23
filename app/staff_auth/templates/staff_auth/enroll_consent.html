@@ -1,53 +1,79 @@
 {% extends "staff_auth/base_enrollment.html" %}
+{% from 'core/_lucide.html' import lucide %}
+{% from 'core/_security_form.html' import submit, alert %}
 {% block title %}Set up staff sign-in · Laundrix{% endblock %}
 {% block progress %}  {# A saved password completes step one. Consent is required before the Didit handoff. #}
   {{ stepper(2 if has_password else 1, enrollment_steps, announce_status=true) }}{% endblock %}
 
 {% block card %}
-  <h1 id="enrollment-title">{{ 'Review and consent' if has_password else 'Set your password' }}</h1>
-  <p>{% if name %}Hi {{ name }}. {% endif %}
-    {% if has_password %}Your password is already set. Review the privacy notice and give your consent before verifying your identity.
-    {% else %}Create the password you’ll use with your work email to sign in.{% endif %}
-  </p>
-
-  <form method="post" novalidate data-enrollment-form class="tw:grid tw:gap-4">
+  <form method="post" novalidate data-enrollment-form data-security-form class="tw:grid tw:gap-4">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     {% if not has_password %}
-      {% for field, label in [('password', 'Create password'), ('confirm_password', 'Confirm password')] %}
-        <div class="enrollment-field">
-          <label for="{{ field }}">{{ label }}</label>
-          <div class="enrollment-password tw:flex">
-            <input id="{{ field }}" name="{{ field }}" type="password" autocomplete="new-password"
-                   minlength="12" maxlength="256" required
-                   {% if loop.first %}aria-describedby="password-hint"{% endif %}>
-            <button type="button" hidden data-password-toggle aria-controls="{{ field }}"
-                    aria-label="Show {{ 'password' if loop.first else 'password confirmation' }}">Show</button>
-          </div>
-          {% if loop.first %}<small id="password-hint">Use 12 to 256 characters.</small>{% endif %}
+      <section data-password-stage class="tw:grid tw:gap-6">
+        <div>
+          <h1 id="enrollment-title" class="security-heading" tabindex="-1">Create your password</h1>
+          <p class="security-copy tw:mb-0!">{% if name %}Welcome, {{ name }}. {% endif %}Choose a strong password for your staff account.</p>
         </div>
-      {% endfor %}
+        {% for field, label in [('password', 'Create password'), ('confirm_password', 'Confirm password')] %}
+          <div class="enrollment-field">
+            <label class="security-label" for="{{ field }}">{{ label }}</label>
+            <div class="enrollment-password tw:flex">
+              <input id="{{ field }}" name="{{ field }}" type="password" autocomplete="new-password" minlength="12" maxlength="256" required
+                     aria-describedby="{{ 'password-hint' if loop.first else 'password-match' }}">
+              <button type="button" hidden data-password-toggle aria-controls="{{ field }}"
+                      aria-label="Show {{ 'password' if loop.first else 'password confirmation' }}">
+                <span data-eye>{{ lucide('eye', 18) }}</span><span data-eye-off hidden>{{ lucide('eye-off', 18) }}</span>
+              </button>
+            </div>
+            {% if loop.first %}
+              <div data-password-strength hidden>
+                <div class="enrollment-strength" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0">
+                  {% for bar in range(4) %}<span></span>{% endfor %}
+                </div>
+                <p class="security-copy" data-strength-text aria-live="polite">Too weak</p>
+              </div>
+              <p class="security-copy tw:mb-0!" id="password-hint"><span data-length-check hidden>{{ lucide('check', 14) }}</span> Use 12 to 256 characters.</p>
+            {% else %}
+              <p class="security-copy tw:mb-0!" id="password-match" aria-live="polite"></p>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <button type="button" class="btn btn-primary btn-block security-button" data-next-password hidden>Set password and continue</button>
+      </section>
     {% endif %}
 
-    <section class="enrollment-preparation" aria-labelledby="enrollment-preparation-title">
-      <h2 id="enrollment-preparation-title">Before you start</h2>
-      <p>Have a valid government-issued ID and a device with a working camera. Contact your administrator if you need help.</p>
-    </section>
-
-    <details class="enrollment-notice" id="privacy-notice">
-      <summary>Privacy notice <span>How we use your ID and face data</span></summary>
+    {# Both stages share the original POST, so the server receives password and consent together. #}
+    <section data-consent-stage class="tw:grid tw:gap-6">
       <div>
-        <p>You must complete a one-time identity verification with our provider, <strong>Didit</strong>, using a government ID and a live selfie.</p>
-        <p>After enrollment, normal staff sign-in uses your work email and password. You will not be asked to repeat the ID and face verification at every login. An administrator may request re-verification when necessary.</p>
-        <p>Laundrix does not store your ID photos, selfies, or face data. It stores identity-verification records and related audit information.</p>
-        <p>Didit processes your verification data under its applicable privacy terms. If you have questions or concerns, contact your administrator before proceeding.</p>
+        <h1 class="security-heading" tabindex="-1" data-consent-heading>Review and consent</h1>
+        {% if has_password %}
+          <p class="security-copy tw:mb-0!">{% if name %}Hi {{ name }}. {% endif %} Your password is already set. Review the privacy notice and give your consent before verifying your identity.</p>
+        {% elif name %}
+          <p class="security-copy tw:mb-0!">Hi {{ name }}.</p>
+        {% endif %}
       </div>
-    </details>
+      {% call alert('Before you start') %}
+        <p class="security-copy">Have a valid government-issued ID and a device with a working camera. Contact your administrator if you need help.</p>
+      {% endcall %}
+      <details class="enrollment-notice" id="privacy-notice" open>
+        <summary>Privacy notice {{ lucide('chevron-down', 16) }}<span>How we use your ID and face data</span></summary>
+        <div>
+          <p>You must complete a one-time identity verification with our provider, <strong>Didit</strong>, using a government ID and a live selfie.</p>
+          <p>After enrollment, normal staff sign-in uses your work email and password. You will not be asked to repeat the ID and face verification at every login. An administrator may request re-verification when necessary.</p>
+          <p>Laundrix does not store your ID photos, selfies, or face data. It stores identity-verification records and related audit information.</p>
+          <p>Didit processes your verification data under its applicable privacy terms. If you have questions or concerns, contact your administrator before proceeding.</p>
+        </div>
+      </details>
 
-    <label class="enrollment-consent tw:flex tw:items-start tw:gap-3">
-      <input type="checkbox" name="consent" required>
-      <span>I consent to the one-time identity verification described in the privacy notice and understand how my verification data is processed.</span>
-    </label>
+      <label class="security-check" for="enrollment-consent">
+        <input type="checkbox" id="enrollment-consent" name="consent" required>
+        <span>I consent to the one-time identity verification described in the privacy notice and understand how my verification data is processed.</span>
+      </label>
 
-    <button class="btn btn-primary btn-block enrollment-action" type="submit">Continue to identity verification</button>
+      <div class="tw:grid tw:gap-2">
+        {{ submit('Continue to identity verification', full_width=true) }}
+        {% if not has_password %}<button type="button" class="btn btn-outline btn-block security-button" data-back-password hidden>Back to password</button>{% endif %}
+      </div>
+    </section>
   </form>
 {% endblock %}

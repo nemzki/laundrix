@@ -32,9 +32,6 @@
 .tw\:min-h-dvh {
   min-height: 100dvh;
 }
-.tw\:w-full {
-  width: 100%;
-}
 .tw\:min-w-0 {
   min-width: 0px;
 }
@@ -82,6 +79,9 @@
 }
 .tw\:gap-4\! {
   gap: calc(var(--tw-spacing) * 4) !important;
+}
+.tw\:gap-6 {
+  gap: calc(var(--tw-spacing) * 6);
 }
 .tw\:overflow-y-auto {
   overflow-y: auto;

@@ -1,4 +1,5 @@
 {% extends "staff_auth/base_enrollment.html" %}
+{% from 'core/_lucide.html' import lucide %}
 {% block title %}{{ title }} · Laundrix{% endblock %}
 {% block head %}
   {{ super() }}
@@ -7,7 +8,7 @@
 {% block progress %}{{ stepper(current, enrollment_steps, announce_status=true) }}{% endblock %}
 {% block card %}
   <!-- Reusable wait markup for staff sign-in and enrollment. --><div class="wait">
-    <div class="enrollment-spinner" aria-hidden="true"></div>
+    <div class="enrollment-spinner">{{ lucide('loader-circle', 32) }}</div>
     <h1 id="enrollment-title">{{ title }}</h1>
     <p class="muted">{{ message }}</p>
     <p class="muted small">This page refreshes by itself.

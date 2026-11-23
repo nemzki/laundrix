@@ -1,14 +1,29 @@
+{% from 'core/_lucide.html' import lucide %}
 {% macro stepper(current, labels, announce_status=false) %}
-<!-- Reusable stepper markup for staff sign-in and enrollment. --><ol class="stepper" aria-label="Progress">
-  {% for label in labels %}
-    {% set n = loop.index %}
-    <li class="{{ 'done' if n < current else ('active' if n == current else '') }}"
-        {% if n == current %}aria-current="step"{% endif %}>
-      <span{% if announce_status %} aria-hidden="true"{% endif %}>{% if n < current %}✓{% else %}{{ n }}{% endif %}</span>{{ label }}
-      {% if announce_status and n != current %}
-        <small class="tw:sr-only">{{ 'completed' if n < current else 'upcoming' }}</small>
-      {% endif %}
-    </li>
-  {% endfor %}
-</ol>
+{% if announce_status %}
+  <ol class="stepper enrollment-stepper tw:flex tw:items-center tw:gap-2" role="list" aria-label="Progress">
+    {% for label in labels %}
+      {% set n = loop.index %}
+      {% if not loop.first %}<li class="enrollment-step-connector" role="presentation" aria-hidden="true"></li>{% endif %}
+      <li data-enrollment-step class="{{ 'done' if n < current else ('active' if n == current else '') }}">
+        <span class="enrollment-step-marker" data-step-marker{% if n == current %} aria-current="step"{% endif %}>
+          <span data-step-number aria-hidden="true">{{ n }}</span>
+          <span data-step-check aria-hidden="true">{{ lucide('check', 16) }}</span>
+          <span class="tw:sr-only">{{ label }} <span data-step-state>{{ 'completed' if n < current else ('upcoming' if n > current else '') }}</span></span>
+        </span>
+        <span class="enrollment-step-label" aria-hidden="true">{{ label }}</span>
+      </li>
+    {% endfor %}
+  </ol>
+{% else %}
+  <ol class="stepper" aria-label="Progress">
+    {% for label in labels %}
+      {% set n = loop.index %}
+      <li class="{{ 'done' if n < current else ('active' if n == current else '') }}"
+          {% if n == current %}aria-current="step"{% endif %}>
+        <span>{% if n < current %}{{ lucide('check', 16) }}{% else %}{{ n }}{% endif %}</span>{{ label }}
+      </li>
+    {% endfor %}
+  </ol>
+{% endif %}
 {% endmacro %}

@@ -1,6 +1,4 @@
 /* Scoped original Flask Manage Orders presentation. */
-@font-face { font-family:"Inter"; src:url("../../../core/static/fonts/inter/InterVariable.woff2") format("woff2"); font-style:normal; font-weight:100 900; font-display:swap; }
-.manage-orders-page { --lx-font:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-family:var(--lx-font); }
 /* Global defaults. Set defaults and shared values used throughout the page. */
 body.app.manage-orders-page:not(.admin-workspace) .content { width:100%; max-width:1440px; margin-inline:auto; padding:28px 24px; }
 body.app.manage-orders-page .page-header { align-items:center; margin-bottom:24px; gap:16px; }

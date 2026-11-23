@@ -22,7 +22,10 @@ test('shared Geist loads once across public, Admin, Staff, React and receipt lay
     // Redirects/page changes may cancel an in-flight preload; real load failures still fail.
     if (request.resourceType() === 'font' && request.failure()?.errorText !== 'net::ERR_ABORTED') failedFonts.push(request.url())
   })
-  for (const path of ['/', '/auth/login', '/track/not-a-valid-link']) {
+  await page.goto('/')
+  await expect(page.locator('body')).toHaveCSS('font-family', /^Inter,/)
+  await expect(page.locator('link[href*="css/fonts.css"]')).toHaveCount(0)
+  for (const path of ['/auth/login', '/track/not-a-valid-link']) {
     await page.goto(path)
     await checkGeist(page)
   }
@@ -39,13 +42,16 @@ test('shared Geist loads once across public, Admin, Staff, React and receipt lay
       await expect.poll(() => page.evaluate("Object.values(window.Chart?.instances || {}).filter(chart => chart.options.plugins.legend.labels.font.family.includes('Geist Sans')).length")).toBeGreaterThan(0)
     }
   }
+  await page.goto('/payments/outstanding')
+  await expect(page.locator('.ob-reference').filter({ visible: true }).first()).toHaveCSS('font-family', /^"Geist Mono",/)
   await page.goto('/orders/')
-  await expect(page.locator('#laundrix-react-orders')).toHaveAttribute('data-ready', 'true')
-  await expect(page.locator('.mo-data-table .mo-reference').first()).toHaveCSS('font-family', /^"Geist Mono",/)
-  expect(await page.evaluate(async () => (await document.fonts.load('600 13px "Geist Mono"')).every(face => face.status === 'loaded'))).toBe(true)
-  await page.getByRole('button', { name: /^View order/ }).filter({ visible: true }).first().click()
-  await expect(page.getByRole('dialog')).toHaveCSS('font-family', /^"Geist Sans",/)
-  const stubUrl = await page.getByRole('link', { name: 'Print Stub' }).getAttribute('href')
+  await expect(page.locator('[data-manage-orders]')).toHaveAttribute('data-state', 'ready')
+  await page.getByRole('link', { name: /^View order/ }).filter({ visible: true }).first().click()
+  const dialog = page.getByRole('dialog', { name: 'Order Summary' })
+  await expect(dialog).toHaveCSS('font-family', /^"Geist Sans",/)
+  const printStub = dialog.getByRole('link', { name: 'Print Stub' })
+  await expect(printStub).toBeVisible()
+  const stubUrl = await printStub.getAttribute('href')
   await page.goto(stubUrl!)
   await checkGeist(page)
   await page.emulateMedia({ media: 'print' })

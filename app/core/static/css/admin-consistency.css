@@ -1,22 +1,5 @@
-/* Loaded only by internal Admin templates, after module styles. Never global. */
-@font-face {
-  font-family: "Inter";
-  src: url("../fonts/inter/InterVariable.woff2") format("woff2");
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-}
-/* Give the browser a font family name and the file that contains that font. */
-@font-face {
-  font-family: "Inter";
-  src: url("../fonts/inter/InterVariable-Italic.woff2") format("woff2");
-  font-style: italic;
-  font-weight: 100 900;
-  font-display: swap;
-}
 /* Global defaults. Set defaults and shared values used throughout the page. */
 body.app {
-  --lx-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --sidebar-w: 256px;
   font-family: var(--lx-font);
   font-size: 14px;
@@ -125,16 +108,6 @@ body.app .lx-sidebar__logout .btn {
   body.app .main { margin-left: var(--sidebar-w); }
   body.app .app-topbar--mobile, body.app .lx-bottom-nav { display: none; }
   body.app .content { padding: 24px; }
-}
-/* Dashboard is a separate React/server shell. Scope to content groups so the
-   preserved identity status/enrollment UI retains its existing typography. */
-.lx-react.lx-dashboard :is(.dashboard-static-sidebar, .dashboard-static-header,
-  .dashboard-heading, .dashboard-group, .dashboard-panels, .dashboard-fallback,
-  .dashboard-bottom-nav, [data-slot="sidebar"], [data-slot="sheet-content"],
-  [data-slot="sidebar-inset"] > header) {
-  --lx-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-geist-sans: var(--lx-font);
-  font-family: var(--lx-font);
 }
 /* Buttons and forms. Style the controls users activate or fill in. */
 .lx-react.lx-dashboard :is(button, input, select, textarea) { font-family: inherit; }

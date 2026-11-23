@@ -1,21 +1,26 @@
 {% extends "staff_auth/base_enrollment.html" %}
+{% from 'core/_security_form.html' import submit %}
 {% block title %}Verify your identity · Laundrix{% endblock %}
 {% block progress %}{{ stepper(2, enrollment_steps, announce_status=true) }}{% endblock %}
 
 {% block card %}
-  <h1 id="enrollment-title">Verify your identity</h1>
-  <p>Didit will guide you through photographing your government-issued ID and taking a live selfie to match your face to the ID.</p>
-  <p>You’ll leave Laundrix to complete the check on Didit’s secure page. The process usually takes about two minutes.</p>
-  <section class="enrollment-preparation" aria-labelledby="verification-preparation-title">
-    <h2 id="verification-preparation-title">Get ready for your ID check</h2>
-    <ul>
-      <li>Use a valid, unexpired government-issued ID.</li>
-      <li>Find good lighting and avoid glare on your ID.</li>
-      <li>Remove hats and sunglasses for your selfie.</li>
-    </ul>
-  </section>
-  <form method="post" data-enrollment-form action="{{ url_for('staff_auth.enroll_start') }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button class="btn btn-primary btn-block enrollment-action" type="submit">Continue to Didit</button>
-  </form>
+  <div class="tw:grid tw:gap-6">
+    <div>
+      <h1 class="security-heading" id="enrollment-title">Verify your identity</h1>
+      <p class="security-copy">Didit will guide you through photographing your government-issued ID and taking a live selfie to match your face to the ID.</p>
+      <p class="security-copy tw:mb-0!">You’ll leave Laundrix to complete the check on Didit’s secure page. The process usually takes about two minutes.</p>
+    </div>
+    <section class="enrollment-preparation" aria-labelledby="verification-preparation-title">
+      <h2 id="verification-preparation-title">Get ready for your ID check</h2>
+      <ul>
+        <li>Use a valid, unexpired government-issued ID.</li>
+        <li>Find good lighting and avoid glare on your ID.</li>
+        <li>Remove hats and sunglasses for your selfie.</li>
+      </ul>
+    </section>
+    <form method="post" data-security-form action="{{ url_for('staff_auth.enroll_start') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {{ submit('Continue to Didit', full_width=true) }}
+    </form>
+  </div>
 {% endblock %}

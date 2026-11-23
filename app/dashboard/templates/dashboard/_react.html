@@ -5,7 +5,7 @@
 {% from 'core/_personal_settings_link.html' import personal_settings_link %}
 {% block title %}{{ dashboard_title }} · Laundrix{% endblock %}
 {% block head %}
-  <link rel="preload" href="{{ url_for('core.static', filename='react-dashboard/fonts/GeistSans-Variable.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ url_for('core.static', filename='fonts/geist/GeistSans-Variable.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link id="laundrix-dashboard-css" rel="stylesheet" href="{{ url_for('core.static', filename='react-dashboard/dashboard.css') }}">
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/order-status.css') }}">
   <link rel="stylesheet" href="{{ url_for('core.static', filename='css/admin-consistency.css') }}">

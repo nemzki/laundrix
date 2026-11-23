@@ -37,11 +37,27 @@ def test_settings_replaces_admin_banner_without_changing_status_or_eligibility(a
     assert services.summary_for(admin)["status"] == status
 
 
-def test_dashboard_feature_gate_and_staff_identity_card_remain_original(app, admin_client, staff_client):
-    staff_html = staff_client.get("/dashboard/staff").get_data(as_text=True)
-    assert 'class="idv-card"' in staff_html
-    assert 'class="dashboard-identity"' not in staff_html
+def test_staff_dashboard_omits_identity_banner_and_keeps_settings_access(app, admin_client, staff_client):
+    assert app.config["IDV_ENABLED"]
+    for url in ("/dashboard/staff", "/dashboard/staff?ui=jinja"):
+        response = staff_client.get(url)
+        assert response.status_code == 200
+        html = response.get_data(as_text=True)
+        assert 'class="idv-card"' not in html
+        assert 'class="dashboard-identity"' not in html
+        assert 'id="dashboard-preserved-identity"' not in html
+        assert "Identity Verification" not in html
+    settings = staff_client.get("/settings")
+    assert settings.status_code == 200
+    verification = re.search(
+        r'<section\b[^>]*aria-labelledby="verification-heading".*?</section>',
+        settings.get_data(as_text=True), re.S,
+    )
+    assert verification is not None
+    assert 'href="/identity/"' in verification.group()
+    assert staff_client.get("/identity/").status_code == 200
     app.config["IDV_ENABLED"] = False
+    assert staff_client.get("/identity/").status_code == 404
     html = admin_client.get("/dashboard/admin").get_data(as_text=True)
     assert 'class="dashboard-identity"' not in html
     assert staff_client.get("/dashboard/admin").status_code == 403

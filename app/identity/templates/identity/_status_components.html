@@ -1,0 +1,21 @@
+{% from 'core/_lucide.html' import lucide %}
+{% set variants = {
+  'verified': ('verified', 'shield-check', 'Verified'),
+  'in_progress': ('in-progress', 'loader-circle', 'In progress'),
+  'pending_review': ('in-progress', 'loader-circle', 'Under review'),
+  'action_required': ('action-required', 'triangle-alert', 'Action needed'),
+  'rejected': ('action-required', 'triangle-alert', 'Not verified'),
+  'error': ('action-required', 'triangle-alert', 'Temporary problem'),
+  'not_started': ('neutral', 'shield', 'Not verified')
+} %}
+{% macro status_badge(status, label=none) -%}
+  {% set variant = variants.get(status, ('neutral', 'shield', 'Unknown')) %}
+  <span class="idv-status-badge" data-tone="{{ variant[0] }}">{{ label or variant[2] }}</span>
+{%- endmacro %}
+{% macro status_icon(status, size, hero=false) -%}
+  {% set variant = variants.get(status, ('neutral', 'shield', 'Unknown')) %}
+  <span class="idv-status-icon{% if hero %} idv-status-icon--hero{% endif %}" data-tone="{{ variant[0] }}">
+    {{ lucide(variant[1], size) }}
+  </span>
+{%- endmacro %}
+{% macro timestamp(value) -%}{{ value.strftime('%b %d, %Y %H:%M') }} UTC{%- endmacro %}

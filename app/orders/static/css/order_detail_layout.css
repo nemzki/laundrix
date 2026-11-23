@@ -1,6 +1,4 @@
 /* Internal Order Details only. Business forms and status colors stay original. */
-@font-face { font-family: "Inter"; src: url("../../../core/static/fonts/inter/InterVariable.woff2") format("woff2"); font-style: normal; font-weight: 100 900; font-display: swap; }
-.order-detail-page { --lx-font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-family: var(--lx-font); }
 /* Global defaults. Set defaults and shared values used throughout the page. */
 body.app.order-detail-page:not(.admin-workspace) .content { width: 100%; max-width: 1280px; margin-inline: auto; padding: 24px; }
 body.app.order-detail-page .page-header { align-items: start; gap: 16px; margin-bottom: 20px; }

@@ -62,7 +62,7 @@ for (const width of [320, 1440]) test(`Shared Admin topbar and working toggle on
     await expect(header).toBeVisible()
     await expect(header.getByRole('navigation', { name: 'Breadcrumb' })).toHaveText(`${group.label}/${item.label}`)
     expect(await header.evaluate(element => element.getBoundingClientRect().height)).toBe(56)
-    expect(await header.evaluate(element => getComputedStyle(element).fontFamily)).toContain('Inter')
+    expect(await header.evaluate(element => getComputedStyle(element).fontFamily)).toContain('Geist Sans')
     const toggle = header.getByRole('button', { name: 'Toggle sidebar' })
     if (width < 768) {
       await toggle.click()
@@ -139,7 +139,7 @@ for (const role of ['admin', 'staff'] as const) for (const width of role === 'st
       if (width < 768) await expect(newOrder).toHaveCSS('height', '44px')
       await expect(page.getByRole('link', { name: 'View All' })).toHaveAttribute('href', data.urls.orders)
       await expect(page.locator('.dashboard-content')).toHaveCSS('padding-left', width < 768 ? '16px' : width < 1024 ? '24px' : '32px')
-      await expect(heading).toHaveCSS('font-family', /Inter/)
+      await expect(heading).toHaveCSS('font-family', /Geist Sans/)
       await expect(page.locator('[data-metric]').first()).toHaveCSS('border-radius', '14px')
       await expect(page.locator('.dashboard-metric-value').first()).toHaveCSS('font-size', '26px')
       const grid = page.locator('.dashboard-metrics')

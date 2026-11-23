@@ -1,0 +1,96 @@
+/* Shadcn-style primitives for the server-rendered security forms. */
+@font-face {
+  font-family: Inter;
+  src: url("../fonts/inter/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+body.security-flow {
+  --background: var(--lx-bg);
+  --foreground: var(--lx-navy);
+  --muted: var(--lx-border);
+  --muted-foreground: var(--lx-muted);
+  --border: var(--lx-border);
+  --primary: var(--lx-primary);
+  --primary-foreground: white;
+  --ring: var(--lx-primary);
+  --radius: .5rem;
+  min-height: 100vh;
+  font-family: Inter, system-ui, sans-serif;
+  background: var(--background);
+}
+
+.security-flow .security-shell {
+  width: 100%;
+  max-width: 32rem;
+  margin-inline: auto;
+  padding: 2.5rem 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.security-flow .security-header { margin-bottom: 2rem; }
+.security-flow .security-header .lx-logo { flex: none; }
+.security-flow .security-header .lx-logo__mark { width: 2.25rem; height: 2.25rem; object-fit: contain; }
+.security-flow .security-header-divider { height: 1.25rem; width: 1px; flex: none; background: var(--border); }
+.security-flow .security-header-label { color: var(--muted-foreground); font-size: .875rem; }
+.security-flow .security-heading {
+  margin: 0 0 .375rem;
+  color: var(--foreground);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  letter-spacing: -.025em;
+}
+.security-flow .security-copy { color: var(--muted-foreground); font-size: .875rem; line-height: 1.5rem; }
+.security-flow .security-label { font-size: .875rem; font-weight: 600; }
+.security-flow .security-button {
+  min-height: 2.5rem;
+  line-height: 1.25rem;
+  padding-block: .5rem;
+  border-radius: var(--radius);
+  text-align: center;
+  font-size: .875rem;
+}
+.security-flow .security-button:disabled { opacity: .5; pointer-events: none; }
+.security-flow .btn-primary { background: var(--primary); color: var(--primary-foreground); }
+.security-flow .btn-primary:hover { background: var(--lx-primary-hover); }
+.security-flow .security-button [data-submit-spinner] { flex: none; }
+.security-flow .security-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .875rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: .875rem;
+}
+.security-flow .security-alert svg { flex: none; margin-top: .125rem; }
+.security-flow .security-alert :is(h2, p) { margin: 0; }
+.security-flow .security-alert h2 { font-size: .875rem; margin-bottom: .25rem; }
+.security-flow .security-alert p { line-height: 1.25rem; }
+.security-flow .security-alert--error { color: var(--lx-danger); background: var(--lx-danger-soft); }
+.security-flow .security-check {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  font-size: .875rem;
+  line-height: 1.25rem;
+  cursor: pointer;
+}
+.security-flow .security-check input {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: .125rem;
+  accent-color: var(--primary);
+}
+.security-flow .security-separator { border: 0; border-top: 1px solid var(--border); margin: 0; }
+.security-flow :is(a, button, input, summary):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .security-flow [data-submit-spinner] { animation: security-spin .8s linear infinite; }
+}
+@keyframes security-spin { to { transform: rotate(1turn); } }

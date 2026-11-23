@@ -11,6 +11,7 @@
 
   var root = document.getElementById("laundrix-analytics") || document.documentElement;
   var charts = [];
+  Chart.defaults.font.family = getComputedStyle(root).fontFamily;
 
   /* Look up a CSS value so chart colors can match the page theme. */
   function css(name, fallback) {
@@ -91,7 +92,7 @@
     });
   }
 
-  build();
+  document.fonts.ready.then(build);
   // Redraw with the right colours when the light/dark theme is switched.
   new MutationObserver(build).observe(document.documentElement, { attributes: true, attributeFilter: ["data-lx-theme"] });
 })();

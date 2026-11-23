@@ -249,7 +249,8 @@ def test_dashboards_show_payment_figures(admin_client, staff_client, pay):
     admin_html = page(admin_client, "/dashboard/admin")
     assert "Outstanding Balance" in admin_html and "\u20b1100.00" in admin_html and "Collected Today" in admin_html and "\u20b160.00" in admin_html
     staff_html = page(staff_client, "/dashboard/staff")
-    assert "Awaiting receipt confirmation" in staff_html and "Collected today" not in staff_html
+    assert "awaiting receipt confirmation" in staff_html.casefold()
+    assert "collected today" not in staff_html.casefold()
 
 
 def test_navigation_is_role_aware(admin_client, staff_client, pay):
@@ -313,13 +314,15 @@ def test_tracking_page_shows_payment_status_and_balance_only(staff_client, anon_
 def test_tracking_page_for_paid_and_untracked_orders(staff_client, anon_client, pay):
     paid = order_from(place(staff_client, FULL_CASH))
     html = page(anon_client, f"/track/{paid.tracking_token}")
-    assert "Paid" in html and "Balance due" not in html
+    assert 'data-payment-status="paid">Paid</span>' in html
+    assert "Balance due" not in html
     legacy = order_from(place(staff_client))
     legacy.payment_arrangement = None
     db.session.commit()
     untracked = page(anon_client, f"/track/{legacy.tracking_token}")
-    assert "<span>Payment</span>" not in untracked and "Balance due" not in untracked
-    assert "<span>Payment</span>" in html
+    assert 'data-payment-status=' not in untracked
+    assert "<dt>Payment</dt>" not in untracked and "Balance due" not in untracked
+    assert "<dt>Payment</dt>" in html
 
 
 # ----------------------------------------------------------------------------- the whole shop workflow
