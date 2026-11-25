@@ -12,5 +12,5 @@
 .finance-nav__link:hover { color: var(--lx-text); background: var(--lx-paint-muted, #f1f5f9); }
 .finance-nav__link.is-active { background: var(--lx-paint-blue-bg, #eff6ff); border-color: var(--lx-paint-blue-border, #bfdbfe); color: var(--lx-primary); }
 .finance-nav__link:focus-visible { outline: 2px solid var(--lx-primary); outline-offset: 2px; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 767px) { .finance-nav--inset { padding: 12px; } }

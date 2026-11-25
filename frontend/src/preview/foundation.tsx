@@ -1,3 +1,4 @@
+// PREVIEW: Show the shared foundation components
 /** Show how shared foundation components fit together in the preview. */
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'

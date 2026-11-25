@@ -5,9 +5,9 @@
 .manage-orders .mo-tab-label { white-space: normal; text-align: left; }
 .manage-orders .mo-tab-count { flex: 0 0 auto; padding: 1px 5px; font-size: var(--lx-text-xs); }
 .manage-orders .mo-filters { display: grid; gap: 10px; align-items: end; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* SEARCH: Size and space the search control */
 .manage-orders .mo-search-field { display: grid; gap: 8px; min-width: 0; }
-/* Cards and data displays. Group related information and make rows easier to scan. */
+/* NAVBAR: Style navigation links and controls */
 .manage-orders .mo-table-panel { min-width: 0; padding: 0; gap: 0; flex: none; }
 /* Typography. Keep text sizes, weights, and spacing consistent. */
 .manage-orders .mo-table-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px; padding: 12px 14px; border-bottom: 1px solid var(--lx-border); }
@@ -59,7 +59,7 @@
 .manage-orders .mo-server-badge { display: inline-flex; align-items: center; max-width: 100%; min-height: 20px; padding: 2px 8px; border: 1px solid var(--lx-border); border-radius: 999px; font-size: var(--lx-text-xs); font-weight: 500; line-height: 16px; }
 .manage-orders .mo-server-filtered { display: inline-flex; align-items: center; height: 20px; padding: 2px 8px; border: 1px solid transparent; border-radius: 999px; font-size: var(--lx-text-xs); font-weight: 500; line-height: 16px; }
 .manage-orders .mo-server-pagination { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; font-size: var(--lx-text-sm); color: var(--lx-muted); }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on wider screens */
 @media (min-width: 640px) {
   .manage-orders .mo-status-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .manage-orders .mo-filters { grid-template-columns: minmax(0, 1fr) auto; }

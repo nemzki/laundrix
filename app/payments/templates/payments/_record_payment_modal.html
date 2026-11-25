@@ -1,5 +1,6 @@
+{# PAYMENT: Show the form only for tracked balances -#}
 {% if order.is_payment_tracked and order.balance_due > 0 %}
-<!-- Content that opens in a separate panel when a user activates its trigger. --><dialog class="modal payment-modal" id="recordPaymentModal" aria-labelledby="recordPaymentTitle">
+<!-- PAYMENT: Record a payment on an unpaid balance --><dialog class="modal payment-modal" id="recordPaymentModal" aria-labelledby="recordPaymentTitle">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0 order-detail-modal">
     <div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><div><h2 class="modal-title tw:text-xl" id="recordPaymentTitle">Record Payment</h2><p class="hint">{{ order.reference }} &middot; {{ order.customer_name }}</p></div><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></div>
         <!-- Fields and controls submitted together to the form action. --><form data-payment-form data-settings-url="{{ url_for('orders.new_order') }}" id="record-payment" method="post" action="{{ url_for('orders.record_payment', reference=order.reference) }}">

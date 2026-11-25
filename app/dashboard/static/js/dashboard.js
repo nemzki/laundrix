@@ -1,3 +1,4 @@
+// DASHBOARD: Build charts from saved report data
 /* Read data from the dashboard markup and draw its charts. */
 /* Admin dashboard charts — Chart.js, CSP-safe external file. */
 (function () {

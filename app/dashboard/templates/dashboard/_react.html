@@ -27,7 +27,7 @@
   {{ personal_settings_link() }}
 </div><form method="post" action="{{ d.urls.logout }}"><input type="hidden" name="csrf_token" value="{{ d.csrf }}"><button class="dashboard-native-button" type="submit">{{ icon('logout',16) }}Logout</button></form></div>
 {%- endmacro %}
-<!-- Initial page data in JSON for the JavaScript interface to read. --><script type="application/json" id="laundrix-dashboard-data">{{ dashboard_data|tojson }}</script>
+<!-- REACT: Flask data for the React dashboard --><script type="application/json" id="laundrix-dashboard-data">{{ dashboard_data|tojson }}</script>
 <div id="laundrix-dashboard" class="lx-react lx-dashboard" data-dashboard-role="{{ d.role }}" data-renderer="server">
   <div class="dashboard-static-shell">
     <aside class="dashboard-static-sidebar" aria-label="{{ d.user.label }} sidebar"><a class="dashboard-brand" href="{{ d.urls.home }}"><img src="{{ d.urls.brand }}" alt="Laundrix" width="34" height="40"><strong>Laundrix</strong></a>{{ navigation() }}{{ account() }}</aside>
@@ -40,7 +40,7 @@
           {% for m in d.metrics if m.group == group %}<div data-slot="card" class="dashboard-card dashboard-metric" data-metric="{{ m.key }}"><div><p class="dashboard-metric-label">{{ m.label }}</p><p class="dashboard-metric-value">{{ m.value }}</p></div><span class="dashboard-metric-icon" aria-hidden="true">{{ metric_icon(m.icon) }}</span></div>{% endfor %}
         </div></section>{% endfor %}
         <div class="dashboard-panels{% if not admin_area %} dashboard-panels-single{% endif %}">
-          <!-- Group the content and controls for the dashboard in one section. --><section data-slot="card" class="dashboard-card dashboard-panel"><div class="dashboard-panel-heading"><h2>Recent Orders</h2><a href="{{ d.urls.orders }}">View All</a></div>
+          <!-- REACT: Recent orders shown while React loads --><section data-slot="card" class="dashboard-card dashboard-panel"><div class="dashboard-panel-heading"><h2>Recent Orders</h2><a href="{{ d.urls.orders }}">View All</a></div>
             {% if d.recent %}
             <div class="dashboard-recent-desktop"><table class="dashboard-table"><caption class="sr-only">Recent Orders</caption><thead><tr><th scope="col">Order Reference</th><th scope="col">Customer</th><th scope="col" class="dashboard-currency">Total</th><th scope="col">Status</th></tr></thead><tbody>{% for row in d.recent %}<tr><td><a class="dashboard-reference" href="{{ row.url }}">{{ row.reference }}</a></td><td>{{ row.customer }}</td><td class="dashboard-currency">{{ row.total }}</td><td><span class="dashboard-status" data-tone="{{ row.tone }}" data-laundry-status="{{ row.value }}">{{ row.status }}</span></td></tr>{% endfor %}</tbody></table></div>
             <div class="dashboard-recent-mobile">{% for row in d.recent %}<article><a class="dashboard-reference" href="{{ row.url }}">{{ row.reference }}</a><p>{{ row.customer }}</p><p>Total <strong>{{ row.total }}</strong></p><span class="dashboard-status" data-tone="{{ row.tone }}" data-laundry-status="{{ row.value }}">{{ row.status }}</span></article>{% endfor %}</div>

@@ -56,7 +56,7 @@ html:not(.lp-enhanced) .reveal { opacity:1; transform:none; }
 .hero-simple svg{position:absolute;width:80%;height:20px;left:0;bottom:-15px;fill:none;stroke:currentColor;stroke-width:5;stroke-linecap:round}
 .hero-description{max-width:510px;font-size:20px;line-height:30px;color:var(--muted-foreground);margin:0 0 30px}
 .hero-actions{display:flex;gap:12px;margin-bottom:30px;flex-wrap:wrap}
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* BUTTON: Style buttons and their spacing */
 .hero-button{display:inline-flex;gap:14px;align-items:center;justify-content:center;padding:14px 26px;border:1px solid var(--border);border-radius:30px;color:var(--foreground);font-size:16px;font-weight:600;min-height:52px}
 .hero-button--primary{background:var(--primary);border-color:var(--primary);color:white;box-shadow:0 9px 22px #3475f82b}
 .hero-button:hover{filter:brightness(.96)}
@@ -90,12 +90,12 @@ html:not(.lp-enhanced) .reveal { opacity:1; transform:none; }
 .clothespin:after{content:'';position:absolute;width:2px;height:12px;top:4px;left:5px;background:#b48b40}
 #ticket-hint{position:absolute;top:97%;width:100%;text-align:center;font:11px/20px monospace;letter-spacing:1px;color:var(--muted-foreground)}
 #ticket-hint span{display:block;font-size:10px;letter-spacing:.3px}
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on wider screens */
 @media(min-width:1280px){.ticket-hero__inner{grid-template-columns:560px 1fr}}
 @media(max-width:1100px){.ticket-hero h1{font-size:68px;letter-spacing:-4px}.hero-benefits{gap:12px}.claim-tickets{gap:30px 20px;inset:12% 8% 10% 5%}.claim-ticket{padding:12px 10px}.claim-ticket__details{margin-inline:-10px;padding-inline:10px}.claim-ticket__number{font-size:18px;padding-bottom:5px}.claim-ticket__details{line-height:22px;font-size:11px}.claim-stamp{font-size:10px;padding:1px 6px}.ticket-hero__inner{min-height:650px}}
 @media(max-width:900px){.ticket-hero__inner{grid-template-columns:1fr;gap:40px;padding:44px 24px 70px}.ticket-hero__copy{max-width:620px}.ticket-hero h1{max-width:600px;font-size:72px}.ticket-scene{width:100%;max-width:580px;justify-self:center}.claim-ticket{padding:18px 14px 13px}.claim-ticket__details{margin-inline:-14px;padding:12px 14px 10px;font-size:12px;line-height:25px}.claim-ticket__number{font-size:20px;padding-bottom:12px}.claim-stamp{font-size:12px;padding:3px 9px}}
 @media(max-width:600px){.landing-header>div:first-child{padding-inline:16px;gap:8px}.landing-header .lx-logo__text{font-size:19px}.landing-header [data-sign-in]{padding-inline:16px;min-height:38px}.landing-theme{width:36px;height:36px}.ticket-hero__inner{padding:36px 20px 66px;gap:34px}.ticket-hero h1{font-size:clamp(42px,10.4vw,62px);letter-spacing:-2.8px;line-height:1.08;margin-bottom:32px}.shop-badge{font-size:11px;gap:7px;margin-bottom:26px}.hero-description{font-size:17px;line-height:27px}.hero-button{padding:12px 19px;font-size:14px;min-height:48px}.hero-benefits{font-size:12px;gap:12px}.claim-tickets{gap:28px 18px;inset:13% 5% 8%}.claim-ticket{padding:10px 8px 8px;border-radius:8px}.claim-ticket__top{font-size:7px;letter-spacing:.6px;line-height:14px}.claim-ticket__number{font-size:15px;line-height:25px;padding-bottom:7px}.claim-ticket__details{margin-inline:-8px;padding:6px 8px;font-size:9px;line-height:19px}.claim-stamp{font-size:9px;line-height:13px;padding:2px 5px;letter-spacing:.5px}.clothespin{width:9px;height:22px;top:-13px}.clothespin:after{left:4px;height:9px}.claim-ticket:nth-child(n){left:0}#ticket-hint{font-size:9px;letter-spacing:0;top:100%}#ticket-hint span{font-size:9px}}
-/* Reduced motion. Apply these styles only when the device or browser meets the condition below. */
+/* ACCESSIBILITY: Reduce motion based on user preference */
 @media(prefers-reduced-motion:reduce){.claim-ticket{transition:none}}
 .ticket-hero{background-image:linear-gradient(90deg,var(--background) 10%,transparent 70%),radial-gradient(circle,#dce6fc 1px,transparent 1px)}
 .ticket-hero__inner{padding-top:55px}

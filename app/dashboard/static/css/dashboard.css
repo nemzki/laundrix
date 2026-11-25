@@ -253,7 +253,7 @@
   white-space: nowrap;
 }
 
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 1024px) {
   .lx-dash__kpi-grid--3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));

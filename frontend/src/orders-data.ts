@@ -12,6 +12,7 @@ export interface OrdersPageData {
   previousUrl: string | null; nextUrl: string | null
 }
 /** Fail back to Jinja rather than mounting incomplete or incompatible data. */
+// API: Check server data before rendering orders
 export function parseOrdersData(value: unknown): OrdersPageData {
   if (!value || typeof value !== 'object') throw new Error('Missing order data')
   const data = value as OrdersPageData

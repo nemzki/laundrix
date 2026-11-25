@@ -22,7 +22,9 @@ export function parseDetail(doc:Document):Details{return {...detailSchema.parse(
 export async function fetchDetail(url:string,signal?:AbortSignal){const {response,doc}=await html(url,{signal:signal || AbortSignal.timeout(15000)});if(!response.ok)throw new Error('Account details could not be loaded.');return parseDetail(doc)}
 export async function fetchCreate(url:string){const {response,doc}=await html(url,{signal:AbortSignal.timeout(15000)});if(!response.ok)throw new Error('Staff form could not be loaded.');const csrf=doc.querySelector<HTMLInputElement>('form [name=csrf_token]')?.value;if(!csrf)throw new Error('The original staff form is unavailable.');return csrf}
 function enrollment(doc:Document):Enrollment|null {const field=doc.querySelector<HTMLInputElement>('#enroll-url');if(!field)return null;const card=field.closest<HTMLElement>('.card');const expires=card?.querySelector<HTMLElement>('[data-enrollment-expires]')?.textContent?.trim();const detail=doc.querySelector<HTMLAnchorElement>('.page-actions a')?.getAttribute('href');if(!card||!card.dataset.enrollmentName||!expires||!detail)return null;return {url:field.value,staffName:card.dataset.enrollmentName,expires,detail:localURL(detail),instructions:Array.from(card.querySelectorAll('ol li')).map(li=>li.textContent?.trim() || '')}}
+// API: Read error messages from the Flask response
 function serverError(doc:Document){return Array.from(doc.querySelectorAll('.flash-error,.alert-error')).map(node=>node.textContent?.trim()).filter(Boolean).join(' ')}
+// FORM: Submit staff details and read the enrollment link
 export async function createStaff(url:string,body:FormData):Promise<Enrollment>{
   // This original endpoint commits and returns the one-time link directly, without a redirect.
   const {response,doc}=await html(url,{method:'POST',body});const error=serverError(doc)

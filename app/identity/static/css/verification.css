@@ -1,3 +1,4 @@
+/* VERIFY: Style the identity verification screens */
 /* Standalone Laundrix verification pages only; hosted Didit and enrollment stay unchanged. */
 .idv-screen .idv-back {
   display: inline-flex;

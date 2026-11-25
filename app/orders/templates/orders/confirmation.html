@@ -29,7 +29,7 @@
       <div class="alert alert-success">Received {{ order.received_at|localdt }}{% if order.received_by %} by {{ order.received_by.full_name or order.received_by.email }}{% endif %}.</div>
     {% else %}
       <p class="muted">Confirm only after the physical laundry is in the shop. This is separate from payment: the order can be received while a balance is still due.</p>
-      <!-- Fields and controls submitted together to the form action. --><form method="post" action="{{ url_for('orders.confirm_received', reference=order.reference) }}"
+      <!-- BUTTON: Confirm that the laundry arrived --><form method="post" action="{{ url_for('orders.confirm_received', reference=order.reference) }}"
             data-confirm="Confirm that the laundry for {{ order.reference }} has been received by the shop?" data-confirm-title="Confirm Laundry Received">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button class="btn btn-primary" type="submit">{{ icon('check', 16) }}<span>Laundry Received</span></button>

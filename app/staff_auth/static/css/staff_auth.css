@@ -27,7 +27,7 @@
 /* Typography. Keep text sizes, weights, and spacing consistent. */
 .wizard-card > .muted { margin: 0 0 1.4rem; }
 .wizard-card label { display: block; font-weight: 600; font-size: .9rem; margin-bottom: .4rem; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 .wizard-card input[type="email"], .wizard-card input[type="password"], .wizard-card input[type="text"] {
   width: 100%; padding: .8rem .9rem; border: 1px solid var(--border); border-radius: 10px; font: inherit;
   margin-bottom: 1.1rem; background: #fff; color: var(--text); }

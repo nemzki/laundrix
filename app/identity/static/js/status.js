@@ -1,3 +1,4 @@
+// VERIFY: Show progress when checking verification status
 // Only the presentation changes. Flask still handles the form and redirects.
 const openVerification = document.querySelector('[data-idv-open]');
 const refreshForm = document.querySelector('[data-idv-refresh]');

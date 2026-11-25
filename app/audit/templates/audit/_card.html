@@ -9,7 +9,7 @@
 
   <details class="audit-filters"{% if f.active or f.notices %} open{% endif %}>
     <summary>Filters{% if f.active %} <span class="audit-badge">On</span>{% endif %}</summary>
-    <!-- Fields and controls submitted together to the form action. --><form method="get" action="{{ url_for('core.personal_settings', _anchor='audit-logs') }}" aria-label="Filter audit logs">
+    <!-- SEARCH: Filter audit logs before loading results --><form method="get" action="{{ url_for('core.personal_settings', _anchor='audit-logs') }}" aria-label="Filter audit logs">
       <div class="field audit-filters__wide"><label for="audit-q">Staff / admin name</label>
         <input id="audit-q" class="input" type="search" name="q" value="{{ f.q }}" maxlength="100" autocomplete="off"></div>
       <div class="field"><label for="audit-action">Action</label>
@@ -57,7 +57,7 @@
         {% set changed = audit.diff_rows(row) %}
         {% if changed %}
         <div class="audit-diff" tabindex="0" role="region" aria-label="Changed values">
-          <!-- Records displayed in rows under matching column headings. --><table class="table">
+          <!-- TABLE: Show audit history entries --><table class="table">
             <thead><tr><th scope="col">Field</th><th scope="col">Before</th><th scope="col">After</th></tr></thead>
             <tbody>{% for key, before, after in changed %}<tr><th scope="row">{{ key|replace('_', ' ')|capitalize }}</th><td>{{ show(before) }}</td><td>{{ show(after) }}</td></tr>{% endfor %}</tbody>
           </table>
@@ -68,7 +68,7 @@
     {% endfor %}
   </ul>
   {% if pg.pages > 1 %}
-  <!-- Related links grouped together so users can find their way around. --><nav class="audit-pager" aria-label="Audit log pages">
+  <!-- PAGINATION: Link to other audit log pages --><nav class="audit-pager" aria-label="Audit log pages">
     {% if pg.has_prev %}<a class="btn btn-outline btn-sm" href="{{ url_for('core.personal_settings', page=pg.prev_num, _anchor='audit-logs', **f.params) }}">Previous</a>{% else %}<span class="btn btn-outline btn-sm is-disabled" aria-disabled="true">Previous</span>{% endif %}
     <span class="muted" aria-current="page">Page {{ pg.page }} of {{ pg.pages }}</span>
     {% if pg.has_next %}<a class="btn btn-outline btn-sm" href="{{ url_for('core.personal_settings', page=pg.next_num, _anchor='audit-logs', **f.params) }}">Next</a>{% else %}<span class="btn btn-outline btn-sm is-disabled" aria-disabled="true">Next</span>{% endif %}

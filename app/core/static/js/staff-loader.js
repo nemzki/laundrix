@@ -1,3 +1,4 @@
+// REACT: Start staff management inside the Flask page
 /* Start the staff interface and show a recovery message if it cannot start. */
 (() => {
   const root = document.getElementById('laundrix-staff');

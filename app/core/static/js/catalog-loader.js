@@ -1,3 +1,4 @@
+// REACT: Start the catalog inside the Flask page
 /* Start the catalog interface and show a recovery message if it cannot start. */
 (() => {
   const root = document.getElementById('laundrix-catalog');

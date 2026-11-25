@@ -51,7 +51,7 @@
 .lx-react.lx-dashboard .dashboard-logout { width: 100%; }
 .lx-react.lx-dashboard .dashboard-fallback { font-size: 12px; color: var(--muted-foreground); align-self: start; }
 .lx-react.lx-dashboard .dashboard-static-shell { display: grid; grid-template-columns: 256px minmax(0,1fr); min-height: 100svh; background: var(--background); }
-/* Navigation. Arrange the links and controls used to move through the application. */
+/* SIDEBAR: Style sidebar links and spacing */
 .lx-react.lx-dashboard .dashboard-static-sidebar { position: sticky; top: 0; height: 100svh; display: flex; flex-direction: column; background: var(--sidebar); border-right: 1px solid var(--border); overflow-y: auto; }
 .lx-react.lx-dashboard .dashboard-static-sidebar .dashboard-brand { padding: 0 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .lx-react.lx-dashboard .dashboard-static-sidebar > .dashboard-account { margin-top: auto; border-top: 1px solid var(--border); padding: 16px; }
@@ -61,7 +61,7 @@
 .lx-react.lx-dashboard .dashboard-nav-label { font-size: 11px; text-transform: uppercase; color: var(--muted-foreground); font-weight: 600; padding: 12px 8px 6px; }
 .lx-react.lx-dashboard .dashboard-nav-link { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 6px 8px; border-radius: 8px; font-size: 14px; }
 .lx-react.lx-dashboard .dashboard-nav-link[aria-current=page] { background: var(--sidebar-accent); color: var(--sidebar-accent-foreground); font-weight: 500; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* BUTTON: Style buttons and their spacing */
 .lx-react.lx-dashboard .dashboard-native-button { display: inline-flex; justify-content: center; align-items: center; gap: 6px; height: 32px; min-height: 32px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); font-size: 14px; line-height: 20px; }
 .lx-react.lx-dashboard .dashboard-primary { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
 .lx-react.lx-dashboard .dashboard-native-menu, .lx-react.lx-dashboard .dashboard-recent-mobile, .lx-react.lx-dashboard .dashboard-bottom-nav { display: none; }
@@ -70,7 +70,7 @@
 .lx-react.lx-dashboard [data-slot=sidebar-inset] > header { padding-inline: 32px !important; }
 .lx-react.lx-dashboard [data-slot=table-container] { overflow: visible; }
 .lx-react.lx-dashboard :focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 1439px) {
  .lx-react.lx-dashboard .dashboard-panels { grid-template-columns: minmax(0,1fr); }
 }

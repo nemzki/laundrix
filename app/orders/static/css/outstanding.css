@@ -19,7 +19,7 @@ body.app #outstanding-summary .ob-stat h2 { min-height:32px; padding-right:44px;
 .ob-filter-left { display:flex; flex:1 1 360px; min-width:0; flex-wrap:wrap; gap:12px; align-items:center; }
 .ob-client-control { display:none; }
 .ob-enhanced .ob-client-control { display:flex; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 .ob-select-wrap { width:190px; max-width:100%; flex:0 0 auto; position:relative; }
 .ob-select-wrap > select { width:100%; min-height:36px; font-size:13px; }
 .ob-sort { width:176px; margin-left:auto; }
@@ -45,7 +45,7 @@ body.app #outstanding-summary .ob-stat h2 { min-height:32px; padding-right:44px;
 .ob-search:focus-within { outline:2px solid var(--lx-paint-blue, #2563eb); outline-offset:1px; }
 .ob-clear { font-size:13px; text-decoration:none; white-space:nowrap; }
 .ob-paid-label { font-size:13px; color:var(--lx-paint-secondary, #475569); }
-/* Cards and data displays. Group related information and make rows easier to scan. */
+/* NAVBAR: Style navigation links and controls */
 .ob-table-wrap { position:relative; overflow-x:auto; overflow-y:hidden; width:100%; }
 /* Take the screen-reader caption out of the scrolling table layout. */
 .ob-table caption[class~="tw:sr-only"] { position:absolute; top:0; left:0; }
@@ -82,12 +82,12 @@ body.app #outstanding-summary .ob-stat h2 { min-height:32px; padding-right:44px;
 .outstanding-page .ob-toast.is-success { background:var(--lx-paint-green-bg, #ecfdf5); border-color:var(--lx-paint-green-border, #a7f3d0); color:var(--lx-paint-green-ink, #065f46); }
 .ob-toast button { position:absolute; top:6px; right:10px; border:0; background:transparent; font-size:20px; color:inherit; }
 .ob-toast p { margin:6px 0 0; }
-/* Dialogs and overlays. Position the floating panel and style its contents. */
+/* MODAL: Style the dialog panel and spacing */
 .ob-modal-error { color:var(--lx-paint-red-ink, #b91c1c); }
 /* Describe how the named animation changes at different points in time. */
 @keyframes ob-pulse { 50% { opacity:.45; } }
-/* Reduced motion. Apply these styles only when the device or browser meets the condition below. */
+/* ACCESSIBILITY: Reduce motion based on user preference */
 @media(prefers-reduced-motion:reduce) { .ob-skeleton span { animation:none; } }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media(max-width:1023px) { .ob-stats { grid-template-columns:minmax(0,1fr); } .ob-filter-left { flex-basis:100%; } }
 @media(max-width:767px) { body.app.outstanding-page:not(.admin-workspace) .content { padding:20px 16px calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom,0px)); } .ob-filters { padding:12px; align-items:stretch; } .ob-footer { align-items:flex-start; } .ob-filter-left { display:grid; grid-template-columns:minmax(0,1fr); } .ob-search { width:100%; max-width:100%; } .ob-select-wrap { width:100%; } .ob-sort { margin-left:0; width:100%; } .ob-sort .ob-select-menu { width:190px; } }

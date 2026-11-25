@@ -75,6 +75,7 @@
     return url;
   }
   /* Fetch the customer list for the current filters and update the directory. */
+  // SEARCH: Refresh results after searching or paging
   async function loadDirectory(url,push,clamped) {
     lastURL=new URL(url);clearTimeout(debounce);
     if(directoryController) directoryController.abort();
@@ -106,6 +107,7 @@
   }
   /* Run this handler when the form is submitted. */
   root.querySelector(".cm-filters").addEventListener("submit",function(event){event.preventDefault();loadDirectory(queryURL(),true);});
+  // SEARCH: Refresh after the user stops typing
   search.addEventListener("input",function(){clearTimeout(debounce);debounce=setTimeout(function(){loadDirectory(queryURL(),true);},300);});
   filter.addEventListener("change",function(){loadDirectory(queryURL(),true);});
   /* Restore the page state when the user moves through browser history. */
@@ -131,6 +133,7 @@
     sheet.querySelector("[data-sheet-edit]").disabled=false;
   }
   /* Fetch the chosen customer profile before showing its details. */
+  // API: Fetch customer details for the side panel
   async function loadProfile(url,id) {
     if(profileController) profileController.abort();
     var current=new AbortController();profileController=current;
@@ -152,6 +155,7 @@
   }
   function enableFields(value) {name.disabled=!value;contact.disabled=!value;duplicate.disabled=!value;submit.disabled=!value;}
   /* Load the customer details and prepare the fields for editing. */
+  // MODAL: Load saved details into the editor
   async function prepareEdit(url,id) {
     if(editController) editController.abort();
     var current=new AbortController();editController=current;
@@ -193,6 +197,7 @@
     if(action.hasAttribute("data-view-customer")){viewTrigger=action;selected=null;showSheetStatus("Loading latest customer details...");sheetUI.show();loadProfile(url,id);}
     else openEditor("edit",url,id,false,action);
   });
+  // MODAL: Open the add customer form
   document.querySelector("[data-add-customer]").addEventListener("click",function(event){if(event.ctrlKey || event.metaKey || event.shiftKey) return;event.preventDefault();openEditor("add",root.dataset.createUrl,null,false,event.currentTarget);});
   sheet.querySelector("[data-sheet-edit]").addEventListener("click",function(){if(selected) openEditor("edit",profileURL,selected.id,true,null);});
   sheet.addEventListener("dialog:hidden",function(){if(profileController) profileController.abort();profileController=null;if(viewTrigger?.isConnected) viewTrigger.focus();});
@@ -207,6 +212,7 @@
   });
   form.addEventListener("input",function(event){if(event.target!==duplicate){duplicate.checked=false;duplicate.required=false;form.querySelector("[data-customer-duplicate]").hidden=true;}});
   /* Run this handler when the form is submitted. */
+  // FORM: Submit customer details and handle errors
   form.addEventListener("submit",async function(event){
     event.preventDefault();if(saving || !form.reportValidity()) return;
     var payload={full_name:name.value,contact_number:contact.value,confirm_duplicate:duplicate.checked};

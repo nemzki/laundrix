@@ -8,9 +8,10 @@ body.app.customers-page .page-header p { font-size:13px; line-height:20px; }
 /* Layout and containers. Arrange the main regions and control the space between them. */
 .cm .cm-panel { padding:0; border:1px solid var(--border); border-radius:14px; box-shadow:none; overflow:hidden; }
 .cm-filters { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:16px; }
+/* SEARCH: Size the customer search field */
 .cm-search { display:flex; align-items:center; gap:8px; width:320px; max-width:100%; min-width:0; padding:0 10px; border:1px solid var(--border); border-radius:8px; color:var(--lx-paint-muted-text, #64748b); background:var(--lx-paint-surface, #fff); }
 .cm-search .icon { flex:0 0 16px; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* SEARCH: Size and space the search control */
 .cm-search .input { min-width:0; width:100%; height:34px; min-height:34px; padding:6px 0; border:0; font-size:13px; box-shadow:none; background:transparent; }
 .cm-search .input:focus, .cm-search .input:focus-visible { border:0; outline:none; box-shadow:none; }
 .cm-search:hover { border-color:var(--lx-paint-muted-text, #94a3b8); }
@@ -19,7 +20,7 @@ body.app.customers-page .page-header p { font-size:13px; line-height:20px; }
 .cm-clear { min-height:36px; font-size:13px; text-decoration:none; margin-left:auto; color:var(--lx-paint-secondary, #475569); }
 .cm-clear:hover { background:var(--lx-paint-subtle, #f8fafc); }
 .cm-filters .cm-filter:focus-visible { outline:2px solid var(--lx-paint-blue, #2563eb); outline-offset:1px; box-shadow:none; }
-/* Cards and data displays. Group related information and make rows easier to scan. */
+/* NAVBAR: Style navigation links and controls */
 .cm-table-wrap { width:100%; overflow-x:auto; overflow-y:hidden; }
 .cm-table { width:100%; min-width:860px; border-collapse:collapse; font-size:13px; line-height:20px; }
 .cm-col-customer { width:28%; }
@@ -31,6 +32,7 @@ body.app.customers-page .page-header p { font-size:13px; line-height:20px; }
 .cm-table th.num,.cm-table th:last-child { text-align:right; }
 .cm-table .num { font-variant-numeric:tabular-nums; }
 .cm-table th { padding:10px 16px; background:var(--lx-paint-subtle, #f8fafc); border-block:1px solid var(--border); color:var(--lx-paint-text, #0f274a); font-weight:500; white-space:nowrap; text-align:left; }
+/* TABLE: Set customer row spacing */
 .cm-table td { padding:10px 16px; border-bottom:1px solid var(--border); vertical-align:middle; }
 .cm-table tr:last-child td { border-bottom:0; }
 .cm-table tbody tr:hover { background:var(--lx-paint-subtle, #f8fafc); }
@@ -102,5 +104,5 @@ body.app #customerModal .modal-header, body.app #customerModal .modal-body, body
 .cm-toast { position:fixed; top:76px; right:20px; z-index:1100; width:360px; max-width:calc(100vw - 32px); padding:14px 36px 14px 14px; background:var(--lx-paint-green-bg, #ecfdf5); border:1px solid var(--lx-paint-green-border, #a7f3d0); border-radius:12px; color:var(--lx-paint-green-ink, #065f46); font-size:13px; pointer-events:none; }
 .cm-toast button { position:absolute; top:6px; right:10px; border:0; background:transparent; color:inherit; font-size:20px; pointer-events:auto; }
 .cm-toast p { margin:5px 0 0; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media(max-width:767px) { body.app.customers-page:not(.admin-workspace) .content { padding:20px 16px 32px; } .cm-filters { padding:12px; } .cm-search { width:100%; } .cm-filters .cm-filter { flex:1 1 210px; max-width:100%; } }

@@ -1,3 +1,4 @@
+// ERROR: Share loading, empty, and error messages
 /** Share status, loading, and error feedback across foundation screens. */
 import { LoaderCircle, CircleAlert, Inbox, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'

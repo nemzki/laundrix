@@ -7,12 +7,12 @@
 {% block body_class %}centered{% endblock %}
 
 {% block body %}
-<!-- Primary content identified as a landmark for assistive technology. --><main class="auth-card">
+<!-- LOGIN: Show the administrator sign-in panel --><main class="auth-card">
   <a class="auth-brand" href="{{ url_for('landing.index') }}"><span>L</span>Laundrix</a>
   <h1>Administrator sign-in</h1>
   <p class="muted">Enter your administrator username and password.</p>
 
-  <!-- Fields and controls submitted together to the form action. --><form method="post" novalidate class="auth-form">
+  <!-- FORM: Submit administrator credentials --><form method="post" novalidate class="auth-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <label for="username">Username</label>

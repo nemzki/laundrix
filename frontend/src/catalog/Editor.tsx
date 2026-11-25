@@ -8,6 +8,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { Switch } from '@/components/ui/switch'
 import type { CatalogForm, CatalogRow, Field, Kind } from './api'
 
+// MODAL: Build the editor from server form fields
 export function Editor({ form, row, kind, categories, busy, onSubmit, onCancel }: {
   form:CatalogForm;row:CatalogRow|null;kind:Kind;categories:string[];busy:boolean;onSubmit:(body:FormData)=>void;onCancel:()=>void
 }) {
@@ -25,6 +26,7 @@ export function Editor({ form, row, kind, categories, busy, onSubmit, onCancel }
   const unitField=form.fields.find(field=>field.name==='pricing_unit')
   const unitLabel=unitField?.options.find(option=>option.value===get('pricing_unit'))?.label
   const appearance=['icon_key','image_url']
+  // FORM: Validate fields before passing values to save
   function submit(event:FormEvent<HTMLFormElement>) {event.preventDefault();if(!busy && event.currentTarget.reportValidity()) onSubmit(new FormData(event.currentTarget))}
   function fieldNode(field:Field,index:number) {
     const id=`catalog-${field.name}-${index}`,value=values[index]

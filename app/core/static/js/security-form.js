@@ -1,3 +1,4 @@
+// FORM: Show progress while security forms submit
 // Keep native form submission, including the original CSRF field and action.
 document.querySelectorAll('[data-security-form]').forEach(form => {
   const consent = form.querySelector('input[name="consent"]');

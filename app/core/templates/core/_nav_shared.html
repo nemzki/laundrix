@@ -9,7 +9,7 @@
 {%- endmacro %}
 
 {% macro logout_button(class_name='lx-nav__logout') -%}
-<!-- Fields and controls submitted together to the form action. --><form class="{{ class_name }}" method="post" action="{{ url_for('auth.logout') }}">
+<!-- BUTTON: Sign out of the current account --><form class="{{ class_name }}" method="post" action="{{ url_for('auth.logout') }}">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <button class="btn btn-outline btn-sm" type="submit">{{ icon('logout', 16) }}<span>Logout</span></button>
 </form>

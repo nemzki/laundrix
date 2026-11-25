@@ -1,3 +1,4 @@
+// THEME: Read the active theme in React
 import { useSyncExternalStore } from 'react'
 
 function subscribe(listener: () => void) {

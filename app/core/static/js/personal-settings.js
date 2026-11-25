@@ -1,3 +1,4 @@
+// FORM: Preview profile edits before saving
 /* Handle interactive parts of the personal settings page. */
 /* Preview only; profile writes use the existing authenticated form/CSRF session. */
 (function () {

@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { parseOrdersData, type OrdersPageData } from './orders-data'
 
 /** Read the existing Flask HTML response; never inject its HTML or invent an API. */
+// TABLE: Keep filters, results, and browser history aligned
 export function useOrdersNavigation(initial: OrdersPageData) {
+  // ERROR: Keep rows, loading, and errors for rendering
   const [data, setData] = useState(initial)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
@@ -27,6 +29,7 @@ export function useOrdersNavigation(initial: OrdersPageData) {
     setPending(true)
     setError('')
     try {
+      // API: Fetch the filtered Flask page as HTML
       const response = await fetch(url, { credentials: 'same-origin', signal: current.controller.signal, headers: { Accept: 'text/html' } })
       if (current.controller.signal.aborted) return
       if (response.redirected) {
@@ -59,8 +62,10 @@ export function useOrdersNavigation(initial: OrdersPageData) {
     }
   }, [initial.indexUrl])
 
+  // NAVBAR: Register and clean up browser navigation
   useEffect(() => {
     const pop = () => { void navigate(window.location.href, 'none') }
+    // TABLE: Reload orders on browser Back or Forward
     window.addEventListener('popstate', pop)
     return () => { window.removeEventListener('popstate', pop); request.current?.controller.abort(); request.current = null }
   }, [navigate])

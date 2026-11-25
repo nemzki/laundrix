@@ -7,7 +7,7 @@
   <h1>Staff sign-in</h1>
   <p class="muted">Enter your work email and password to sign in.</p>
 
-  <!-- Fields and controls submitted together to the form action. --><form method="post" novalidate>
+  <!-- FORM: Submit staff email and password --><form method="post" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <label for="email">Email address</label>

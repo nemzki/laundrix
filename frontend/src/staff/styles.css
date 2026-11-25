@@ -1,6 +1,6 @@
 /* Staff-only frontend. Protected authentication/enrollment screens do not load this bundle. */
 .lx-react.lx-staff { --staff-ready:1; --lx-text-xs:12px; --lx-text-sm:13px; --lx-text-base:14px; --lx-text-lg:18px; --lx-text-xl:20px; --lx-text-2xl:24px; --input:var(--lx-border); --ring:var(--lx-primary); --accent-foreground:var(--lx-text); --destructive:var(--lx-paint-red-ink, #b91c1c); }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 .lx-react.lx-staff [data-slot=button],.lx-react.lx-staff [data-slot=input],.lx-react.lx-staff select { min-height:36px; font-size:13px; }
 /* Layout and containers. Arrange the main regions and control the space between them. */
 .lx-react.lx-staff .staff-panel { border:1px solid var(--lx-border); border-radius:14px; background:var(--lx-paint-surface, #fff); min-width:0; overflow:hidden; }
@@ -21,7 +21,7 @@
 .lx-react.lx-staff .staff-filter-row select:focus-visible { outline:2px solid var(--lx-primary); outline-offset:1px; box-shadow:none; }
 .lx-react.lx-staff select { flex:0 0 176px; width:176px; height:36px; max-width:100%; border:1px solid var(--lx-paint-border, #cbd5e1); border-radius:8px; padding:6px 28px 6px 10px; background:var(--lx-paint-surface, #fff); color:var(--lx-paint-text, #0f274a); }
 .lx-react.lx-staff .staff-clear { margin-left:auto; height:36px; min-height:36px; padding:6px 10px; border-radius:8px; color:var(--lx-paint-secondary, #475569); font-size:13px; }
-/* Cards and data displays. Group related information and make rows easier to scan. */
+/* NAVBAR: Style navigation links and controls */
 .lx-react.lx-staff [data-slot=table-container] { width:100%; overflow-x:auto; overflow-y:hidden; }
 .lx-react.lx-staff .staff-table { width:100%; min-width:900px; table-layout:fixed; border-collapse:collapse; }
 .lx-react.lx-staff .staff-col-person { width:28%; }
@@ -62,7 +62,7 @@
 .lx-react.lx-staff .staff-menu [data-slot=dropdown-menu-separator] { margin-block:5px; background:var(--lx-paint-border, #e2e8f0); }
 .lx-react.lx-staff .staff-menu .staff-menu-item-destructive { color:var(--lx-paint-red-ink, #dc2626); }
 .lx-react.lx-staff .staff-menu .staff-menu-item-destructive:is(:hover,[data-highlighted]) { background:var(--lx-paint-red-bg, #fef2f2); color:var(--lx-paint-red-ink, #b91c1c); }
-/* Dialogs and overlays. Position the floating panel and style its contents. */
+/* MODAL: Style the dialog panel and spacing */
 .lx-react.lx-staff#laundrix-react-portals .staff-dialog { display:flex; flex-direction:column; gap:0; padding:0 !important; max-width:512px; width:calc(100vw - 32px); max-height:calc(100dvh - 32px); overflow:hidden; z-index:1070; border:1px solid var(--lx-paint-border, #e2e8f0); border-radius:14px; background:var(--lx-paint-surface, #fff); }
 .lx-react.lx-staff .staff-dialog [data-slot=dialog-header] { padding:20px 48px 16px 20px; text-align:left; flex-shrink:0; }
 .lx-react.lx-staff#laundrix-react-portals [data-slot=dialog-title],.lx-react.lx-staff#laundrix-react-portals [data-slot=sheet-title] { font-size:16px; line-height:24px; font-weight:500; letter-spacing:normal; }
@@ -108,7 +108,7 @@
 .lx-react.lx-staff .staff-timeline li { padding-bottom:14px; font-size:12px; }
 .lx-react.lx-staff .staff-timeline strong { font-weight:500; }
 .lx-react.lx-staff .staff-timeline p { color:var(--lx-paint-muted-text, #64748b); margin-top:4px; overflow-wrap:anywhere; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media(max-width:767px) { .lx-react.lx-staff .staff-controls { padding:12px; } .lx-react.lx-staff .staff-filter-row { align-items:stretch; } .lx-react.lx-staff .staff-search { width:100%; flex:1 1 100%; } .lx-react.lx-staff .staff-filter-row select { flex:1 1 140px; min-width:0; } .lx-react.lx-staff .staff-clear { margin-left:auto; } .lx-react.lx-staff .staff-pagination { align-items:flex-start; } .lx-react.lx-staff .staff-pagination > div { flex-wrap:wrap; } }
 
 

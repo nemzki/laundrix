@@ -1,3 +1,4 @@
+// LAYOUT: Share the sidebar and page layout
 /** Share layout building blocks across the foundation screens. */
 import { useId, useState, type ReactNode } from 'react'
 import { Menu, type LucideIcon } from 'lucide-react'

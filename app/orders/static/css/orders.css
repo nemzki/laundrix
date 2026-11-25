@@ -54,7 +54,7 @@
   border: 1px solid var(--border);
   border-radius: 12px;
 }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 .orders-toolbar .field { margin: 0; flex: 1 1 180px; min-width: 0; }
 .orders-toolbar__search { flex: 1 1 240px; }
 .orders-toolbar__filter { flex: 0 1 220px; }
@@ -68,7 +68,7 @@
 
 /* Layout and containers. Arrange the main regions and control the space between them. */
 .orders-panel { padding: 0; overflow: hidden; }
-/* Cards and data displays. Group related information and make rows easier to scan. */
+/* NAVBAR: Style navigation links and controls */
 .orders-table-wrap { margin: 0; }
 .orders-table { margin: 0; }
 .orders-table th,
@@ -185,7 +185,7 @@
 }
 .orders-empty .btn { margin-top: 0.35rem; }
 
-/* Dialogs and overlays. Position the floating panel and style its contents. */
+/* MODAL: Style the dialog panel and spacing */
 .orders-modal .modal-content {
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -215,7 +215,7 @@
 .orders-modal__grid dd { margin: 0.25rem 0 0; font-weight: 600; color: var(--navy); }
 .orders-modal__hint { margin: 1rem 0 0; }
 
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 900px) {
   .orders-table-wrap { display: none; }
   .orders-cards { display: block; }
@@ -908,7 +908,7 @@
 .stub td { padding: .15rem 0; vertical-align: top; }
 .stub td.r { text-align: right; white-space: nowrap; }
 .stub-actions { text-align: center; margin: 1rem; }
-/* Print layout. Apply these styles only when the device or browser meets the condition below. */
+/* PRINT: Adjust layout for printed pages */
 @media print { .stub-actions { display: none; } .stub { border: 0; margin: 0 auto; } }
 .stub-qr {
     margin-top: .8rem;

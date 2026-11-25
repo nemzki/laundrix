@@ -15,7 +15,7 @@
 .new-order-page #wizard [hidden] { display: none !important; }
 /* Cards and data displays. Group related information and make rows easier to scan. */
 .new-order-page #wizard .card { box-shadow: none; border-radius: 12px; }
-/* Layout and containers. Arrange the main regions and control the space between them. */
+/* WIZARD: Place the wizard beside its summary */
 .new-order-page #wizard .wizard-layout { grid-template-columns: minmax(0,1fr) 300px; gap: 24px; }
 .new-order-page #wizard .wizard-main { padding: 24px; min-width: 0; }
 .new-order-page #wizard .wizard-side { min-width: 0; top: 24px; }
@@ -37,7 +37,7 @@
 .new-order-page #wizard .wiz-panel { background: var(--lx-paint-surface, #fff); border: 0; padding: 16px 0 0; }
 .new-order-page #wizard .seg { display: inline-flex; width: auto; max-width: 100%; border-radius: 8px; padding: 4px; background: var(--lx-paint-muted, #eef2f7); }
 .new-order-page #wizard .seg-btn { padding: 8px 12px; border-radius: 6px; font-size: 13px; min-height: 40px; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Size the wizard fields and labels */
 .new-order-page #wizard .field { min-width: 0; }
 .new-order-page #wizard .field label { font-size: 13px; font-weight: 500; }
 .new-order-page #wizard .input { min-height: 40px; border-radius: 8px; font: inherit; }
@@ -108,7 +108,7 @@
 .new-order-page #wizard .side-customer-row #side-customer { text-align: right; }
 .new-order-page #wizard #side-contact { text-align: right; }
 .new-order-page #wizard #side-step { border-top: 1px solid var(--border); margin: 12px 0 0; padding-top: 12px; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Fit service details on narrower screens */
 @media (max-width: 1150px) {
  .new-order-page #wizard .detail-card { grid-template-columns: minmax(0,1fr) auto; }
  .new-order-page #wizard .detail-card .form-grid { grid-column: 1; }

@@ -1,3 +1,4 @@
+// ORDER: Handle order detail controls and feedback
 /* Handle order detail controls such as copying and release feedback. */
 /* Display only: reuse the existing backend-rendered stub QR, never generate one. */
 (function () {

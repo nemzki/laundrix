@@ -1,3 +1,4 @@
+// REACT: Mount the dashboard with Flask data
 /** Start the dashboard React interface using its page mount point. */
 import { Component, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'

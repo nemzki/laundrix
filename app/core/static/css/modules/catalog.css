@@ -3,11 +3,11 @@
 /* Cards and data displays. Group related information and make rows easier to scan. */
 .ui-page .card { border-radius: var(--lx-radius); }
 .ui-page .ui-table .row-actions { align-items: start; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* NAVBAR: Style navigation links and controls */
 .ui-page .ui-table .inline-form { display: block; }
 .ui-page .form-card .btn-row { padding-top: 1rem; border-top: 1px solid var(--lx-border); }
 .ui-page .form-card fieldset { border-radius: var(--lx-radius-sm); padding-bottom: .75rem; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 700px) { .ui-page .form-card .btn-row .btn { flex: 1 1 auto; min-height: 44px; } }
 
 .ui-page .ui-table th:first-child { width: 40%; }

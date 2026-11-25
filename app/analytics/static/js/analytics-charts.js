@@ -50,6 +50,7 @@
     charts.push(new Chart(canvas, config));
   }
 
+  // API: Draw reports using server data
   function build() {
     var p = palette();
     charts.forEach(function (c) { c.destroy(); });

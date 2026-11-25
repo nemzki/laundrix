@@ -30,6 +30,7 @@ const stepStyle: Record<StepState, string> = {
   Unavailable: 'border-border bg-[var(--lx-paint-muted,var(--lx-bg))] text-[var(--lx-paint-secondary,var(--lx-muted))]',
 }
 
+// STATUS: Show progress through account verification
 function VerificationTracker({ account }: { account: Details }) {
   const verified = account.identity === 'Verified'
   const approved = account.approved !== 'Not yet' && Boolean(account.approved)
@@ -191,6 +192,7 @@ export function StaffDetails({ initial, index }: { initial: Details; index: stri
     }
   }
 
+  // API: Send the confirmed account action
   async function confirm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!operation || lock.current) return

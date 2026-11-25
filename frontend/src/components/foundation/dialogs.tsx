@@ -11,6 +11,7 @@ export function ContentDialog({ trigger, title, description, children }: { trigg
   </DialogContent></Dialog>
 }
 /** The caller owns submission, errors and closing after a real successful response. */
+// ERROR: Show pending and error states during confirmation
 export function ConfirmationDialog({ open, onOpenChange, trigger, title, description, confirmLabel, onConfirm, pending = false, error, destructive = false }: {
   open: boolean; onOpenChange: (open: boolean) => void; trigger: ReactNode; title: string; description: string
   confirmLabel: string; onConfirm: () => void; pending?: boolean; error?: string; destructive?: boolean

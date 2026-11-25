@@ -1,3 +1,4 @@
+// THEME: Let users choose their color theme
 /** Offer the supported theme choices and keep the selected option visible. */
 import { Palette, Sun, Moon, Monitor, Check } from 'lucide-react'
 

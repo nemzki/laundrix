@@ -35,7 +35,7 @@
       {% if cashier %}<dt>Served by</dt><dd>{{ cashier }}</dd>{% endif %}
     </dl>
     <hr>
-    <!-- Records displayed in rows under matching column headings. --><table class="stub-items">
+    <!-- TABLE: Show printable laundry items --><table class="stub-items">
       {% for i in order.items %}
       <tr><td>{{ i.name }}{% if i.description %}<br>{{ i.description }}{% endif %}{% if i.measurement %}<br>{{ i.measurement|qty }} {{ i.measurement_unit }}{% endif %}<br>{{ i.quantity|qty }} {{ i.unit }}{% if i.customer_supplied %} (customer-supplied){% else %} x {{ i.unit_price|peso }}{% endif %}{% if i.instructions %}<br>Note: {{ i.instructions }}{% endif %}</td>
           <td class="r">{{ i.line_total|peso }}</td></tr>

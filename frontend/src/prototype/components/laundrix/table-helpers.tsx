@@ -1,4 +1,5 @@
 'use client'
+// TABLE: Share prototype table display helpers
 
 /** Provide reusable pieces for presenting and navigating tabular data. */
 import * as React from 'react'

@@ -2,6 +2,7 @@
 (function () {
   "use strict";
 
+  // FORM: Show or hide the password text
   function initPasswordToggles() {
     document.querySelectorAll("[data-password-toggle]").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -16,6 +17,7 @@
     });
   }
 
+  // LOGIN: Show progress while signing in
   function initSubmitLoading() {
     document.querySelectorAll("[data-auth-form]").forEach(function (form) {
       /* Show immediate feedback while the browser submits the sign-in form. */
@@ -36,6 +38,7 @@
   }
 
   /* Show Google redirect feedback and reset it if the browser restores this page. */
+  // LOGIN: Set up Google sign-in
   function initGoogle() {
     var buttons = document.querySelectorAll("[data-google-btn]");
     if (!buttons.length) return;

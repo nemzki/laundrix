@@ -1,3 +1,4 @@
+// NAVBAR: Keep the admin menu state in sync
 /* Connect the admin header controls to their menus and actions. */
 /* Admin shell sidebar and shared mobile drawer. */
 (function () {

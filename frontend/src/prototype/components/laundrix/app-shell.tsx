@@ -1,3 +1,4 @@
+// LAYOUT: Arrange prototype navigation and content
 /** Arrange the prototype navigation and the content of the selected workspace. */
 import { useId, type ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'

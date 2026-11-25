@@ -7,7 +7,7 @@
     {{ brand_logo('sidebar', href=url_for('dashboard.index')) }}
   </div>
 
-  <!-- Related links grouped together so users can find their way around. --><nav class="lx-sidebar__nav" aria-label="Application">
+  <!-- SIDEBAR: Show application links in the sidebar --><nav class="lx-sidebar__nav" aria-label="Application">
     {{ nav_groups(is_admin, ep, bp, 'lx-nav__link', true) }}
   </nav>
 

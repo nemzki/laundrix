@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 
 /** Explicit control ID makes labels, hints and server errors usable for any native/shadcn control. */
+// ERROR: Group a field with its hint and error
 export function FormField({ id, label, hint, error, required, children }: {
   id: string; label: string; hint?: string; error?: string; required?: boolean
   children: (props: { id: string; 'aria-describedby'?: string; 'aria-invalid': boolean; required?: boolean }) => ReactNode

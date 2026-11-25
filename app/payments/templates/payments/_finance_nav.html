@@ -1,5 +1,5 @@
 {% macro finance_nav(active, inset=false) -%}
-<!-- Related links grouped together so users can find their way around. --><nav class="finance-nav{% if inset %} finance-nav--inset{% endif %}" aria-label="Finance navigation">
+<!-- NAVBAR: Show finance page links --><nav class="finance-nav{% if inset %} finance-nav--inset{% endif %}" aria-label="Finance navigation">
   {% for key, title, endpoint in [('records', 'All Payments', 'payments.records'), ('outstanding', 'Outstanding Balances', 'payments.outstanding'), ('summary', 'Summaries', 'payments.summary')] %}
   <a class="finance-nav__link{% if active == key %} is-active{% endif %}" href="{{ url_for(endpoint) }}"{% if active == key %} aria-current="page"{% endif %}>{{ title }}</a>
   {% endfor %}

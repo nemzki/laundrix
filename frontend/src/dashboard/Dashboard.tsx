@@ -33,6 +33,7 @@ function BottomNavigation({ data }: { data: DashboardData }) {
     <button type="button" onClick={() => setOpenMobile(true)}><MoreHorizontal aria-hidden="true" /><span>More</span></button>
   </nav>
 }
+// DASHBOARD: Show recent orders from dashboard data
 function RecentOrders({ data }: { data: DashboardData }) {
   const status = (row: DashboardData['recent'][number]) => <span className="dashboard-status" data-tone={row.tone} data-laundry-status={row.value}>{row.status}</span>
   return <Card className="dashboard-card dashboard-panel" aria-label="Recent Orders"><div className="dashboard-panel-heading"><h2>Recent Orders</h2><a href={data.urls.orders}>View All</a></div>
@@ -43,6 +44,7 @@ function RecentOrders({ data }: { data: DashboardData }) {
       <div className="dashboard-empty"><strong>No orders yet</strong><p>Create the first order to see activity here.</p></div>}
   </Card>
 }
+// NAVBAR: Render dashboard navigation, metrics, and activity
 export function Dashboard({ data, onReady }: { data: DashboardData; onReady: () => void }) {
   useLayoutEffect(onReady, [onReady])
   const navigation: NavigationSection[] = data.navigation.map(section => ({ label: section.label,

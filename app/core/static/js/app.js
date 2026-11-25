@@ -1,3 +1,4 @@
+// MODAL: Open and close native dialogs
 /* Set up dialogs, confirmation prompts, and other behavior shared across pages. */
 /* Shared behaviour (CSP-safe: external file, no inline handlers). */
 (function () {
@@ -5,6 +6,7 @@
 
   var dialogs = new WeakMap();
   /* Keep the interface in sync with the dialog. */
+  // MODAL: Keep dialog buttons in sync
   function syncDialog(element) {
     element.classList.toggle("show", element.open);
     document.body.classList.toggle("modal-open", !!document.querySelector("dialog:is(.modal,.offcanvas)[open]"));
@@ -60,6 +62,7 @@
   };
 
   document.addEventListener("click", function (event) {
+    // MODAL: Match the clicked button to its dialog
     var trigger = event.target.closest("[data-dialog-target]");
     if (trigger) {
       var element = document.getElementById(trigger.dataset.dialogTarget.slice(1));

@@ -1,3 +1,4 @@
+{# DASHBOARD: Choose the server or React dashboard -#}
 <!-- Choose between the server-rendered dashboard and the React dashboard. -->{% if request.args.get('ui') == 'jinja' %}
   {% include 'dashboard/_legacy.html' %}
 {% else %}

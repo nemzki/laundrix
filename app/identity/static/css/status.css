@@ -1,3 +1,4 @@
+/* VERIFY: Style verification status and history */
 /* Status presentation is shared by the hero, details, and attempt history. */
 .idv-details-screen [data-tone="verified"] { --idv-tone: var(--lx-success); --idv-ink: var(--lx-paint-green-ink, #166534); }
 .idv-details-screen [data-tone="in-progress"] { --idv-tone: var(--primary); --idv-ink: var(--lx-paint-blue-ink, var(--lx-primary-hover)); }

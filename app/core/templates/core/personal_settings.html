@@ -7,7 +7,7 @@
 {% block page_head %}<link rel="stylesheet" href="{{ url_for('core.static', filename='css/personal-settings.css') }}">{% if audit %}<link rel="stylesheet" href="{{ url_for('audit.static', filename='css/audit.css') }}">{% endif %}{% endblock %}
 {% block content %}
 <div class="personal-settings" data-personal-settings>
-  <!-- Group the content and controls for the shared application shell in one section. --><section class="card ps-card" aria-labelledby="profile-heading">
+  <!-- LAYOUT: Edit your display name and photo --><section class="card ps-card" aria-labelledby="profile-heading">
     <div class="ps-section-heading"><span class="ps-section-icon">{{ icon('users',20) }}</span><div><h2 id="profile-heading">My profile</h2><p class="muted">Your account information.</p></div></div>
     <!-- Fields and controls submitted together to the form action. --><form class="ps-profile-form" method="post" action="{{ url_for('core.update_profile') }}" enctype="multipart/form-data" novalidate data-profile-form data-saved-name="{{ current_user.full_name or '' }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

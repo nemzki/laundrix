@@ -35,7 +35,7 @@ body.app.payment-summary-page #payment-summary-kpis h2 {
 .payment-summary-report-heading { margin-bottom: 16px; }
 body.app.payment-summary-page #payment-summary-reports h2 { margin: 0; font-size: 14px; line-height: 21px; font-weight: 500; letter-spacing: normal; }
 .payment-summary-report-heading p { margin: 4px 0 0; color: var(--lx-muted); font-size: 13px; line-height: 20px; }
-/* Cards and data displays. Group related information and make rows easier to scan. */
+/* NAVBAR: Style navigation links and controls */
 .payment-summary-table { width: 100%; margin: 0; }
 body.internal-ui .payment-summary-table :is(th, td) { padding: 10px 12px; font-size: 13px; line-height: 20px; overflow-wrap: anywhere; }
 body.internal-ui .payment-summary-table th { font-size: 12px; font-weight: 500; }
@@ -47,7 +47,7 @@ body.internal-ui .payment-summary-table tfoot :is(th, td) { border-top: 1px soli
 .payment-summary-empty strong { font-size: 13px; line-height: 20px; font-weight: 500; }
 .payment-summary-empty p { margin: 0; color: var(--lx-muted); font-size: 13px; line-height: 20px; }
 .payment-summary-note { margin: 0; color: var(--lx-muted); font-size: 12px; line-height: 18px; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 1023px) {
   .payment-summary-kpis, .payment-summary-reports { grid-template-columns: minmax(0, 1fr); }
 }

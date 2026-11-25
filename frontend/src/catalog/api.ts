@@ -10,6 +10,7 @@ export interface Field {name:string;label:string;value:string;checked:boolean;ty
 export interface CatalogForm {action:string;fields:Field[];errors:string[]}
 
 export function localURL(value:string):string {const url=new URL(value,location.origin);if(url.origin!==location.origin) throw new Error('Invalid catalog destination.');return url.href}
+// API: Read catalog JSON embedded in Flask HTML
 export function parseCatalog(doc:Document):CatalogData {
   const node=doc.getElementById('laundrix-catalog-data')
   if(!node) throw new Error('The catalog response could not be verified. Refresh before retrying.')
@@ -39,11 +40,13 @@ function parseForm(doc:Document,action:string):CatalogForm {
   })
   return {action:localURL(action),fields,errors:Array.from(form.querySelectorAll('.field-error')).map(node=>node.textContent || '')}
 }
+// API: Load the original Flask editor form
 export async function fetchForm(url:string,signal:AbortSignal):Promise<CatalogForm> {
   const {response,doc}=await html(url,{signal})
   if(!response.ok) throw new Error('Catalog form could not be loaded. Please retry.')
   return parseForm(doc,url)
 }
+// ERROR: Read updated catalog data or form errors
 export async function saveForm(form:CatalogForm,body:FormData):Promise<{data:CatalogData}|{form:CatalogForm}> {
   const {response,doc}=await html(form.action,{method:'POST',body})
   if(response.status===422) return {form:parseForm(doc,form.action)}

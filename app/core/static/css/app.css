@@ -267,7 +267,7 @@
   font-weight: 700;
 }
 
-/* Dialogs and overlays. Position the floating panel and style its contents. */
+/* NAVBAR: Size the slide-out mobile menu */
 .app .lx-nav-drawer {
   --lx-drawer-width: min(100vw - 2.5rem, 320px);
 }
@@ -293,7 +293,7 @@
 }
 .app .lx-nav-drawer__logout { margin-top: auto; }
 
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Swap desktop sidebar for mobile navigation */
 @media (max-width: 960px) {
   .app .lx-sidebar { display: none; }
   .main { margin-left: 0; }

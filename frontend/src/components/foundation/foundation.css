@@ -21,7 +21,7 @@
 .lx-foundation :focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 /* Layout and containers. Arrange the main regions and control the space between them. */
 .lx-foundation.fx-shell { min-height: 100svh; background: var(--background); display: grid; grid-template-columns: 16rem minmax(0,1fr); }
-/* Navigation. Arrange the links and controls used to move through the application. */
+/* SIDEBAR: Style sidebar links and spacing */
 .lx-foundation .fx-sidebar { position: sticky; top: 0; height: 100svh; overflow-y: auto; display: flex; flex-direction: column; border-right: 1px solid var(--border); background: var(--lx-paint-surface, white); }
 .lx-foundation .fx-brand { padding: 1.5rem 1.25rem; font-size: 1.125rem; font-weight: 700; }
 .lx-foundation .fx-nav { padding: 0 .75rem 1rem; }
@@ -41,9 +41,9 @@
 .lx-foundation .fx-page-heading h1 { font-size: 1.5rem; font-weight: 650; letter-spacing: -.025em; overflow-wrap: anywhere; }
 .lx-foundation .fx-actions, .lx-foundation .fx-filters { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; min-width: 0; }
 .lx-foundation .fx-search { display: grid; gap: .5rem; flex: 1 1 16rem; min-width: 0; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 .lx-foundation .fx-field { display: grid; gap: .5rem; min-width: 0; }
-/* Cards and data displays. Group related information and make rows easier to scan. */
+/* NAVBAR: Style navigation links and controls */
 .lx-foundation .fx-table-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--lx-paint-surface, white); min-width: 0; overflow: hidden; }
 .lx-foundation .fx-table { table-layout: fixed; }
 .lx-foundation .fx-table th { background: var(--muted); }
@@ -51,7 +51,7 @@
 .lx-foundation .fx-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; }
 .lx-foundation .fx-state { padding: 2rem 1rem; display: grid; justify-items: center; gap: .75rem; text-align: center; overflow-wrap: anywhere; }
 .lx-foundation .lx-status[data-tone=danger] { background: var(--lx-paint-red-bg, #fef2f2); color: var(--lx-paint-red-ink, #b91c1c); }
-/* Dialogs and overlays. Position the floating panel and style its contents. */
+/* MODAL: Style the dialog panel and spacing */
 .lx-foundation .fx-dialog { width: calc(100% - 2rem); max-height: calc(100dvh - 2rem); overflow-y: auto; }
 .lx-foundation .fx-drawer { width: min(20rem, calc(100% - 2rem)); overflow-y: auto; }
 .lx-foundation .fx-toasts { position: fixed; bottom: 1rem; right: 1rem; width: min(24rem, calc(100% - 2rem)); z-index: 1080; display: grid; gap: .5rem; }
@@ -60,7 +60,7 @@
 .lx-foundation .fx-mobile-menu { display: none; }
 .lx-foundation .fx-skip { position: fixed; top: .5rem; left: .5rem; padding: .75rem; z-index: 1100; background: var(--lx-paint-surface, white); transform: translateY(-200%); }
 .lx-foundation .fx-skip:focus { transform: none; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 767px) {
  .lx-foundation.fx-shell { grid-template-columns: minmax(0,1fr); }
  .lx-foundation .fx-sidebar { display: none; }

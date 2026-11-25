@@ -1,3 +1,4 @@
+// RESPONSIVE: Track whether the screen is narrow
 import { useSyncExternalStore } from 'react'
 
 const MOBILE_QUERY = '(max-width: 767px)'

@@ -27,6 +27,7 @@ if (passwordStage) {
   const matchText = passwordStage.querySelector('#password-match');
   const steps = document.querySelectorAll('[data-enrollment-step]');
 
+  // FORM: Update the password requirement checklist
   function updatePassword() {
     const length = [...password.value].length;
     const validLength = length >= password.minLength && length <= password.maxLength;
@@ -46,6 +47,7 @@ if (passwordStage) {
     if (matchText.textContent !== matchLabel) matchText.textContent = matchLabel;
   }
 
+  // FORM: Switch between password setup and consent
   function showStage(consent, moveFocus = true) {
     enrollmentForm.dataset.enrollmentStage = consent ? 'consent' : 'password';
     passwordStage.hidden = consent;

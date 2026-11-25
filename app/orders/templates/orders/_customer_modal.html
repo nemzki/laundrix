@@ -1,5 +1,5 @@
 {% from 'core/_icons.html' import icon %}
-<!-- Content that opens in a separate panel when a user activates its trigger. --><dialog class="modal" id="customerModal" aria-labelledby="customerModalTitle">
+<!-- MODAL: Form dialog for adding or editing customers --><dialog class="modal" id="customerModal" aria-labelledby="customerModalTitle">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0">
     <div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><div><h2 id="customerModalTitle" class="modal-title">Add Customer</h2><p data-customer-modal-description>Enter the customer's contact details.</p></div><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></div>
     <!-- Fields and controls submitted together to the form action. --><form id="customerForm" method="post" action="{{ url_for('orders.create_customer') }}">

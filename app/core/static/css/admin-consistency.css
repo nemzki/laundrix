@@ -12,7 +12,7 @@ body { --admin-page-gutter: 32px; }
 body.app.admin-workspace .content { margin-inline: 0; padding: 24px var(--admin-page-gutter) 48px; }
 .lx-react.lx-dashboard .dashboard-content { padding: 24px var(--admin-page-gutter) 48px; }
 .lx-react.lx-dashboard .dashboard-static-header { padding-inline: var(--admin-page-gutter); }
-/* Navigation. Arrange the links and controls used to move through the application. */
+/* SIDEBAR: Style sidebar links and spacing */
 .lx-react.lx-dashboard [data-slot=sidebar-inset] > header { padding-inline: var(--admin-page-gutter) !important; }
 body.app .page-header { margin-bottom: 24px; gap: 16px; }
 body.app :is(.page-header h1, #wizard .page-header h1) { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -.025em; }
@@ -48,7 +48,7 @@ body.app .admin-topbar .staff-management-crumb { flex-shrink: 0; }
 body.app .admin-topbar .staff-management-crumb a { color: inherit; text-decoration: none; }
 body.app .admin-topbar .staff-management-crumb a:hover { text-decoration: underline; }
 body.app .admin-topbar li[aria-current] { color: var(--text); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on wider screens */
 @media (min-width: 768px) {
   body.app.admin-sidebar-collapsed .lx-sidebar { display: none; }
   body.app.admin-sidebar-collapsed .main { margin-left: 0; }
@@ -60,7 +60,7 @@ body.app .admin-topbar li[aria-current] { color: var(--text); font-weight: 500; 
   body.app.admin-workspace .content { padding: 20px var(--admin-page-gutter) calc(var(--lx-bottom-nav-h) + 24px + env(safe-area-inset-bottom, 0px)); }
   .lx-react.lx-dashboard .dashboard-content { padding: 20px var(--admin-page-gutter) calc(88px + env(safe-area-inset-bottom, 0px)); }
 }
-/* Print layout. Apply these styles only when the device or browser meets the condition below. */
+/* PRINT: Adjust layout for printed pages */
 @media print { body.app .admin-topbar { display: none; } }
 /* Match the dashboard Sidebar primitives, not the legacy operational chrome. */
 body.app .lx-sidebar {
@@ -109,7 +109,7 @@ body.app .lx-sidebar__logout .btn {
   body.app .app-topbar--mobile, body.app .lx-bottom-nav { display: none; }
   body.app .content { padding: 24px; }
 }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 .lx-react.lx-dashboard :is(button, input, select, textarea) { font-family: inherit; }
 @media (max-width: 960px) {
   body.app .content { padding: 20px 16px calc(var(--lx-bottom-nav-h) + 20px); }

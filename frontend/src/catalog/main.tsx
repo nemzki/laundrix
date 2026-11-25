@@ -1,3 +1,4 @@
+// REACT: Mount the catalog with Flask data
 /** Start the catalog React interface using its page mount point. */
 import { Component, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'

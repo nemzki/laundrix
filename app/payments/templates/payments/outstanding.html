@@ -17,6 +17,7 @@
 {% block page_subtitle %}Orders that still have money to collect. Record payments as customers settle.{% endblock %}
 {% block page_actions %}{% endblock %}
 {% block content %}
+{# NAVBAR: Only admins see the finance navigation -#}
 {% if current_user.role == 'admin' %}{{ finance_nav('outstanding') }}{% endif %}
 <!-- Group the content and controls for payment management in one section. --><section class="ob" data-outstanding data-state="loading" data-count-unpaid="{{ url_for('orders.index', payment='unpaid') }}" data-count-partial="{{ url_for('orders.index', payment='partial') }}">
   <div class="ob-stats" id="outstanding-summary" aria-label="Outstanding balance summary">
@@ -67,7 +68,7 @@
   </div>
   <p class="tw:sr-only" data-ob-announcement role="status"></p>
 </section>
-<!-- Content that opens in a separate panel when a user activates its trigger. --><dialog class="modal payment-modal" id="recordPaymentModal" aria-labelledby="recordPaymentTitle"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0"><div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><h2 id="recordPaymentTitle" class="modal-title">Record Payment</h2><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></div><div class="modal-body" data-ob-modal-status role="status">Loading latest order details...</div></div></div></dialog>
+<!-- MODAL: Payment dialog waits for the latest order --><dialog class="modal payment-modal" id="recordPaymentModal" aria-labelledby="recordPaymentTitle"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0"><div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><h2 id="recordPaymentTitle" class="modal-title">Record Payment</h2><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></div><div class="modal-body" data-ob-modal-status role="status">Loading latest order details...</div></div></div></dialog>
 <div class="ob-toast" data-ob-toast role="status" hidden><button type="button" data-toast-close aria-label="Dismiss notification">&times;</button><strong data-toast-title></strong><p data-toast-message></p></div>
 {% endblock %}
 {% block page_scripts %}

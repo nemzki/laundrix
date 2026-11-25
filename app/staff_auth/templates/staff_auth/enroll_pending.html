@@ -1,4 +1,5 @@
 {% extends "staff_auth/base_enrollment.html" %}
+{# VERIFY: Show the pending enrollment status -#}
 {% block title %}Under review · Laundrix{% endblock %}
 {% block progress %}{{ stepper(2, enrollment_steps, announce_status=true) }}{% endblock %}
 {% block card %}

@@ -44,7 +44,7 @@
   .lx-auth__main { padding-bottom: 7.5rem; }
 }
 
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 .lx-auth__form-wrap {
   text-align: center;
 }
@@ -302,7 +302,7 @@ body.lx-auth .flash-stack {
 }
 .auth-form .btn { margin-top: 1.1rem; width: 100%; }
 
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 480px) {
   .lx-auth__brand {
     top: 20px;
@@ -470,7 +470,7 @@ body.lx-auth .flash-stack {
 }
 .lx-scan__message { margin: 0; min-height: 1.4em; font-size: 0.88rem; color: var(--lx-muted, #64748b); }
 .lx-scan__actions { margin-top: 0.75rem; }
-/* Reduced motion. Apply these styles only when the device or browser meets the condition below. */
+/* ACCESSIBILITY: Reduce motion based on user preference */
 @media (prefers-reduced-motion: reduce) {
   .lx-scan__beam { animation: none !important; }
   .lx-scan__oval, .lx-scan__progress span { transition: none; }

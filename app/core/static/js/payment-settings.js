@@ -1,3 +1,4 @@
+// PAYMENT: Handle payment method and policy changes
 /* Connect payment method settings to the controls on the page. */
 /* Payment Settings only. Uses the existing method-creation JSON response; all other forms remain native. */
 (function () {

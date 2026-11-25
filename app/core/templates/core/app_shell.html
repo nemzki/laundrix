@@ -28,7 +28,7 @@
       {% set topbar_title = self.page_title()|striptags|trim %}
       {% include 'core/_admin_topbar.html' %}
     {% else %}
-    <!-- Introductory information and controls for this part of the page. --><header class="app-topbar app-topbar--mobile" aria-label="Mobile navigation">
+    <!-- NAVBAR: Show the mobile menu button --><header class="app-topbar app-topbar--mobile" aria-label="Mobile navigation">
       <button
         class="icon-btn lx-topbar__menu"
         type="button"
@@ -41,7 +41,7 @@
     </header>
     {% endif %}
 
-    <!-- Primary content identified as a landmark for assistive technology. --><main class="content">
+    <!-- LAYOUT: Place page content inside the app shell --><main class="content">
       {% block page_header %}<div class="page-header">
         <div>
           <h1>{% block page_title %}{% endblock %}</h1>

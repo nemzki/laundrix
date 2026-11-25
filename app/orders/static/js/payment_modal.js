@@ -1,3 +1,4 @@
+// PAYMENT: Update the record payment dialog
 /* Update the payment form according to the selected payment method. */
 /* Shared original payment form: server-authoritative validation and one transaction. */
 (function () {

@@ -71,6 +71,7 @@
       typeof navigator.mediaDevices.getUserMedia === "function";
   }
 
+  // ERROR: Show a helpful camera error
   function cameraError(error) {
     var n = error && error.name;
     if (n === "NotAllowedError" || n === "SecurityError") {
@@ -87,6 +88,7 @@
   }
 
   /* Stop the active camera stream and release its resources. */
+  // CAMERA: Release the camera when scanning ends
   function stopCamera() {
     clearTimers();
     if (stream) {
@@ -250,6 +252,7 @@
   }
 
   /* Attach the captured image and request token before sending the verification request. */
+  // API: Send the captured photo for verification
   async function submit(blob) {
     var form = document.querySelector('[data-auth-form]');
     var csrf = form ? form.querySelector('input[name="csrf_token"]') : null;

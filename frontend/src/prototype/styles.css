@@ -104,7 +104,7 @@
 }
 
 
-/* Reduced motion. Apply these styles only when the device or browser meets the condition below. */
+/* ACCESSIBILITY: Reduce motion based on user preference */
 @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
 .lx-react.prototype-preview-host { margin: 0; font-family: var(--lx-font, "Geist", system-ui, sans-serif); }

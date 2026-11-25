@@ -12,6 +12,7 @@
     }
   }
 
+  // LAYOUT: Prevent duplicate submissions and show progress
   function bindBusySubmit(form, submitBtn) {
     if (!form || !submitBtn) return;
     var label = submitBtn.querySelector("[data-label]");
@@ -44,6 +45,7 @@
   }
 
   /* Set up the status modal. */
+  // MODAL: Set up the laundry status dialog
   function initStatusModal() {
     var modalEl = document.getElementById("statusUpdateModal");
     var form = document.getElementById("statusUpdateForm");
@@ -112,6 +114,7 @@
   }
 
   /* Set up the confirm received modal. */
+  // ORDER: Confirm the shop received the laundry
   function initConfirmReceivedModal() {
     var modalEl = document.getElementById("confirmReceivedModal");
     var form = document.getElementById("confirmReceivedForm");
@@ -138,6 +141,7 @@
   }
 
   /* Set up the sms retry modal. */
+  // LAYOUT: Confirm before retrying a failed SMS
   function initSmsRetryModal() {
     var modalEl = document.getElementById("smsRetryModal");
     var form = document.getElementById("smsRetryForm");
@@ -169,6 +173,7 @@
   }
 
   /* Set up the reverse payment modal. */
+  // PAYMENT: Confirm before reversing a payment
   function initReversePaymentModal() {
     var modalEl = document.getElementById("reversePaymentModal");
     var form = document.getElementById("reversePaymentForm");

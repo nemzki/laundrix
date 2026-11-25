@@ -1,6 +1,6 @@
 /* Standalone receipt layout. Select the paper size in the browser print dialog. */
 .stub-page { min-height: 100vh; padding: 16px 10px 24px; background: #fff; color: #000; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* BUTTON: Style buttons and their spacing */
 .stub-page button { font-family: inherit; }
 .stub-toolbar { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; max-width: 560px; margin: 0 auto 24px; }
 .stub-toolbar p { flex-basis: 100%; margin: 0; color: #475569; text-align: center; font-size: .8125rem; line-height: 1.5; }
@@ -21,7 +21,7 @@
 .stub-meta { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 16px; margin: 0; }
 .stub-meta dt { font-weight: 400; color: #000; }
 .stub-meta dd { min-width: 0; margin: 0; text-align: right; font-weight: 600; }
-/* Cards and data displays. Group related information and make rows easier to scan. */
+/* NAVBAR: Style navigation links and controls */
 .stub table { width: 100%; table-layout: fixed; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .stub th, .stub td { padding: 4px 0; vertical-align: top; white-space: normal; overflow-wrap: anywhere; }
 .stub th:first-child, .stub td:first-child { padding-right: 12px; }
@@ -54,18 +54,18 @@
 .stub-head + .stub-qr { margin-top: 0; }
 .stub-head + .stub-qr img { margin-top: 4px; }
 .stub-qr p { margin: 6px 0; }
-/* Dialogs and overlays. Position the floating panel and style its contents. */
+/* MODAL: Style the dialog panel and spacing */
 #trackingQrPreviewModal .modal-body { min-width: 0; text-align: center; overflow-wrap: anywhere; }
 #trackingQrPreviewModal .tracking-qr-preview { display: block; width: 280px; max-width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; margin: 16px auto; background: #fff; image-rendering: pixelated; }
 #trackingQrPreviewModal .qr-preview-reference { margin: 0; }
 #trackingQrPreviewModal .modal-footer .btn { min-height: 44px; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 360px) {
   .stub-page { padding: 16px 10px 24px; }
   .stub { padding: 12px; }
   .stub-meta { column-gap: 10px; }
 }
-/* Print layout. Apply these styles only when the device or browser meets the condition below. */
+/* PRINT: Adjust layout for printed pages */
 @media print {
   @page { size: auto; margin: 3mm; }
   html, body.stub-page { width: auto; min-height: 0; margin: 0; padding: 0; background: #fff; }

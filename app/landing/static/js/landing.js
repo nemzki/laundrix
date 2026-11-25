@@ -6,6 +6,7 @@
   var menu = document.getElementById('mobile-menu');
   var toggle = document.querySelector('[data-mobile-toggle]');
   /* Update the menu. */
+  // RESPONSIVE: Toggle the mobile navigation menu
   function setMenu(open, restoreFocus) {
     if (!menu || !toggle) return;
     menu.hidden = !open;

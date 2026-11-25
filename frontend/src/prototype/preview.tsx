@@ -1,3 +1,4 @@
+// PREVIEW: Show prototype screens and components
 /** Render the prototype preview and the interface shown inside it. */
 import { useState } from 'react'
 import { LayoutDashboard, ListFilter, SlidersHorizontal } from 'lucide-react'

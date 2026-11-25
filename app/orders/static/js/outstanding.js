@@ -139,6 +139,7 @@
       name:row.querySelector(".ob-customer strong").textContent.toLocaleLowerCase(),
       contact:row.querySelector(".ob-contact").textContent.replace(/\D/g,"") };
   }
+  // PAYMENT: Show balances matching the current filters
   function render(url,push) {
     if (!complete) return;
     var state=stateAt(url), query=state.q.toLocaleLowerCase(), digits=state.q.replace(/\D/g,"");
@@ -191,6 +192,7 @@
     if(push) history.pushState(null,"",canonical);
     else if(canonical.href!==location.href) history.replaceState(null,"",canonical);
   }
+  // API: Fetch updated balance rows from Flask
   async function load(url,push) {
     lastURL=new URL(url); clearTimeout(debounce);
     if(controller) controller.abort();
@@ -259,6 +261,7 @@
     }
   });
   /* Load the form for recording a payment on the selected order. */
+  // PAYMENT: Load the latest payment form
   async function openPayment() {
     if (modalController) modalController.abort();
     var current = new AbortController(); modalController = current;

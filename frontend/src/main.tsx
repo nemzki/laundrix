@@ -5,6 +5,7 @@ import './index.css'
 import { OrdersPage } from './OrdersPage'
 import { parseOrdersData } from './orders-data'
 
+// ERROR: Restore the server page if React fails
 function restoreJinja() {
   const fallback = document.querySelector<HTMLElement>('[data-orders-jinja]')
   const host = document.getElementById('laundrix-react-orders')
@@ -29,6 +30,7 @@ const payload = document.getElementById('laundrix-orders-data')
 const stylesheet = document.getElementById('laundrix-react-css') as HTMLLinkElement | null
 const serverMarkup = document.createDocumentFragment()
 if (host) Array.from(host.childNodes).forEach(node => serverMarkup.append(node.cloneNode(true)))
+// REACT: Start React with the server-rendered order data
 async function mount() {
   if (!host || !payload || !stylesheet) return
   // Deferred modules execute after the render-blocking head stylesheets. The

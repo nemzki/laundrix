@@ -17,7 +17,7 @@
 .ps-verification{display:grid;justify-items:start;gap:10px}
 .ps-verification p,.ps-feedback{color:var(--lx-muted);margin:0}
 .ps-themes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* BUTTON: Style buttons and their spacing */
 .ps-themes button{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:20px;border:1px solid var(--lx-border);border-radius:12px;background:var(--lx-surface);color:var(--lx-text);text-align:left;font:inherit;cursor:pointer;min-width:0}
 .ps-themes button>svg{color:var(--lx-primary)}
 .ps-themes button>span:not(.ps-theme-check){font-size:13px;color:var(--lx-muted)}
@@ -26,7 +26,7 @@
 .ps-theme-check{position:absolute;right:12px;top:12px;color:var(--lx-primary);visibility:hidden}
 .ps-themes [aria-checked=true] .ps-theme-check{visibility:visible}
 .ps-themes button:focus-visible{outline:2px solid var(--lx-primary);outline-offset:4px}
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media(max-width:600px){.personal-settings .ps-card{padding:18px}.ps-details{grid-template-columns:1fr;gap:16px}.ps-themes{grid-template-columns:1fr}.ps-themes button{padding:16px}}
 
 /* Keep the last Settings action above the Staff mobile navigation. */

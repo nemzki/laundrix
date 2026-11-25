@@ -1,3 +1,4 @@
+// TABLE: Share data table and pagination controls
 /** Provide reusable components for displaying records and summary values. */
 import { useId, type ReactNode, type Key, type ComponentProps } from 'react'
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -32,6 +33,7 @@ export function SearchField({ label = 'Search', ...props }: ComponentProps<typeo
     <Input {...props} id={id} type="search" className={`pl-9 ${props.className ?? ''}`} />
   </div></div>
 }
+// PAGINATION: Link to adjacent result pages
 export function Pagination({ page, pages, previousUrl, nextUrl }: { page: number; pages: number; previousUrl: string | null; nextUrl: string | null }) {
   return <nav aria-label="Pagination" className="fx-pagination">
     {previousUrl ? <Button variant="outline" asChild><a href={previousUrl}><ChevronLeft aria-hidden="true" />Previous</a></Button> : <Button variant="outline" disabled><ChevronLeft aria-hidden="true" />Previous</Button>}

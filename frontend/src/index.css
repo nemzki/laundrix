@@ -61,10 +61,10 @@
  min-width: 0;
 }
 .lx-react *, .lx-react ::before, .lx-react ::after { border-color: var(--lx-border); }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 .lx-react [data-slot="button"], .lx-react [data-slot="input"], .lx-react [data-slot="select-trigger"] { min-height: 36px; }
 .lx-react [data-slot="button"][data-variant="default"]:hover { background: var(--lx-primary-hover); }
-/* Dialogs and overlays. Position the floating panel and style its contents. */
+/* MODAL: Style the dialog panel and spacing */
 .lx-react [data-slot="dialog-content"] { z-index: 1060; }
 .lx-react [data-slot="dialog-overlay"] { z-index: 1055; }
 /* Shared portal hierarchy: menus remain above dialogs; protected pages do not load this CSS. */
@@ -80,7 +80,7 @@
 .lx-react [data-radix-select-viewport]::-webkit-scrollbar { display: none; }
 .lx-react [data-slot="dialog-header"] { padding-right: 2rem; }
 .lx-react [data-slot="tabs-list"] { height: auto; min-height: 36px; }
-/* Cards and data displays. Group related information and make rows easier to scan. */
+/* NAVBAR: Style navigation links and controls */
 .lx-react [data-slot="table-cell"], .lx-react [data-slot="table-head"] { overflow-wrap: anywhere; }
 /* Exact existing status treatments from components.css, including legacy tones. */
 .lx-react .lx-status[data-tone="info"] { background: var(--lx-paint-cyan-bg, #e0f2fe); color: var(--lx-paint-cyan-ink, #075985); }
@@ -89,7 +89,7 @@
 .lx-react .lx-status[data-tone="ready"] { background: var(--lx-paint-green-bg, #dcfce7); color: var(--lx-paint-green-ink, #166534); }
 .lx-react .lx-status[data-tone="neutral"] { background: var(--lx-paint-border, #e2e8f0); color: var(--lx-paint-secondary, #334155); }
 .lx-react .lx-status[data-tone="success"] { background: var(--lx-paint-green-bg, #d1fae5); color: var(--lx-paint-green-ink, #065f46); }
-/* Reduced motion. Apply these styles only when the device or browser meets the condition below. */
+/* ACCESSIBILITY: Reduce motion based on user preference */
 @media (prefers-reduced-motion: reduce) {
  .lx-react *, .lx-react ::before, .lx-react ::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }

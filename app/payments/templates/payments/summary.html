@@ -13,7 +13,7 @@
 {% block content %}
 {{ finance_nav('summary') }}
 {% set period_names = {'daily': 'Today', 'weekly': 'This Week', 'monthly': 'This Month'} %}
-<!-- Related links grouped together so users can find their way around. --><nav class="payment-summary-periods" aria-label="Reporting period">
+<!-- FILTER: Choose the payment reporting period --><nav class="payment-summary-periods" aria-label="Reporting period">
   {% for key, name in period_names.items() %}
   <a class="payment-summary-period{% if period == key %} is-active{% endif %}" href="{{ url_for('payments.summary', period=key) }}"{% if period == key %} aria-current="page"{% endif %}>
     <span>{{ name }}</span><span class="payment-summary-period-amount">{{ totals[key]|peso }}</span>

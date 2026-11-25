@@ -15,7 +15,7 @@
 {% block page_subtitle %}Track every laundry order, check its status, and open order details.{% endblock %}
 {% block page_actions %}<a class="btn btn-primary" href="{{ url_for('orders.new_order') }}">{{ icon('plus', 16) }}<span>New Order</span></a>{% endblock %}
 {% block content %}
-<!-- Group the content and controls for order management in one section. --><section class="mo" data-manage-orders data-state="loading" data-index-url="{{ url_for('orders.index') }}" aria-label="Manage orders">
+<!-- TABLE: Order filters and server-rendered results --><section class="mo" data-manage-orders data-state="loading" data-index-url="{{ url_for('orders.index') }}" aria-label="Manage orders">
   <div class="card mo-panel">
     <div class="mo-controls">
       <!-- Related links grouped together so users can find their way around. --><nav class="mo-tabs" aria-label="Laundry status filters">
@@ -62,7 +62,7 @@
     <p class="mo-loading-label" role="status">Loading orders...</p><p class="tw:sr-only" data-orders-announcement role="status"></p>
   </div>
 </section>
-<!-- Content that opens in a separate panel when a user activates its trigger. --><dialog class="modal" id="orderSummaryModal" aria-labelledby="orderSummaryModalLabel">
+<!-- MODAL: JavaScript fills this dialog after View --><dialog class="modal" id="orderSummaryModal" aria-labelledby="orderSummaryModalLabel">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content tw:flex tw:flex-col tw:min-w-0 mo-modal">
     <div class="modal-header tw:flex tw:items-center tw:shrink-0 tw:justify-between"><h2 class="modal-title" id="orderSummaryModalLabel">Order Summary</h2><button class="btn-close" type="button" data-dialog-dismiss="modal" aria-label="Close"></button></div>
     <div class="modal-body">

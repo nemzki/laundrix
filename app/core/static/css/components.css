@@ -68,6 +68,7 @@
   outline: none;
   box-shadow: var(--lx-focus-ring);
 }
+/* BUTTON: Set the primary button colors */
 .btn-primary,
 .btn.btn-primary {
   background: var(--lx-primary);
@@ -236,7 +237,7 @@ textarea.form-control { min-height: 84px; resize: vertical; }
 
 /* ---------- Dialogs and drawers ---------- */
 body.modal-open { overflow: hidden; }
-/* Dialogs and overlays. Position the floating panel and style its contents. */
+/* MODAL: Set shared sizing for native dialogs */
 dialog:is(.modal, .offcanvas) {
   padding: 0;
   border: 0;
@@ -252,7 +253,7 @@ dialog.modal {
   background: transparent;
 }
 .modal-dialog { margin: auto; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Add more dialog space on wider screens */
 @media (min-width: 576px) {
   dialog.modal { --lx-modal-gutter: 1.75rem; }
   .modal-dialog { max-width: 500px; }

@@ -19,6 +19,7 @@ const singular:Record<Kind,string>={services:'service',packages:'package',addons
 function CatalogIcon({row}:{row:CatalogRow}) {
   return <span className="catalog-icon" dangerouslySetInnerHTML={{__html:row.visual}} />
 }
+// MODAL: Render catalog tabs, rows, and editor
 export function Catalog({initial,onReady}:{initial:CatalogData;onReady:()=>void}) {
   const [data,setData]=useState(initial),[kind,setKind]=useState<ViewKind>(initial.tab),[query,setQuery]=useState('')
   const [editor,setEditor]=useState<{kind:Kind;row:CatalogRow|null;url:string}|null>(null),[form,setForm]=useState<CatalogForm|null>(null),[formVersion,setFormVersion]=useState(0)
@@ -36,6 +37,7 @@ export function Catalog({initial,onReady}:{initial:CatalogData;onReady:()=>void}
       .finally(()=>clearTimeout(timer))
     return ()=>{disposed=true;controller.abort();clearTimeout(timer)}
   },[editor])
+  // MODAL: Open the editor for a catalog item
   function begin(row:CatalogRow|null,event?:MouseEvent,createKind?:Kind) {
     if(lock.current) return
     const target=row?.kind || createKind || (kind==='all' ? 'services' : kind)
@@ -50,6 +52,7 @@ export function Catalog({initial,onReady}:{initial:CatalogData;onReady:()=>void}
     try{const saved=await toggleAvailability(row,!row.active,data.index);setData(saved);setNotice(`${row.name} availability saved.`)}catch(reason){setError(reason instanceof Error ? reason.message : 'Availability was not confirmed.')}
     finally{lock.current=false;setPending(false)}
   }
+  // ERROR: Save changes and handle server validation
   async function save(body:FormData) {
     if(!editor || !form || lock.current) return
     lock.current=true;setPending(true);setFormError('')

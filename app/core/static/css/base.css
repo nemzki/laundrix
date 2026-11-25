@@ -27,11 +27,11 @@ dt { font-weight: 700; }
 blockquote, figure { margin: 0 0 1rem; }
 small, .small { font-size: .875em; }
 hr { margin: 1rem 0; border: 0; border-top: 1px solid; opacity: .25; }
-/* Cards and data displays. Group related information and make rows easier to scan. */
+/* NAVBAR: Style navigation links and controls */
 table { border-collapse: collapse; }
 th { text-align: inherit; }
 caption { padding: .5rem 0; color: var(--lx-muted); text-align: left; caption-side: bottom; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 button, input, select, textarea, optgroup { margin: 0; font: inherit; }
 ::file-selector-button { font: inherit; }
 button, select { text-transform: none; }
@@ -73,7 +73,7 @@ h4, h5, h6 {
 }
 .error-box .btn { margin-top: 1rem; }
 
-/* Reduced motion. Apply these styles only when the device or browser meets the condition below. */
+/* ACCESSIBILITY: Reduce motion based on user preference */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }

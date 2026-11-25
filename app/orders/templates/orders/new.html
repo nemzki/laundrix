@@ -44,7 +44,7 @@
     <div class="wizard-main card">
       <div id="step-alert" class="alert alert-error" role="alert" hidden></div>
 
-      <!-- Group the content and controls for order management in one section. --><section class="wstep" data-step="1" data-step-title="Customer">
+      <!-- CUSTOMER: Choose an existing or new customer --><section class="wstep" data-step="1" data-step-title="Customer">
         <h2 class="wiz-heading">Customer Information</h2>
         <p class="muted wiz-lead">Search an existing customer or enter a new one. New customers are saved when you confirm the order.</p>
         <div class="seg" role="group" aria-label="Customer mode">
@@ -94,6 +94,7 @@
         </div>
       </section>
 
+      {# CATALOG: List services and packages from the catalog -#}
       <section class="wstep" data-step="2" data-step-title="Services" hidden>
         <h2 class="wiz-heading">Select Services</h2>
         <p class="muted wiz-lead">Choose one or more. A Wash, Dry &amp; Fold package already includes the services listed on its card.</p>
@@ -178,6 +179,7 @@
         {% endfor %}
       </section>
 
+      {# WIZARD: JavaScript fills in the selected service details -#}
       <section class="wstep" data-step="3" data-step-title="Details" hidden>
         <h2 class="wiz-heading">Service Details</h2>
         <p class="muted wiz-lead">Enter how many loads, kilos, or pieces for each service.</p>
@@ -190,6 +192,7 @@
         </div>
       </section>
 
+      {# PAYMENT: Choose payment timing and methods -#}
       <section class="wstep" data-step="4" data-step-title="Payment" hidden>
         <h2 class="wiz-heading">Payment</h2>
         <p class="muted wiz-lead">Record what the customer is paying now. Enter only amounts you have actually received; nothing is marked as paid automatically.</p>
@@ -296,6 +299,7 @@
         {% if pay_settings.payment_notice %}<p class="hint">{{ pay_settings.payment_notice }}</p>{% endif %}
       </section>
 
+      {# FORM: Review the server quote before submitting -#}
       <section class="wstep" data-step="5" data-step-title="Review" hidden>
         <h2 class="wiz-heading">Review Order</h2>
         <p class="muted wiz-lead">Check everything with the customer before confirming.</p>
@@ -334,6 +338,7 @@
       <div class="wizard-nav">
         <button type="button" class="btn btn-outline" id="btn-back" hidden>{{ icon('arrow-left', 16) }}<span>Back</span></button>
         <span class="spacer"></span>
+        {# WIZARD: Wizard script handles Next and Confirm clicks -#}
         <button type="button" class="btn btn-primary" id="btn-next"><span data-next-label>Next</span>{{ icon('arrow-right', 16) }}</button>
         <button type="button" class="btn btn-primary" id="btn-confirm" hidden>{{ icon('check', 16) }}<span data-confirm-label>Confirm Order</span></button>
       </div>

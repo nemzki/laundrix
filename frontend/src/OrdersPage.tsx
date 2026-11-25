@@ -17,6 +17,7 @@ import { useOrdersNavigation } from './use-orders-navigation'
 function StatusBadge({ label, tone }: { label: string; tone: string }) {
   return <Badge variant="outline" className="lx-status h-auto min-h-5 max-w-full whitespace-normal text-left" data-tone={tone}>{label}</Badge>
 }
+// PAYMENT: Display laundry and payment status badges
 function OrderStatuses({ order }: { order: OrderSummary }) {
   return <div className="mo-mobile-statuses">
     <div><span className="sr-only">Laundry: </span>
@@ -35,6 +36,7 @@ function OrderDate({ order }: { order: OrderSummary }) {
     {time && <span className="mo-secondary">{time}</span>}
   </span>
 }
+// ORDER: Show the selected order and its actions
 function SummaryDialog({ order, onClose, restoreFocus }: { order: OrderSummary | null; onClose: () => void; restoreFocus: () => void }) {
   return <Dialog open={order !== null} onOpenChange={open => { if (!open) onClose() }}>
     <DialogContent className="max-h-[85dvh] grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden sm:max-w-lg" onCloseAutoFocus={event => { event.preventDefault(); restoreFocus() }}>
@@ -68,8 +70,10 @@ function SummaryDialog({ order, onClose, restoreFocus }: { order: OrderSummary |
     </DialogContent>
   </Dialog>
 }
+// MODAL: Render order filters, results, and dialogs
 export function OrdersPage({ data: initial, onReady }: { data: OrdersPageData; onReady: () => void }) {
   const { data, pending, error, navigate, filterOrders, retry } = useOrdersNavigation(initial)
+  // ORDER: Track which order summary is open
   const [selected, setSelected] = useState<{ order: OrderSummary; data: OrdersPageData } | null>(null)
   const trigger = useRef<HTMLButtonElement | null>(null)
   const form = useForm({ defaultValues: { q: data.term } })

@@ -27,6 +27,7 @@
     root.querySelector("[data-clear-search]").hidden = !search.value;
     root.querySelectorAll("[data-clear-filters]").forEach(function (link) { link.hidden = !search.value && !statusInput.value && !paymentInput.value; });
   }
+  // ORDER: Refresh filtered orders from Flask
   async function load(url, push, clamp) {
     lastURL = new URL(url);
     clearTimeout(debounce);
@@ -94,6 +95,7 @@
   var summary = window.laundrixDialog(summaryEl);
   var summaryURL, expectedRef, summaryController, summaryTrigger;
   /* Fetch the selected order and fill the summary panel. */
+  // API: Fetch order data for the summary dialog
   async function loadSummary() {
     var restoreFocus = summaryEl.contains(document.activeElement);
     if (summaryController) summaryController.abort();

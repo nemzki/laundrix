@@ -6,7 +6,7 @@
 .ui-stack { display: grid; gap: 1rem; }
 .ui-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
 .ui-toolbar { display: flex; align-items: end; flex-wrap: wrap; gap: .75rem; padding: 1rem; margin-bottom: 1rem; border: 1px solid var(--lx-border); border-radius: var(--lx-radius); }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 .ui-toolbar .field { flex: 1 1 12rem; min-width: 0; margin: 0; }
 .ui-toolbar .input, .ui-toolbar.filters > .input { max-width: 100%; }
 .ui-toolbar > .input { flex: 1 1 10rem; min-width: 0; }
@@ -34,7 +34,7 @@
 .ui-root .flash { display: flex; align-items: start; justify-content: space-between; gap: .75rem; }
 .ui-root .flash .btn-close { flex-shrink: 0; }
 .ui-root .input:focus-visible, .ui-root select:focus-visible, .ui-root button:focus-visible, .ui-root a:focus-visible { outline-offset: 3px; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 700px) {
   .ui-root .tabs { flex-wrap: wrap; overflow-x: visible; }
   .ui-root .tab { padding: .65rem .75rem; white-space: normal; }
@@ -52,7 +52,7 @@
   .ui-toolbar > .btn { flex: 1 1 auto; min-height: 44px; }
   .ui-root .ui-actions > .btn { min-height: 44px; }
 }
-/* Reduced motion. Apply these styles only when the device or browser meets the condition below. */
+/* ACCESSIBILITY: Reduce motion based on user preference */
 @media (prefers-reduced-motion: reduce) {
   .ui-root *, .ui-root *::before, .ui-root *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }

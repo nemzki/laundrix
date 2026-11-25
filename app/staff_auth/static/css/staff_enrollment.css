@@ -1,3 +1,4 @@
+/* FORM: Style enrollment fields and progress */
 body.staff-enrollment { font-family: var(--lx-font); }
 
 .staff-enrollment .enrollment-content h1:not(.security-heading) {

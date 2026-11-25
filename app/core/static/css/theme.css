@@ -2,7 +2,7 @@
 .lx-theme-picker { position: relative; flex: 0 0 auto; margin-left: auto; }
 .lx-theme-trigger { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 6px; border: 1px solid var(--lx-border); border-radius: 8px; background: transparent; color: var(--lx-muted); }
 .lx-theme-trigger:hover { background: var(--lx-primary-soft); color: var(--lx-primary); }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* BUTTON: Style buttons and their spacing */
 .lx-theme-trigger:focus-visible, .lx-theme-menu button:focus-visible { outline: 2px solid var(--lx-primary); outline-offset: 2px; }
 .lx-theme-menu { position: absolute; bottom: calc(100% + 8px); right: 0; width: 156px; padding: 4px; border: 1px solid var(--lx-border); border-radius: 10px; background: var(--lx-surface); color: var(--lx-text); box-shadow: var(--lx-shadow); z-index: 1100; }
 .lx-theme-menu[hidden] { display: none !important; }
@@ -11,9 +11,9 @@
 .lx-theme-menu .lx-theme-check { margin-left: auto; color: inherit; visibility: hidden; }
 .lx-theme-menu [aria-checked=true] .lx-theme-check { visibility: visible; }
 .lx-theme-menu svg { flex-shrink: 0; }
-/* Navigation. Arrange the links and controls used to move through the application. */
+/* SIDEBAR: Style sidebar links and spacing */
 .lx-sidebar__user-meta { min-width: 0; }
-/* Dialogs and overlays. Position the floating panel and style its contents. */
+/* NAVBAR: Style navigation links and controls */
 .lx-nav-drawer__profile > div:not(.lx-theme-picker) { min-width: 0; overflow-wrap: anywhere; }
 .lx-react.lx-dashboard .dashboard-user > .lx-theme-picker { display: block; min-width: 32px; }
 .lx-react.lx-dashboard .dashboard-user > div:not(.lx-theme-picker) { flex: 1; }
@@ -102,7 +102,7 @@
   }
 }
 
-/* Print layout. Apply these styles only when the device or browser meets the condition below. */
+/* PRINT: Adjust layout for printed pages */
 @media print {
   .lx-theme-picker { display: none !important; }
   html[data-lx-theme] { color-scheme: light; }

@@ -19,7 +19,7 @@
       </a>
       {% endfor %}
     </div></div>
-    <!-- Fields and controls submitted together to the form action. --><form method="get" action="{{ url_for('orders.index') }}" role="search" class="mo-filters" data-orders-filters>
+    <!-- SEARCH: Filter orders by search and payment status --><form method="get" action="{{ url_for('orders.index') }}" role="search" class="mo-filters" data-orders-filters>
       <div data-slot="form-item" class="mo-search-field"><label for="initial-orders-search" data-slot="form-label">Search orders</label>
         <input id="initial-orders-search" class="mo-search-input" data-slot="input" type="search" name="q" value="{{ term }}" placeholder="Reference, name or contact" autocomplete="off">
       </div>

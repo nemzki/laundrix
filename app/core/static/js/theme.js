@@ -15,6 +15,7 @@
       if (option.closest('[data-theme-preferences]')) option.tabIndex = option.dataset.themeOption === preference ? 0 : -1;
     });
   }
+  // THEME: Apply the current light or dark theme
   function apply() {
     var resolved = preference === 'system' ? (media.matches ? 'dark' : 'light') : preference;
     root.dataset.lxTheme = resolved;
@@ -24,6 +25,7 @@
     sync();
     window.dispatchEvent(new CustomEvent('laundrix:themechange', { detail: { preference: preference, resolved: resolved } }));
   }
+  // THEME: Save the selected theme preference
   function choose(value) {
     if (!valid(value)) return;
     preference = value;

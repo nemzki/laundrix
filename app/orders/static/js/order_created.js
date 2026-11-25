@@ -1,3 +1,4 @@
+// ORDER: Handle actions after an order is created
 /* Connect the actions on the order confirmation screen. */
 /* Toast handoff is UI state only; the page and all totals come from the saved order. */
 (function () {

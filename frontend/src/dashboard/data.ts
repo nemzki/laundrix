@@ -1,3 +1,4 @@
+// DASHBOARD: Check data before rendering the dashboard
 import { z } from 'zod'
 // Keep data validation compatible with Flask's existing script-src 'self'.
 z.config({ jitless: true })

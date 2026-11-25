@@ -8,7 +8,7 @@
 .idv-panel h2 { font-size: 1rem; margin: 1.2rem 0 .3rem; }
 .idv-hint { background: var(--primary-soft); border-radius: 10px; padding: .8rem 1rem; font-size: .92rem; margin: 1rem 0 0; }
 .idv-actions { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.4rem; }
-/* Buttons and forms. Style the controls users activate or fill in. */
+/* FORM: Style form fields and labels */
 .idv-actions form { margin: 0; }
 .idv-meta { display: grid; gap: .5rem; margin: 1.2rem 0 0; font-size: .9rem; }
 .idv-meta div { display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
@@ -58,7 +58,7 @@
 .idv-card h2 { font-size: 0.95rem; margin: 0.15rem 0 0.1rem; font-weight: 700; }
 .idv-card p { margin: 0; font-size: 0.84rem; line-height: 1.35; }
 .idv-card .btn { flex: none; }
-/* Responsive layout. Rearrange the interface when the viewport meets the width condition below. */
+/* RESPONSIVE: Adjust layout on narrower screens */
 @media (max-width: 640px) {
   .idv-card .btn { width: 100%; }
 }

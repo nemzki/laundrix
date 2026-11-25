@@ -6,7 +6,7 @@
 {% block page_subtitle %}Optional products such as Fabcon or Liquid Soap.{% endblock %}
 {% block page_actions %}<a class="btn btn-outline" href="{{ url_for('catalog.index', tab='addons') }}">{{ icon('arrow-left', 16) }}<span>Back</span></a>{% endblock %}
 {% block content %}
-<!-- Fields and controls submitted together to the form action. --><form class="card form-card" method="post" novalidate>
+<!-- FORM: Save the selected catalog item --><form class="card form-card" method="post" novalidate>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   {% if errors %}<div class="alert alert-error" role="alert">Please fix the highlighted fields.</div>{% endif %}
   <div class="form-grid">

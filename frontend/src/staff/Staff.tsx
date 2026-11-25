@@ -24,6 +24,7 @@ function AccountMenu({row,view,act}:{row:StaffRow;view:()=>void;act:(action:Acti
  const renderAction=(action:Action,destructive=false)=><DropdownMenuItem key={action.url} variant={destructive?'destructive':'default'} className={destructive?'staff-menu-item-destructive':'staff-menu-item'} onSelect={()=>setTimeout(()=>act(action),0)}>{destructive?<ShieldAlert aria-hidden="true" size={16}/>:<ShieldCheck aria-hidden="true" size={16}/>}{action.label}</DropdownMenuItem>
  const regularActions=details?.actions.filter(action=>!isDestructive(action))||[],destructiveActions=details?.actions.filter(isDestructive)||[]
  return <DropdownMenu onOpenChange={open=>{if(open)load()}}><DropdownMenuTrigger asChild><Button variant="ghost" size="icon-sm" aria-label={`Actions for ${row.name}`}><MoreHorizontal size={16}/></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="staff-menu"><DropdownMenuItem className="staff-menu-item" onSelect={()=>setTimeout(view,0)}><Eye aria-hidden="true" size={16}/>View Details</DropdownMenuItem>{error ? <DropdownMenuItem className="staff-menu-item" onSelect={event=>{event.preventDefault();load()}}>Retry loading actions</DropdownMenuItem> : !details ? <DropdownMenuItem className="staff-menu-item" disabled><LoaderCircle className="size-4 animate-spin"/>Loading actions</DropdownMenuItem> : <>{regularActions.map(action=>renderAction(action))}{destructiveActions.length>0&&<><DropdownMenuSeparator/>{destructiveActions.map(action=>renderAction(action,true))}</>}</>}</DropdownMenuContent></DropdownMenu>}
+// MODAL: Manage staff filters, rows, and dialogs
 export function Staff({ initial }: { initial: StaffList }) {
   // The directory state tracks the current server results and requested filters.
   const [data, setData] = useState(initial)
@@ -69,6 +70,7 @@ export function Staff({ initial }: { initial: StaffList }) {
   }
 
   // Start a list refresh and reflect the chosen filters in the address bar.
+  // STAFF: Load staff matching the requested filters
   function navigate(status = data.status, query = search, sort = data.sort, page = 1) {
     if (timer.current) clearTimeout(timer.current)
 
@@ -181,6 +183,7 @@ export function Staff({ initial }: { initial: StaffList }) {
   }
 
   // Create the account from the form and display the returned enrollment link.
+  // STAFF: Create an account and show its enrollment link
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (submissionLock.current || !event.currentTarget.reportValidity()) return
@@ -204,6 +207,7 @@ export function Staff({ initial }: { initial: StaffList }) {
   }
 
   // Validate the reason when required, then submit the selected account action.
+  // FORM: Submit the selected staff action
   async function confirm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!operation || submissionLock.current) return

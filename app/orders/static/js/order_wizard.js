@@ -69,6 +69,7 @@
   }
 
   /* Display the requested wizard step and move keyboard focus to its heading when appropriate. */
+  // WIZARD: Show the active wizard step
   function show(n) {
     quoteRevision += 1; clearTimeout(quoteTimer);
     step = n;
@@ -156,6 +157,7 @@
   }
 
   /* Update the summary beside the wizard with the current selections and estimate. */
+  // ORDER: Refresh the order sidebar summary
   function renderSide() {
     $("#side-customer").textContent = custMode === "existing" && customer ? customer.full_name : custMode === "new" ? ($("#new-name").value.trim() || "Not selected") : "Not selected";
     $("#side-contact").textContent = custMode === "existing" && customer ? customer.contact_number : custMode === "new" ? $("#new-contact").value.trim() : "";
@@ -281,6 +283,7 @@
   }
 
   /* Update payment controls and amounts for the selected arrangement. */
+  // PAYMENT: Update payment fields and balance preview
   function syncPayment() {
     var a = arrangement();
     var takesMoney = a === "full" || a === "partial";
@@ -311,6 +314,7 @@
   }
 
   /* Load and display the GCash QR code when it is available. */
+  // PAYMENT: Load the saved GCash QR code
   function loadGcashQR(box) {
     if (!box.dataset.qrUrl || box.dataset.qrStarted) return;
     box.dataset.qrStarted = "true";
@@ -380,6 +384,7 @@
    * @param {object} payload - The current order details to send.
    * @returns {Promise<{status: number, body: object}>} The HTTP status and parsed response body.
    */
+  // API: Send order data and CSRF token
   function post(url, payload) {
     return fetch(url, {
       method: "POST", credentials: "same-origin",
@@ -414,6 +419,7 @@
   // ---------------------------------------------------------------- step 1: customer
   var searchTimer = null;
   /* Request matching customers and display the results. */
+  // API: Fetch matching customers from the server
   function runSearch() {
     var q = $("#cust-search").value.trim(), list = $("#cust-results");
     clearErrors();
@@ -525,6 +531,7 @@
     }
   }
   /* Store the quoted total and use it to update the on-screen summary. */
+  // LAYOUT: Replace estimates with confirmed server prices
   function acceptQuote(data) {
     localEstimates = {};
     sideQuote = data.lines;
@@ -551,6 +558,7 @@
     renderSide();
   }
   /* Wait briefly for more edits before asking the server for a new quote. */
+  // API: Request updated prices after editing stops
   function queueDetailsQuote() {
     clearTimeout(quoteTimer);
     if (step !== 3 || busy) return;
@@ -602,6 +610,7 @@
     renderSide();
   }
   /* Validate the current step and move forward when it is ready. */
+  // FORM: Validate selections before moving forward
   function next() {
     if (busy) return;
     quoteRevision += 1; clearTimeout(quoteTimer);
@@ -651,6 +660,7 @@
   function back() { if (!busy && step > 1) show(step - 1); }
 
   /* Send the final order request and display the server response. */
+  // FORM: Submit the reviewed order to Flask
   function confirmOrder() {
     if (busy) return;
     if (!window.confirm("Create this order and generate the stub? Prices and payment will be saved as shown.")) return;
@@ -674,7 +684,7 @@
     });
   }
 
-  // ---------------------------------------------------------------- wiring
+  // WIZARD: Connect wizard buttons to their actions
   $("#btn-next").addEventListener("click", next);
   $("#btn-back").addEventListener("click", back);
   $("#btn-confirm").addEventListener("click", confirmOrder);
@@ -702,6 +712,7 @@
     });
   });
 
+  // SEARCH: Wait briefly before searching as users type
   $("#cust-search").addEventListener("input", function () { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 250); });
   $$("[data-cust-mode]").forEach(function (b) { b.addEventListener("click", function () { setMode(b.dataset.custMode); }); });
   $("#new-name").addEventListener("input", function () { confirmDuplicate = false; renderSide(); });
