@@ -89,11 +89,49 @@
 .analytics-subheading + .analytics-scroll { border-top: 1px solid var(--border, #e2e8f0); }
 
 /* export */
-.analytics-export { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
-.analytics-export label { display: grid; gap: 4px; font-size: 12px; color: var(--muted-foreground, #64748b); }
-.analytics-export select, .analytics-export input {
+.export-form { display: grid; gap: 16px; }
+.export-row { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+.export-form label { display: grid; gap: 4px; font-size: 12px; color: var(--muted-foreground, #64748b); }
+.export-form select, .export-form input[type=date] {
   height: 34px; padding: 0 10px; border: 1px solid var(--border, #e2e8f0); border-radius: 8px;
   background: var(--card, #fff); color: var(--foreground, #172033); font: inherit; font-size: 13px;
 }
-.analytics-export .analytics-btn.analytics-btn-primary { height: 34px; padding: 0 16px; background: var(--primary, #2563eb); color: #fff; border-color: var(--primary, #2563eb); }
-.analytics-export .analytics-btn.analytics-btn-primary:hover { background: var(--primary, #2563eb); opacity: .9; }
+.export-form fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.export-form legend { padding: 0; margin-bottom: 4px; font-size: 12px; color: var(--muted-foreground, #64748b); }
+.export-form [hidden] { display: none !important; }
+.export-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.export-format { display: grid; gap: 4px; }
+.export-format .export-choice { display: inline-flex; align-items: center; gap: 6px; margin-right: 12px; font-size: 13px; color: var(--foreground, #172033); }
+.export-format { display: block; }
+.export-quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.export-quick .analytics-btn, .export-presets .analytics-btn { height: 30px; padding: 0 10px; font-size: 12px; }
+.export-section { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border, #e2e8f0); }
+.export-section h3 { margin: 0; font-size: 14px; font-weight: 600; color: var(--foreground, #172033); }
+.export-section h3 .analytics-sub { display: inline; margin-left: 8px; }
+.export-filterset { display: flex; flex-wrap: wrap; gap: 14px 28px; }
+.export-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.export-pill { display: inline-flex; }
+.export-pill input { position: absolute; opacity: 0; pointer-events: none; }
+.export-pill span {
+  padding: 5px 12px; border: 1px solid var(--border, #e2e8f0); border-radius: 999px; font-size: 12px;
+  color: var(--foreground, #172033); background: var(--card, #fff); cursor: pointer; user-select: none;
+}
+.export-pill input:checked + span { background: var(--primary, #2563eb); border-color: var(--primary, #2563eb); color: #fff; }
+.export-pill input:focus-visible + span, .export-check input:focus-visible { outline: 2px solid var(--primary, #2563eb); outline-offset: 2px; }
+.export-columns-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.export-presets, .export-preset-set { display: flex; flex-wrap: wrap; gap: 6px; }
+.export-columnset { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px 20px; }
+.export-group { display: grid; align-content: start; gap: 6px; }
+.export-group-name { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted-foreground, #64748b); }
+.export-form .export-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--foreground, #172033); cursor: pointer; }
+.export-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px solid var(--border, #e2e8f0); }
+.export-summary { margin: 0; font-size: 13px; color: var(--muted-foreground, #64748b); }
+.export-summary[data-tone=ok] { color: var(--foreground, #172033); }
+.export-summary[data-tone=warn] { color: #b54708; }
+.export-summary[data-tone=error] { color: #d92d20; }
+.export-form .analytics-btn.analytics-btn-primary { height: 36px; padding: 0 18px; background: var(--primary, #2563eb); color: #fff; border-color: var(--primary, #2563eb); }
+.export-form .analytics-btn.analytics-btn-primary:hover { background: var(--primary, #2563eb); opacity: .9; }
+@media (max-width: 640px) {
+  .export-columnset { grid-template-columns: 1fr 1fr; }
+  .export-footer .analytics-btn-primary { width: 100%; }
+}

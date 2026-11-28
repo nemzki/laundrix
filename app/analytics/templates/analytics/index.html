@@ -164,17 +164,84 @@
 
     <article class="dashboard-card dashboard-panel analytics-card" aria-labelledby="export-heading">
       <div class="dashboard-panel-heading">
-        <div><h2 id="export-heading">Export data</h2><p class="analytics-sub">Download current records as a CSV file that opens in Excel. Customer phone numbers are not included.</p></div>
+        <div><h2 id="export-heading">Export data</h2><p class="analytics-sub">Download current records as a CSV or Excel file. Pick the records, narrow them with filters, and tick only the columns you need. Customer phone numbers are never included.</p></div>
       </div>
       <div class="analytics-body">
-        <form class="analytics-export" method="get" action="{{ url_for('analytics.export') }}">
-          <label>Records
-            <select name="dataset">{% for key, label in export_datasets.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select>
-          </label>
-          <label>From<input type="date" name="start" value="{{ export_defaults.start }}" max="{{ export_defaults.end }}" required></label>
-          <label>To<input type="date" name="end" value="{{ export_defaults.end }}" max="{{ export_defaults.end }}" required></label>
-          <button class="analytics-btn analytics-btn-primary" type="submit">Download CSV</button>
+        <form class="export-form" id="export-form" method="get" action="{{ url_for('analytics.export') }}" data-preview-url="{{ url_for('analytics.export_preview') }}" novalidate>
+          <input type="hidden" name="custom" value="1">
+
+          <div class="export-row">
+            <label>Records
+              <select name="dataset" id="export-dataset">{% for key, label in export_datasets.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select>
+            </label>
+            <fieldset class="export-format">
+              <legend>File type</legend>
+              {% for key, label in export_formats.items() %}
+              <label class="export-choice"><input type="radio" name="format" value="{{ key }}"{% if loop.first %} checked{% endif %}><span>{{ label }}{% if key == 'xlsx' %} (.xlsx){% else %} (.csv){% endif %}</span></label>
+              {% endfor %}
+            </fieldset>
+            <label>From<input type="date" name="start" id="export-start" value="{{ export_defaults.start }}" max="{{ export_defaults.end }}" required></label>
+            <label>To<input type="date" name="end" id="export-end" value="{{ export_defaults.end }}" max="{{ export_defaults.end }}" required></label>
+            <div class="export-quick" role="group" aria-label="Quick date ranges">
+              <button type="button" class="analytics-btn" data-range-days="7">7 days</button>
+              <button type="button" class="analytics-btn" data-range-days="30">30 days</button>
+              <button type="button" class="analytics-btn" data-range-days="90">90 days</button>
+              <button type="button" class="analytics-btn" data-range-days="month">This month</button>
+            </div>
+          </div>
+
+          <section class="export-section" aria-labelledby="export-filters-heading">
+            <h3 id="export-filters-heading">Filters <span class="analytics-sub">Leave everything unticked to include all records.</span></h3>
+            {% for dataset, cfg in export_config.items() %}
+            {% set first_dataset = loop.first %}
+            <div class="export-filterset" data-dataset="{{ dataset }}"{% if not first_dataset %} hidden{% endif %}>
+              {% for f in cfg.filters %}
+              <fieldset class="export-filter"{% if not first_dataset %} disabled{% endif %}>
+                <legend>{{ f.label }}</legend>
+                <div class="export-pills">
+                  {% for o in f.options %}<label class="export-pill"><input type="checkbox" name="{{ f.name }}" value="{{ o.value }}"><span>{{ o.label }}</span></label>{% endfor %}
+                </div>
+              </fieldset>
+              {% endfor %}
+            </div>
+            {% endfor %}
+          </section>
+
+          <section class="export-section" aria-labelledby="export-columns-heading">
+            <div class="export-columns-head">
+              <h3 id="export-columns-heading">Columns <span class="analytics-sub" id="export-column-count" aria-live="polite"></span></h3>
+              <div class="export-presets">
+                {% for dataset, cfg in export_config.items() %}
+                <span class="export-preset-set" data-dataset="{{ dataset }}"{% if not loop.first %} hidden{% endif %}>
+                  <button type="button" class="analytics-btn" data-preset="defaults">Standard</button>
+                  {% for p in cfg.presets %}<button type="button" class="analytics-btn" data-preset="{{ p.id }}">{{ p.label }}</button>{% endfor %}
+                  <button type="button" class="analytics-btn" data-preset="all">Select all</button>
+                  <button type="button" class="analytics-btn" data-preset="none">Clear</button>
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+            {% for dataset, cfg in export_config.items() %}
+            <fieldset class="export-columnset" data-dataset="{{ dataset }}"{% if not loop.first %} hidden disabled{% endif %}>
+              <legend class="export-sr">Columns for {{ cfg.label }}</legend>
+              {% for g in cfg.groups %}
+              <div class="export-group">
+                <p class="export-group-name">{{ g.name }}</p>
+                {% for col in g.columns %}
+                <label class="export-check"><input type="checkbox" name="columns" value="{{ col.key }}"{% if col.default %} checked{% endif %}><span>{{ col.label }}</span></label>
+                {% endfor %}
+              </div>
+              {% endfor %}
+            </fieldset>
+            {% endfor %}
+          </section>
+
+          <div class="export-footer">
+            <p class="export-summary" id="export-summary" role="status" aria-live="polite">Checking how many records match…</p>
+            <button class="analytics-btn analytics-btn-primary" id="export-submit" type="submit">Download CSV</button>
+          </div>
         </form>
+        <script type="application/json" id="analytics-export-config">{{ export_config|tojson }}</script>
       </div>
     </article>
 
@@ -185,5 +252,6 @@
 {% block page_scripts %}
   <!-- API: Flask report data for the charts --><script type="application/json" id="analytics-chart-data">{{ {'orders': report.charts.orders, 'revenue': report.charts.revenue, 'status': report.charts.status, 'services': report.charts.services}|tojson }}</script>
   <!-- Page behavior loaded after the HTML or referenced by the markup above. --><script src="{{ url_for('core.static', filename='vendor/chartjs/chart.umd.min.js') }}" defer></script>
+  <script src="{{ url_for('analytics.static', filename='js/analytics-export.js') }}" defer></script>
   <script src="{{ url_for('analytics.static', filename='js/analytics-charts.js') }}" defer></script>
 {% endblock %}

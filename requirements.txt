@@ -14,3 +14,4 @@ gunicorn>=21.2       # production server (Linux)
 pytest>=8.0
 qrcode[pil]>=8.0,<9.0
 scikit-learn==1.9.1  # ML development/training pipeline; numpy, scipy and joblib are dependencies
+openpyxl>=3.1
